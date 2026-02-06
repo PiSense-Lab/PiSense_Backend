@@ -19,7 +19,7 @@ For Linux - curl -LsSf https://astral.sh/uv/install.sh | sh
 
 This will resolve the new dependency and add it to our list of dependencies in `pyproject.toml`. You will need to run `uv lock` afterwards to update the lock file. ( We will later setup a pipeline to yell at you when you forget )
 
-#### Developing
+#### Developing ( Assuming you are using vscode with WSL )
 
 git clone the repo and install uv
 
@@ -32,5 +32,3 @@ In linux ( wsl ) `source .venv/bin/activate` to enter the local environment. ( I
 Update version number in `pyproject.toml` ( Do we want to enforce versioning semantics )
 
 `uv lock` to update lock file ( This will be eventually required by the pipeline )
-
-
