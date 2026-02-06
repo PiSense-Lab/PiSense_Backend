@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [
-    Nicholas Doboszenski
+    "Nicholas Doboszenski"
 ]
 dependencies = [
     "fastapi[standard]>=0.128.3",
