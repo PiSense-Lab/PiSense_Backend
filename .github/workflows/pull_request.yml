@@ -25,5 +25,5 @@ jobs:
       run: uv sync --locked --all-extras --dev
 
     - name: Run tests
-      # For example, using `pytest`
-      run: uv run nox
+      # Runs nox tests with dependency group `tests`
+      run: uv run --groups tests nox
