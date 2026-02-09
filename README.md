@@ -32,3 +32,14 @@ In linux ( wsl ) `source .venv/bin/activate` to enter the local environment. ( I
 Update version number in `pyproject.toml` ( Do we want to enforce versioning semantics )
 
 `uv lock` to update lock file ( This will be eventually required by the pipeline )
+
+
+### Configuration
+
+All of our code is within our `pisense` within its respective folder. There are a bunch of `__init__.py` files in all of the folder, those are for `pytest` to properly import stuff, they can be ignored. There are two main parts of this project, the `backend` which contains most of the logic and the `api` part which contains the network paths for external users to access. The `api` part should contain only api related logic, all logic should be contained in the `backend` and imported to the `api`, this keeps all of our logic generic and reusable and not linked directly to a api call which may change.
+
+### Testing
+
+We are using `nox` to setup and run all of our python testing. `Nox` just setups up the tests so we are using `pytest` for a majority of our unit and e2e tests. `Nox` is configured in `noxfile.py` and contains a bunch of different `sessions` which each contain some testing. There is also a linter installed ( which exactly is up for debate ) which will enforce stricter typing and code styling. Its a pain but will be nice in the long run. 
+
+You can run the tests locally using `uv run nox` which will run all of the tests, for a specific test you can add the `-s` flag and which session you are running.
