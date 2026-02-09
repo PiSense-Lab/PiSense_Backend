@@ -10,4 +10,4 @@ def tests(session):
 def lint(session):
     """Lints the code with flake8."""
     session.install("flake8")
-    session.run("flake8", "backend", '-v') # Runs linter on backend
+    session.run("flake8", "pisense", '-v') # Runs linter on backend
