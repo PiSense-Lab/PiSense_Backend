@@ -51,3 +51,7 @@ You can run the tests locally using `uv run nox` which will run all of the tests
 
 If you are in the proper environment then you can just run `fastapi run pisense/api/main.py`
 
+This will run an api at http://0.0.0.0:8000
+
+Navigating to http://0.0.0.0:8000/docs will give you access to the docs page which is very useful for development and testing
+
