@@ -43,3 +43,11 @@ All of our code is within our `pisense` within its respective folder. There are 
 We are using `nox` to setup and run all of our python testing. `Nox` just setups up the tests so we are using `pytest` for a majority of our unit and e2e tests. `Nox` is configured in `noxfile.py` and contains a bunch of different `sessions` which each contain some testing. There is also a linter installed ( which exactly is up for debate ) which will enforce stricter typing and code styling. Its a pain but will be nice in the long run. 
 
 You can run the tests locally using `uv run nox` which will run all of the tests, for a specific test you can add the `-s` flag and which session you are running.
+
+
+### Starting fastapi
+
+`uv run fastapi run pisense/api/main.py` 
+
+If you are in the proper environment then you can just run `fastapi run pisense/api/main.py`
+
