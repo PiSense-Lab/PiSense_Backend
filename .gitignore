@@ -1,0 +1,7 @@
+dist/*
+.venv/*
+**/__pycache__/*
+pisense_backend.egg-info/*
+.python-version
+.nox/*
+.pytest_cache/*
