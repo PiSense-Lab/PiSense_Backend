@@ -5,3 +5,5 @@ pisense_backend.egg-info/*
 .python-version
 .nox/*
 .pytest_cache/*
+docker/db_data/*
+**/.env
