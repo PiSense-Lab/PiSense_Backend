@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
-from models.weather_models import HourlyRecord
-from clients.openmeteo_client import openmeteo_client
+from pisense.api.models.weather_models import HourlyRecord
+from pisense.api.clients.openmeteo_client import openmeteo_client
 
 
 def _build_hourly_records(hourly) -> list[HourlyRecord]:

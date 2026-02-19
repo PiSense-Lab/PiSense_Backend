@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from models.weather_models import HourlyRecord
-from services.weather_service import (
+from pisense.api.models.weather_models import HourlyRecord
+from pisense.api.services.weather_service import (
     get_forecast_weather,
     get_historical_weather
 )
