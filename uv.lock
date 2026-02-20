@@ -677,6 +677,7 @@ dependencies = [
     { name = "nox" },
     { name = "openpyxl" },
     { name = "pandas" },
+    { name = "pydantic" },
 ]
 
 [package.dev-dependencies]
@@ -692,6 +693,7 @@ requires-dist = [
     { name = "nox", specifier = ">=2025.11.12" },
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas", specifier = ">=3.0.1" },
+    { name = "pydantic", specifier = ">=2.12.5" },
 ]
 
 [package.metadata.requires-dev]

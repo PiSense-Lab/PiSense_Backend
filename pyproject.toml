@@ -10,6 +10,7 @@ dependencies = [
     "nox>=2025.11.12",
     "openpyxl>=3.1.5",
     "pandas>=3.0.1",
+    "pydantic>=2.12.5",
 ]
 
 [dependency-groups]
