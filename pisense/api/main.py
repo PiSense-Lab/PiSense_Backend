@@ -11,4 +11,3 @@ app.include_router(weather_router)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
