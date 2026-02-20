@@ -5,8 +5,13 @@ from dotenv import load_dotenv
 from pisense.database.database import Database
 
 from fastapi import FastAPI
+from pisense.backend.routes.weather import router as weather_router
+
+# to start server: source .venv/bin/activate && fastapi dev pisense/api/main.py
 
 ENV_FILE_PATH = ".env" # root of the repository
+
+app.include_router(weather_router)
 
 
 db: Database
