@@ -7,3 +7,4 @@ pisense_backend.egg-info/*
 .pytest_cache/*
 docker/db_data/*
 **/.env
+**/.cache.sqlite
