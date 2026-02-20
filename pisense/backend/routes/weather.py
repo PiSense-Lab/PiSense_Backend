@@ -24,6 +24,7 @@ async def weather_forecast():
 async def historical_weather():
     return get_historical_weather()
 
+
 @router.get(
     "/daily-weather",
     response_model=list[DailyRecord]

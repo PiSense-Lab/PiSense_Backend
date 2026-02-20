@@ -6,6 +6,7 @@ class HourlyRecord(BaseModel):
     date: datetime
     temperature_2m: float
 
+
 class DailyRecord(BaseModel):
     date: datetime
     temperature_2m_max: float

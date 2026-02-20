@@ -30,6 +30,7 @@ def _build_hourly_records(hourly) -> list[HourlyRecord]:
         for row in df.itertuples(index=False)
     ]
 
+
 def _build_daily_records(daily) -> list[DailyRecord]:
     """
     Shared transformer for daily weather blocks.
@@ -39,10 +40,10 @@ def _build_daily_records(daily) -> list[DailyRecord]:
     temp_min = daily.Variables(1).ValuesAsNumpy()
 
     dates = pd.date_range(
-                start = pd.to_datetime(daily.Time(), unit = "s", utc = True),
-                end =  pd.to_datetime(daily.TimeEnd(), unit = "s", utc = True),
-                freq = pd.Timedelta(seconds = daily.Interval()),
-                inclusive = "left"
+                start=pd.to_datetime(daily.Time(), unit="s", utc=True),
+                end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
+                freq=pd.Timedelta(seconds=daily.Interval()),
+                inclusive="left"
             )
 
     df = pd.DataFrame({
@@ -79,6 +80,7 @@ def get_forecast_weather():
     hourly = response.Hourly()
 
     return _build_hourly_records(hourly)
+
 
 def get_forecast_day_weather():
     url = "https://api.open-meteo.com/v1/forecast"
