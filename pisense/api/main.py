@@ -11,11 +11,7 @@ from pisense.backend.routes.weather import router as weather_router
 
 ENV_FILE_PATH = ".env" # root of the repository
 
-app.include_router(weather_router)
-
-
 db: Database
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,6 +32,8 @@ async def lifespan(app: FastAPI):
     logging.info("Api Has Been Shutdown")
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(weather_router)
 
 @app.get("/")
 async def root():
