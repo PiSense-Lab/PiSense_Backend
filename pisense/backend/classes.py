@@ -16,7 +16,7 @@ class Project():
     def name(self) -> str:
         """
         Returns name of object
-        
+
         :return: name of object
         :rtype: str
         """
@@ -34,7 +34,7 @@ class Group():
     def users(self) -> list["User"]:
         """
         Returns a list of users that are a part of this group
-        
+
         :return: list of users that are a part of this group
         :rtype: list[User]
         """
@@ -44,7 +44,7 @@ class Group():
     def projects(self) -> list["Project"]:
         """
         Returns a list of projects owned by this object
-        
+
         :return: list of projects owned by this object
         :rtype: list[Project]
         """
@@ -54,7 +54,7 @@ class Group():
     def name(self) -> str:
         """
         Returns name of object
-        
+
         :return: name of object
         :rtype: str
         """
@@ -72,7 +72,7 @@ class User():
     def projects(self) -> list["Project"]:
         """
         Returns a list of projects owned by this object
-        
+
         :return: list of projects owned by this object
         :rtype: list[Project]
         """
@@ -82,7 +82,7 @@ class User():
     def name(self) -> str:
         """
         Returns name of object
-        
+
         :return: name of object
         :rtype: str
         """

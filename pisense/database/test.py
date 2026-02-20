@@ -1,6 +1,6 @@
 from typing import List
 import mariadb
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import HTTPException
 import sys
 import re
 
@@ -65,7 +65,7 @@ def create_table(
     cols = ", ".join(column_defs)
 
     query = f"CREATE TABLE {table_name} ({cols})"
-    
+
     print("success!")
     cur = conn.cursor()
     cur.execute(query)
@@ -101,11 +101,11 @@ def insert_rows(table_name: str, column_name: List[str], rows: List[List[str]]):
     for row in rows:
         if len(row) != len(column_name):
             raise HTTPException(status_code=400, detail="Row length does not match column length")
-        
+
         # Validate each value against its column type
         for val, col in zip(row, column_name):
             validate_value(val, schema[col])
-        
+
         cur.execute(query, row)  # safe parameter binding
 
     conn.commit()
@@ -113,7 +113,7 @@ def insert_rows(table_name: str, column_name: List[str], rows: List[List[str]]):
 
 def validate_value(value, col_type):
     col_type = col_type.upper()
-    
+
     if col_type == "INT":
         try:
             int(value)
@@ -145,4 +145,4 @@ def validate_value(value, col_type):
             bool(value)
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Value {value} is not a valid BOOLEAN")
-        
+

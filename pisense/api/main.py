@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
     db = Database(db_password=db_password,username=username,host=host) # Sets up database connection
 
     yield # Run the api
-    
+
     # Shutdown Code
     logging.info("Api Has Been Shutdown")
 
@@ -37,5 +37,7 @@ app.include_router(weather_router)
 
 @app.get("/")
 async def root():
+    global db
+
     print(db)
     return {"message": "Hello World"}

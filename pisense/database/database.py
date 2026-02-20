@@ -30,7 +30,7 @@ class Database():
     @property
     def cursor(self):
         return self._cursor
-    
+
     def get_groups(self) -> list[Group]:
         ...
 
@@ -52,7 +52,7 @@ class Database():
     def get_table(self):
         ...
 
-    
+
     def create_table():
         ...
 

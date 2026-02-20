@@ -18,6 +18,14 @@ dependencies = [
 
 [dependency-groups]
 tests = [
-    "flake8>=7.3.0",
     "pytest>=9.0.2",
+    "ruff>=0.15.2",
 ]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501"]
+
+[tool.ruff]
+include = ["test/*", "pisense/*"]
+

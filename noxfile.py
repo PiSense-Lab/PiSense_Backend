@@ -8,6 +8,6 @@ def tests(session):
 
 @nox.session
 def lint(session):
-    """Lints the code with flake8."""
-    session.install("flake8")
-    session.run("flake8", "pisense") # Runs linter on python code in `pisense/*`
+    """Lints the code with ruff."""
+    session.install("ruff")
+    session.run("ruff", "check", "--fix") # Runs linter on python code in `pisense/*`
