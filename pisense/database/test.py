@@ -8,7 +8,7 @@ import re
 try:
     conn = mariadb.connect(
         user="admin",
-        password="",
+        password="ilovepisense",
         host="192.168.1.90",
         port=3306,
         database="PiSense"
@@ -17,7 +17,7 @@ except mariadb.Error as e:
     print(f"Error connecting to MariaDB Platform: {e}")
     sys.exit(1)
 
-ALLOWED_TYPES = {"INT", "VARCHAR(50)", "TEXT", "DATE", "TIME"}
+ALLOWED_TYPES = {"INT", "VARCHAR(50)", "BOOL", "DATE", "TIME"}
 
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
@@ -25,9 +25,9 @@ def valid_identifier(name):
 #Create a new table from input from front end. Expects form data with 'table_name', 'column_name[]', and 'column_type[]'
 
 def create_table(
-    table_name: str = "test",
-    column_name: List[str] = ["id", "name", "value"],
-    column_type: List[str] = ["INT", "VARCHAR(50)", "TEXT"]
+    table_name: str = "test2",
+    column_name: List[str] = ["name", "value"],
+    column_type: List[str] = ["VARCHAR(50)", "INT"]
 ):
     # Validate table name
     if not valid_identifier(table_name):
@@ -38,6 +38,8 @@ def create_table(
         raise HTTPException(status_code=400, detail="Each column must have a type and vice versa")
 
     column_defs = []
+
+    column_defs.append("id INT PRIMARY KEY AUTO_INCREMENT")
 
     #removes whitespace and capitalizes
     for c, t in zip(column_name, column_type):
@@ -71,4 +73,76 @@ def create_table(
 
     return "Table created!"
 
-create_table()
+def insert_rows(table_name: str, column_name: List[str], rows: List[List[str]]):
+    # Validate table name
+    if not valid_identifier(table_name):
+        raise HTTPException(status_code=400, detail="Invalid table name")
+
+    # Validate column names
+    for col in column_name:
+        if not valid_identifier(col.strip()):
+            raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+
+    # Fetch column types from the existing table
+    cur = conn.cursor()
+    cur.execute(f"DESCRIBE {table_name}")
+    schema = {col[0]: col[1].upper() for col in cur.fetchall()}  # {column_name: column_type}
+
+    # Make sure all columns exist
+    for col in column_name:
+        if col not in schema:
+            raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
+
+    cols = ", ".join(col.strip() for col in column_name)
+    placeholders = ", ".join(["?"] * len(column_name))
+    query = f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})"
+
+    # Insert rows
+    for row in rows:
+        if len(row) != len(column_name):
+            raise HTTPException(status_code=400, detail="Row length does not match column length")
+        
+        # Validate each value against its column type
+        for val, col in zip(row, column_name):
+            validate_value(val, schema[col])
+        
+        cur.execute(query, row)  # safe parameter binding
+
+    conn.commit()
+    return f"{len(rows)} rows inserted!"
+
+def validate_value(value, col_type):
+    col_type = col_type.upper()
+    
+    if col_type == "INT":
+        try:
+            int(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not an INT")
+    elif col_type == "DECIMAL":
+        try:
+            float(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a DECIMAL")
+    elif col_type.startswith("VARCHAR"):
+        max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
+        if len(str(value)) > max_len:
+            raise HTTPException(status_code=400, detail=f"Value {value} exceeds max length {max_len}")
+    elif col_type == "DATE":
+        import datetime
+        try:
+            datetime.datetime.strptime(value, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid DATE")
+    elif col_type == "TIME":
+        import datetime
+        try:
+            datetime.datetime.strptime(value, "%H:%M:%S")
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid TIME")
+    elif col_type == "BOOL":
+        try:
+            bool(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid BOOLEAN")
+        
