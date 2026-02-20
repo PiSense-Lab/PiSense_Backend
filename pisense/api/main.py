@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from pisense.api.routes.weather import router as weather_router
+from pisense.backend.routes.weather import router as weather_router
 
 # to start server: source .venv/bin/activate && fastapi dev pisense/api/main.py
 
