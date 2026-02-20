@@ -1,5 +1,4 @@
 import pandas as pd
-from datetime import datetime
 from pisense.api.models.weather_models import HourlyRecord
 from pisense.api.clients.openmeteo_client import openmeteo_client
 
