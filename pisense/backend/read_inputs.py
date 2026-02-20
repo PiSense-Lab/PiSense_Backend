@@ -20,22 +20,22 @@ class Reader():
 class xclReader(Reader):
     # reads in a xlsx file and returns an array with the sheets in each
     #   index of the array. The array is comprised of pandas DataFrames
-    def readIn(self):
-        with pd.ExcelFile(self.filepath) as xls:
-            for index, pd.sheet_names in enumerate(pd.sheet_names):
-                self.sheetList.append(pd.read_excel(
-                   xls, pd.sheet_names[index]))
+    def readIn(self, filepath):
+        with pd.ExcelFile(filepath) as xls:
+            data = pd.read_excel(xls, sheet_name=None)
+            for key, value in data.items():
+                self.sheetList.append(value)
         return self.sheetList
 
     # gets the columns inbetween the firstCol and endCol and returns the
     #   DataFrame
     def getCols(self, firstCol, endCol, sheetName):
-        return pd.read_excel(self.filepath, sheetName)
+        return pd.read_excel(self.filepath, sheet_name=sheetName)
         # usecols=firstCol:endCol)
 
     # gets the rows in between the firstRow and endRow
     def getRows(self, firstRow, endRow, sheetName):
-        return pd.read_excel(self.filepath, sheetName)
+        return pd.read_excel(self.filepath, sheet_name=sheetName)
 
 
 # reader and other functions for altering csv files

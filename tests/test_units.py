@@ -27,7 +27,8 @@ class TestReaders():
 
     def test_xReadIn(self):
         xRead = xclReader(self.xFilepath)
-        
+        xList = xRead.readIn(self.xFilepath)
+        assert isinstance(xList[0], pd.DataFrame)
 
     def test_cReadIn(self):
         cRead = csvReader(self.cFilepath)
