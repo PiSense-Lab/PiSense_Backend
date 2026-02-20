@@ -1,4 +1,3 @@
-from typing import Generator
 
 class Project():
 
@@ -9,8 +8,8 @@ class Project():
         ...
 
     @property
-    def users(self) -> Generator["User"]:
-        """Generator of users that can access this project"""
+    def users(self) -> list["User"]:
+        """list of users that can access this project"""
         ...
 
     @property
@@ -32,22 +31,22 @@ class Group():
         ...
 
     @property
-    def users(self) -> Generator["User"]:
+    def users(self) -> list["User"]:
         """
-        Returns a generator of users that are a part of this group
+        Returns a list of users that are a part of this group
         
-        :return: Generator of users that are a part of this group
-        :rtype: Generator[User, None, None]
+        :return: list of users that are a part of this group
+        :rtype: list[User]
         """
         ...
 
     @property
-    def projects(self) -> Generator["Project"]:
+    def projects(self) -> list["Project"]:
         """
-        Returns a generator of projects owned by this object
+        Returns a list of projects owned by this object
         
-        :return: Generator of projects owned by this object
-        :rtype: Generator[Project, None, None]
+        :return: list of projects owned by this object
+        :rtype: list[Project]
         """
         ...
 
@@ -70,12 +69,12 @@ class User():
         ...
 
     @property
-    def projects(self) -> Generator["Project"]:
+    def projects(self) -> list["Project"]:
         """
-        Returns a generator of projects owned by this object
+        Returns a list of projects owned by this object
         
-        :return: Generator of projects owned by this object
-        :rtype: Generator[Project, None, None]
+        :return: list of projects owned by this object
+        :rtype: list[Project]
         """
         ...
 

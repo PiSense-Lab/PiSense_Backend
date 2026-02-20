@@ -1,5 +1,6 @@
-from mariadb import Cursor, Connection
-
+from mariadb import Cursor, Connection, mariadb
+import logging
+import sys
 from pisense.backend.classes import Group, User, Project
 
 class Database():
@@ -7,15 +8,25 @@ class Database():
     Docstring for database
     """
 
-    _cursor: Cursor | None = None
-    _connection: Connection | None = None
+    _cursor: Cursor
+    _connection: Connection
 
-
-    def __init__():
+    def __init__(self, db_password: str, host: str, username: str = "admin", port: int = 3306, database: str = "PiSense"):
         # Connect to db -> _connection
-        # create cursor -> _cursor
-        ...
+        try:
+            self._connection: Connection = mariadb.connect(
+                user=username,
+                password=db_password,
+                host=host,
+                port=port,
+                database=database
+            )
+        except mariadb.Error as e:
+            logging.error(f"Error connecting to MariaDB Platform: {e}")
+            sys.exit(1)
 
+        # create cursor -> _cursor
+        self._cursor = self._connection.cursor()
     @property
     def cursor(self):
         return self._cursor
@@ -53,8 +64,3 @@ class Database():
 
     def create_group():
         ...
-
-
-        # .env file
-    
-

@@ -551,6 +551,7 @@ dependencies = [
     { name = "logging" },
     { name = "mariadb" },
     { name = "nox" },
+    { name = "python-dotenv" },
 ]
 
 [package.dev-dependencies]
@@ -565,6 +566,7 @@ requires-dist = [
     { name = "logging", specifier = ">=0.4.9.6" },
     { name = "mariadb", specifier = ">=1.1.14" },
     { name = "nox", specifier = ">=2025.11.12" },
+    { name = "python-dotenv", specifier = ">=1.2.1" },
 ]
 
 [package.metadata.requires-dev]
