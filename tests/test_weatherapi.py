@@ -1,4 +1,4 @@
-import pytest
+# import pytest
 from fastapi.testclient import TestClient
 from pisense.api.main import app
 

@@ -19,3 +19,6 @@ tests = [
     "flake8>=7.3.0",
     "pytest>=9.0.2",
 ]
+
+[tool.setuptools.packages.find]
+include = ["pisense*"]
