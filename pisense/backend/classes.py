@@ -2,7 +2,87 @@
 from mariadb import Cursor, Connection, mariadb
 import logging
 import sys
-from pisense.backend.classes import Group, User, Project
+
+class Group():
+
+    def __init__(self):
+        ...
+
+    def __str__(self):
+        ...
+
+    @property
+    def users(self) -> list["User"]:
+        """
+        Returns a list of users that are a part of this group
+
+        :return: list of users that are a part of this group
+        :rtype: list[User]
+        """
+        ...
+
+    @property
+    def projects(self) -> list["Project"]:
+        """
+        Returns a list of projects owned by this object
+
+        :return: list of projects owned by this object
+        :rtype: list[Project]
+        """
+        ...
+
+    @property
+    def name(self) -> str:
+        """
+        Returns name of object
+
+        :return: name of object
+        :rtype: str
+        """
+        ...
+
+class User():
+
+    def __init__(self, name: str):
+        ...
+
+    def __str__(self):
+        ...
+
+    @property
+    def projects(self) -> list["Project"]:
+        """
+        Returns a list of projects owned by this object
+
+        :return: list of projects owned by this object
+        :rtype: list[Project]
+        """
+        ...
+
+    @property
+    def name(self) -> str:
+        """
+        Returns name of object
+
+        :return: name of object
+        :rtype: str
+        """
+        ...
+
+class Project():
+
+    def __init__(self, name: str, owner: User | Group):
+        self.name = name
+        self.owner = owner
+
+    def __str__(self):
+        return f"{self.name}"
+
+    @property
+    def users(self) -> list["User"]:
+        """list of users that can access this project"""
+        ...
+
 
 class Database():
     """
@@ -136,85 +216,5 @@ class Database():
     def create_group(self):
         """
         Creates a new group in the database.
-        """
-        ...
-
-class Project():
-
-    def __init__(self, name: str, owner: "User" | "Group"):
-        self.name = name
-        self.owner = owner
-
-    def __str__(self):
-        return f"{self.name}"
-
-    @property
-    def users(self) -> list["User"]:
-        """list of users that can access this project"""
-        ...
-
-class Group():
-
-    def __init__(self):
-        ...
-
-    def __str__(self):
-        ...
-
-    @property
-    def users(self) -> list["User"]:
-        """
-        Returns a list of users that are a part of this group
-
-        :return: list of users that are a part of this group
-        :rtype: list[User]
-        """
-        ...
-
-    @property
-    def projects(self) -> list["Project"]:
-        """
-        Returns a list of projects owned by this object
-
-        :return: list of projects owned by this object
-        :rtype: list[Project]
-        """
-        ...
-
-    @property
-    def name(self) -> str:
-        """
-        Returns name of object
-
-        :return: name of object
-        :rtype: str
-        """
-        ...
-
-class User():
-
-    def __init__(self, name: str):
-        ...
-
-    def __str__(self):
-        ...
-
-    @property
-    def projects(self) -> list["Project"]:
-        """
-        Returns a list of projects owned by this object
-
-        :return: list of projects owned by this object
-        :rtype: list[Project]
-        """
-        ...
-
-    @property
-    def name(self) -> str:
-        """
-        Returns name of object
-
-        :return: name of object
-        :rtype: str
         """
         ...
