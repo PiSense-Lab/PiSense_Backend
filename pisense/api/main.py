@@ -11,7 +11,6 @@ from pisense.backend.routes.weather import router as weather_router
 
 ENV_FILE_PATH = ".env" # root of the repository
 
-db: Database
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,7 +23,7 @@ async def lifespan(app: FastAPI):
     username = os.getenv("MARIADB_USER")
     host = os.getenv("HOST")
 
-    db = Database(db_password=db_password,username=username,host=host) # Sets up database connection
+    Database(db_password=db_password,username=username,host=host) # Sets up database connection singleton
 
     yield # Run the api
 
@@ -37,7 +36,5 @@ app.include_router(weather_router)
 
 @app.get("/")
 async def root():
-    global db
-
-    print(db)
+    print(Database())
     return {"message": "Hello World"}
