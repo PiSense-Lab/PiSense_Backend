@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 import logging
 import os
 from dotenv import load_dotenv
-from pisense.database.database import Database
+from pisense.backend.classes import Database
 
 from fastapi import FastAPI
 from pisense.backend.routes.weather import router as weather_router
@@ -11,10 +11,8 @@ from pisense.backend.routes.weather import router as weather_router
 
 ENV_FILE_PATH = ".env" # root of the repository
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global db
     # Startup code
     load_dotenv(dotenv_path=ENV_FILE_PATH) # Loads .env file into environment
 
