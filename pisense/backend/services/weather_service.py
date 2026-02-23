@@ -40,11 +40,11 @@ def _build_daily_records(daily) -> list[DailyRecord]:
     temp_min = daily.Variables(1).ValuesAsNumpy()
 
     dates = pd.date_range(
-                start=pd.to_datetime(daily.Time(), unit="s", utc=True),
-                end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
-                freq=pd.Timedelta(seconds=daily.Interval()),
-                inclusive="left"
-            )
+        start=pd.to_datetime(daily.Time(), unit="s", utc=True),
+        end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
+        freq=pd.Timedelta(seconds=daily.Interval()),
+        inclusive="left"
+    )
 
     df = pd.DataFrame({
         "date": dates,
