@@ -1,15 +1,57 @@
 
+import re
+from typing import List
+
 from mariadb import Cursor, Connection, mariadb
 import logging
 import sys
+from fastapi import HTTPException
+
+def validate_value(value, col_type):
+    col_type = col_type.upper()
+
+    if col_type == "INT":
+        try:
+            int(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not an INT")
+    elif col_type == "DECIMAL":
+        try:
+            float(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a DECIMAL")
+    elif col_type.startswith("VARCHAR"):
+        max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
+        if len(str(value)) > max_len:
+            raise HTTPException(status_code=400, detail=f"Value {value} exceeds max length {max_len}")
+    elif col_type == "DATE":
+        import datetime
+        try:
+            datetime.datetime.strptime(value, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid DATE")
+    elif col_type == "TIME":
+        import datetime
+        try:
+            datetime.datetime.strptime(value, "%H:%M:%S")
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid TIME")
+    elif col_type == "BOOL":
+        try:
+            bool(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid BOOLEAN")
+
+def valid_identifier(name):
+    return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
 
 class Group():
 
-    def __init__(self):
-        ...
+    def __init__(self, name: str):
+        self.name = name
 
     def __str__(self):
-        ...
+        return f"{self.name}"
 
     @property
     def users(self) -> list["User"]:
@@ -31,23 +73,13 @@ class Group():
         """
         ...
 
-    @property
-    def name(self) -> str:
-        """
-        Returns name of object
-
-        :return: name of object
-        :rtype: str
-        """
-        ...
-
 class User():
 
     def __init__(self, name: str):
-        ...
+        self.name = name
 
     def __str__(self):
-        ...
+        return f"{self.name}"
 
     @property
     def projects(self) -> list["Project"]:
@@ -56,16 +88,6 @@ class User():
 
         :return: list of projects owned by this object
         :rtype: list[Project]
-        """
-        ...
-
-    @property
-    def name(self) -> str:
-        """
-        Returns name of object
-
-        :return: name of object
-        :rtype: str
         """
         ...
 
@@ -82,7 +104,6 @@ class Project():
     def users(self) -> list["User"]:
         """list of users that can access this project"""
         ...
-
 
 class Database():
     """
@@ -105,7 +126,7 @@ class Database():
             return
         self._initialized = True
         try:
-            self._connection: Connection = mariadb.connect(
+            self._connection = mariadb.connect(
                 user=username,
                 password=db_password,
                 host=host,
@@ -115,20 +136,58 @@ class Database():
                 read_timeout=10,
                 write_timeout=10
             )
+            if not isinstance(self._connection, Connection):
+                logging.error("Did not return a connection object")
+                sys.exit(1)
         except mariadb.Error as e:
             logging.error(f"Error connecting to MariaDB Platform: {e}")
             sys.exit(1)
 
         # create cursor -> _cursor
-        self._cursor = self._connection.cursor()
+        self._cursor: Cursor = self._connection.cursor()
 
     @property
-    def cursor(self):
+    def cursor(self) -> Cursor:
+        if not isinstance(self._cursor, Cursor):
+            logging.error("Did not return a connection object")
+            sys.exit(1)
         return self._cursor
 
     @property
-    def connection(self):
+    def connection(self) -> Connection:
         return self._connection()
+    
+    def _get_rows(self, table: str, columns: List[str] = [], where_condition: str = "") -> list[tuple]:
+
+        # Validate table name
+        if not valid_identifier(table):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        # Validate column names
+        for col in columns:
+            if not valid_identifier(col.strip()):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+            
+        cols = "*"
+        if columns:
+            cols = ", ".join(col.strip() for col in columns)
+
+        
+        where = ""
+        if where_condition:
+            where = f" WHERE {where_condition}"
+
+
+        sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
+    
+        self.cursor.execute(sql_str)
+
+        out = self.cursor.fetchall()
+
+        if isinstance(out, List):
+            return out
+        else:
+            raise Exception("SQL did not return a list")
 
     def get_groups(self) -> list[Group]:
         """
@@ -193,7 +252,6 @@ class Database():
         :rtype: ??? ( Make a table object? )
         """
         ...
-
 
     def create_table(self):
         """
