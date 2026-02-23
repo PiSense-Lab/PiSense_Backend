@@ -9,3 +9,4 @@ docker/db_data/*
 **/.env
 **/.cache.sqlite
 build/*
+.vscode/*
