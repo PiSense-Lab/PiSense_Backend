@@ -1,5 +1,6 @@
 from typing import List
 import mariadb
+from pisense.database.validate import validate_value
 from fastapi import HTTPException
 import sys
 import re
@@ -8,7 +9,7 @@ import re
 try:
     conn = mariadb.connect(
         user="admin",
-        password="ilovepisense",
+        password="",
         host="192.168.1.90",
         port=3306,
         database="PiSense"
@@ -110,39 +111,3 @@ def insert_rows(table_name: str, column_name: List[str], rows: List[List[str]]):
 
     conn.commit()
     return f"{len(rows)} rows inserted!"
-
-def validate_value(value, col_type):
-    col_type = col_type.upper()
-
-    if col_type == "INT":
-        try:
-            int(value)
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not an INT")
-    elif col_type == "DECIMAL":
-        try:
-            float(value)
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a DECIMAL")
-    elif col_type.startswith("VARCHAR"):
-        max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
-        if len(str(value)) > max_len:
-            raise HTTPException(status_code=400, detail=f"Value {value} exceeds max length {max_len}")
-    elif col_type == "DATE":
-        import datetime
-        try:
-            datetime.datetime.strptime(value, "%Y-%m-%d")
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid DATE")
-    elif col_type == "TIME":
-        import datetime
-        try:
-            datetime.datetime.strptime(value, "%H:%M:%S")
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid TIME")
-    elif col_type == "BOOL":
-        try:
-            bool(value)
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid BOOLEAN")
-
