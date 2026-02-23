@@ -30,26 +30,3 @@ jobs:
     - name: Run tests
       # Runs nox tests with dependency group `tests`
       run: uv run --group tests nox
-
-  e2e:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_COLOR: "1"
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install uv
-      uses: astral-sh/setup-uv@v7
-
-    - name: Install C dependencies
-      run: sudo apt-get update && sudo apt-get install -y libmariadb3 libmariadb-dev
-
-    - name: Set up Python
-      run: uv python install
-
-    - name: Install the project
-      run: uv sync --locked --all-extras --dev
-
-    - name: Run tests
-      # Runs nox tests with dependency group `tests`
-      run: uv run --group tests nox
