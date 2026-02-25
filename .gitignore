@@ -8,3 +8,5 @@ pisense_backend.egg-info/*
 docker/db_data/*
 **/.env
 **/.cache.sqlite
+build/*
+.vscode/*
