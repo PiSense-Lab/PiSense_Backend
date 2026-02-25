@@ -2,7 +2,6 @@
 import pandas as pd
 import numpy as np
 
-
 # base class of Reader to be inherited by various input file readers
 class Reader():
     filepath = "path_to_file"
@@ -11,9 +10,6 @@ class Reader():
     def __init__(self, fPath, list=[]):
         self.filepath = fPath
         self.sheetList = list
-
-    def toJSON(self, sheetNum=1):
-        return self.sheetList[sheetNum - 1].to_json()
 
 
 # reader and other functions for altering excel (xlsx) files

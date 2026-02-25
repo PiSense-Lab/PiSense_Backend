@@ -4,6 +4,9 @@ from pisense.backend.read_inputs import xclReader
 from pisense.backend.read_inputs import csvReader
 import pandas as pd
 import json
+from pisense.backend.utils.dataframe_utils import toJSON
+from pisense.backend.utils.dataframe_utils import addRow
+from pisense.backend.utils.dataframe_utils import editRow 
 
 
 
@@ -39,7 +42,7 @@ class TestReaders():
     def test_toJSON(self):
         cRead = csvReader(self.cFilepath)
         cList = cRead.readIn(self.cFilepath)
-        cjson = cRead.toJSON(1)
+        cjson = toJSON(cList[0])
         tf = False
         try:
             json.loads(cjson)
@@ -48,5 +51,29 @@ class TestReaders():
             tf = False
         assert tf
 
+    def test_addRow(self):
+        cRead = csvReader(self.cFilepath)
+        cList = cRead.readIn(self.cFilepath)
+        # print(cList[0])
+        # print(cList[0].columns)
+        new_df = addRow(cList[0], list_of_values={
+            cList[0].columns[0] : '10:03:00', cList[0].columns[1] : 15
+        })
+        # print(new_df)
+        assert new_df.at[len(new_df) - 1,"Value"] == 15
+        second_df = addRow(cList[0], list_of_values={
+            cList[0].columns[0] : '10:01:00', cList[0].columns[1] : 32
+        }, loca=5)
+        print(second_df)
+        assert second_df.at[5, "Value"] == 32
 
 
+
+    def test_editRow(self):
+        assert True
+
+    def test_toSQL(self):
+        assert True # must test after connected to db
+
+    def test_readSQL(self):
+        assert True

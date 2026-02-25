@@ -3,7 +3,7 @@ import nox
 @nox.session(python=["3.12"])
 def tests(session):
     """Runs tests with pytest."""
-    session.install("pytest", "pandas", "openpyxl")
+    session.install("pytest", "pandas", "openpyxl", "mariadb", "sqlalchemy")
     session.run("pytest", "tests") # Runs tests in tests folder ( files must be named `test_*` )
 
 @nox.session
