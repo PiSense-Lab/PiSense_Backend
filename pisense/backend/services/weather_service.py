@@ -1,5 +1,5 @@
 import pandas as pd
-from pisense.backend.models.weather_models import HourlyRecord
+from pisense.backend.models.weather_models import HourlyRecord, DailyRecord
 from pisense.backend.clients.openmeteo_client import openmeteo_client
 
 
@@ -31,6 +31,37 @@ def _build_hourly_records(hourly) -> list[HourlyRecord]:
     ]
 
 
+def _build_daily_records(daily) -> list[DailyRecord]:
+    """
+    Shared transformer for daily weather blocks.
+    """
+
+    temp_max = daily.Variables(0).ValuesAsNumpy()
+    temp_min = daily.Variables(1).ValuesAsNumpy()
+
+    dates = pd.date_range(
+        start=pd.to_datetime(daily.Time(), unit="s", utc=True),
+        end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
+        freq=pd.Timedelta(seconds=daily.Interval()),
+        inclusive="left"
+    )
+
+    df = pd.DataFrame({
+        "date": dates,
+        "temperature_2m_max": temp_max,
+        "temperature_2m_min": temp_min
+    })
+
+    return [
+        DailyRecord(
+            date=row.date.to_pydatetime(),
+            temperature_2m_max=float(row.temperature_2m_max),
+            temperature_2m_min=float(row.temperature_2m_min)
+        )
+        for row in df.itertuples(index=False)
+    ]
+
+
 def get_forecast_weather():
     url = "https://api.open-meteo.com/v1/forecast"
 
@@ -49,6 +80,27 @@ def get_forecast_weather():
     hourly = response.Hourly()
 
     return _build_hourly_records(hourly)
+
+
+def get_forecast_day_weather():
+    url = "https://api.open-meteo.com/v1/forecast"
+
+    params = {
+        "latitude": 46.73,
+        "longitude": 94.69,
+        "daily": ["temperature_2m_max", "temperature_2m_min"],
+        "temperature_unit": "fahrenheit",
+    }
+
+    responses = openmeteo_client.weather_api(
+        url,
+        params=params
+    )
+
+    response = responses[0]
+    daily = response.Daily()
+
+    return _build_daily_records(daily)
 
 
 def get_historical_weather():
