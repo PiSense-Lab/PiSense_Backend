@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 
 
 try:
-    creation_string = "mariadb://admin:ilovepisense@192.158.1.90:3306/PiSense"
+    creation_string = "mariadb://admin:ilovepisense@192.158.1.90:3306/PiSensee"
     engine = create_engine(creation_string)
 except Exception as e:
     print(f"Error connecting to d: {e}")
