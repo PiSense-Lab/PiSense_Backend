@@ -29,3 +29,5 @@ ignore = ["E501"]
 [tool.ruff]
 include = ["test/*", "pisense/*"]
 
+[tool.setuptools.packages.find]
+include = ["pisense*"]
