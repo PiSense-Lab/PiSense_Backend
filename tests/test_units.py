@@ -4,9 +4,8 @@ from pisense.backend.read_inputs import xclReader
 from pisense.backend.read_inputs import csvReader
 import pandas as pd
 import json
-from pisense.backend.utils.dataframe_utils import toJSON
-from pisense.backend.utils.dataframe_utils import addRow
-from pisense.backend.utils.dataframe_utils import editRow 
+from pisense.backend.utils.dataframe_utils import toJSON, addRow, editRow, toSQL, readSQL
+
 
 
 
@@ -67,13 +66,13 @@ class TestReaders():
         print(second_df)
         assert second_df.at[5, "Value"] == 32
 
-
-
     def test_editRow(self):
         assert True
 
-    def test_toSQL(self):
-        assert True # must test after connected to db
-
-    def test_readSQL(self):
-        assert True
+    def test_toSQL_readSQL(self):
+        cRead = csvReader(self.cFilepath)
+        cList = cRead.readIn(self.cFilepath)
+        toSQL(cList[0], "test_table")
+        temp = readSQL("test_table")
+        
+        assert cList[0].at(5, "Value") == temp.at(5, "Value") # must test after connected to db
