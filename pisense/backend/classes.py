@@ -6,6 +6,18 @@ from mariadb import Cursor, Connection, mariadb
 import logging
 import sys
 from fastapi import HTTPException
+from pisense.backend.exceptions import DatabaseError
+from pisense.database.validate import validate_value
+
+def database_to_user(user: tuple) -> "User":
+    return User(user[0], user[1])
+
+def database_to_group(group: tuple) -> "Group":
+    return Group(group[0], group[1])
+
+def database_to_project(project: tuple) -> "Project":
+    return Project(project[0], project[1])
+
 
 def validate_value(value, col_type):
     col_type = col_type.upper()
@@ -47,7 +59,8 @@ def valid_identifier(name):
 
 class Group():
 
-    def __init__(self, name: str):
+    def __init__(self, id: int, name: str):
+        self.id = id
         self.name = name
 
     def __str__(self):
@@ -75,7 +88,8 @@ class Group():
 
 class User():
 
-    def __init__(self, name: str):
+    def __init__(self, id: int, name: str):
+        self.id = id
         self.name = name
 
     def __str__(self):
@@ -93,9 +107,11 @@ class User():
 
 class Project():
 
-    def __init__(self, name: str, owner: User | Group):
+    def __init__(self, id: int, name: str, ):
+        #owner: User | Group
+        self.id = id
         self.name = name
-        self.owner = owner
+        #self.owner = owner
 
     def __str__(self):
         return f"{self.name}"
@@ -114,6 +130,8 @@ class Database():
     _connection: Connection
     _instance: "Database" = None
     _initialized: bool = False
+
+    ALLOWED_TYPES = {"INT", "VARCHAR(50)", "BOOL", "DATE", "TIME"}
 
     def __new__(cls, *args, **kwargs) -> "Database": # Singleton implementation, returns existing instance if it exists
         if cls._instance is None:
@@ -155,7 +173,7 @@ class Database():
 
     @property
     def connection(self) -> Connection:
-        return self._connection()
+        return self._connection
     
     def _get_rows(self, table: str, columns: List[str] = [], where_condition: str = "") -> list[tuple]:
 
@@ -189,60 +207,215 @@ class Database():
         else:
             raise Exception("SQL did not return a list")
 
-    def get_groups(self) -> list[Group]:
+    def _insert_rows(self, table_name: str, column_name: List[str], rows: List[List[str]]):
         """
-        Returns a list of Groups
+        Inserts rows into given table.
+        """
+        # Validate table name
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        # Validate column names
+        for col in column_name:
+            if not valid_identifier(col.strip()):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+
+        # Fetch column types from the existing table
+        self.cursor.execute(f"DESCRIBE {table_name}")
+        schema = {col[0]: col[1].upper() for col in self.cursor.fetchall()}  # {column_name: column_type}
+
+        # Make sure all columns exist
+        for col in column_name:
+            if col not in schema:
+                raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
+
+        cols = ", ".join(col.strip() for col in column_name)
+        placeholders = ", ".join(["?"] * len(column_name))
+        query = f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})"
+
+        # Insert rows
+        for row in rows:
+            if len(row) != len(column_name):
+                raise HTTPException(status_code=400, detail="Row length does not match column length")
+
+            # Validate each value against its column type
+            for val, col in zip(row, column_name):
+                validate_value(val, schema[col])
+
+            self.cursor.execute(query, row)  # safe parameter binding
+
+        self.connection.commit()
+        return f"{len(rows)} rows inserted!"
+
+    def get_groups(self, name: str | None = None) -> list[Group]:
+        """
+        Returns a list of Groups. WHERE clause uses LIKE.
 
         :return: List of Groups
         :rtype: list[Group]
         """
-        ...
+        where = []
+        where_condition = ""
+        if name:
+            where.append(f"name LIKE '%{name}%'")
 
-    def get_users(self) -> list[User]:
+        if len(where) > 0:
+            where_condition = f"{where[0]}"
+            if len(where) > 1:
+                for w in range(1, len(where)):
+                    where_condition = f"{where_condition} AND {where[w]}"
+
+        ret = []
+        groups = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
+        for g in groups:
+            ret.append(database_to_group(g))
+        return ret
+
+    def get_users(self, name: str | None = None) -> list[User]:
         """
         Returns a list of users.
 
         :return: List of users.
         :rtype: list[User]
         """
-        ...
+        where = []
+        where_condition = ""
+        if name:
+            where.append(f"name LIKE '%{name}%'")
 
-    def get_projects(self, owner: User | Group | None = None) -> list[Project]:
+        if len(where) > 0:
+            where_condition = f"{where[0]}"
+            if len(where) > 1:
+                for w in range(1, len(where)):
+                    where_condition = f"{where_condition} AND {where[w]}"
+
+        ret = []
+        users = self._get_rows("Users", ["id", "name"], where_condition=where_condition)
+        for u in users:
+            ret.append(database_to_user(u))
+        return ret
+
+    def get_projects(self, name: str | None = None, owner: User | Group | None = None) -> list[Project]:
         """
         Returns a list of projects. Returns all projects if owner is None otherwise only return projects owned by owner
 
         :return: List of projects.
         :rtype: list[Project]
         """
+        where = []
+        where_condition = ""
+        if name:
+            where.append(f"name LIKE '%{name}%'")
 
-        ...
+        if len(where) > 0:
+            where_condition = f"{where[0]}"
+            if len(where) > 1:
+                for w in range(1, len(where)):
+                    where_condition = f"{where_condition} AND {where[w]}"
 
-    def get_group(self) -> Group:
+        ret = []
+        projects = self._get_rows("Projects", ["id", "name"], where_condition=where_condition)
+        for p in projects:
+            ret.append(database_to_project(p))
+        return ret
+
+    def get_group(self, id: int | None = None, name: str | None = None) -> Group:
         """
         Returns a group from the database
 
         :return: Group from the database
         :rtype: Project
         """
-        ...
+        where = []
+        where_condition = ""
+        if id:
+            where.append(f"id = {id}")
+        if name:
+            where.append(f"name = '{name}'")
 
-    def get_project(self) -> Project:
+        if len(where) > 0:
+            where_condition = f"{where[0]}"
+            if len(where) > 1:
+                for w in range(1, len(where)):
+                    where_condition = f"{where_condition} AND {where[w]}"
+        else:
+            raise DatabaseError("No Where condition set, please set a parameter,")
+
+        users = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
+        
+        
+        if len(users) == 0:
+            raise DatabaseError("No group found.")
+        if len(users) > 1:
+            raise DatabaseError("More than one group found, tighten constraints or use `get_groups` function.")
+        
+        return database_to_user(users[0])
+    
+    def get_project(self, id: int | None = None, name: str | None = None) -> Project:
         """
         Returns a project from the database
 
         :return: Project from the database
         :rtype: Project
         """
-        ...
+        where = []
+        where_condition = ""
+        if id:
+            where.append(f"id = {id}")
+        if name:
+            where.append(f"name = '{name}'")
 
-    def get_user(self) -> User:
+        if len(where) > 0:
+            where_condition = f"{where[0]}"
+            if len(where) > 1:
+                for w in range(1, len(where)):
+                    where_condition = f"{where_condition} AND {where[w]}"
+        else:
+            raise DatabaseError("No Where condition set, please set a parameter,")
+
+        users = self._get_rows("Projects", ["id", "name"], where_condition=where_condition)
+        
+        
+        if len(users) == 0:
+            raise DatabaseError("No project found.")
+        if len(users) > 1:
+            raise DatabaseError("More than one project found, tighten constraints or use `get_projects` function.")
+        
+        return database_to_user(users[0])
+
+    def get_user(self, id: int | None = None, name: str | None = None) -> User:
         """
         Returns a user from the database
+
+        Will add conditions together with AND
 
         :return: User from the database
         :rtype: User
         """
-        ...
+        where = []
+        where_condition = ""
+        if id:
+            where.append(f"id = {id}")
+        if name:
+            where.append(f"name = '{name}'")
+
+        if len(where) > 0:
+            where_condition = f"{where[0]}"
+            if len(where) > 1:
+                for w in range(1, len(where)):
+                    where_condition = f"{where_condition} AND {where[w]}"
+        else:
+            raise DatabaseError("No Where condition set, please set a parameter,")
+
+        users = self._get_rows("Users", ["id", "name"], where_condition=where_condition)
+        
+        
+        if len(users) == 0:
+            raise DatabaseError("No user found.")
+        if len(users) > 1:
+            raise DatabaseError("More than one user found, tighten constraints or use `get_users` function.")
+        
+        return database_to_user(users[0])
 
     def get_table(self):
         """
@@ -253,26 +426,73 @@ class Database():
         """
         ...
 
-    def create_table(self):
+    def create_table(self, table_name: str = "test2", column_name: List[str] = ["name", "value"], column_type: List[str] = ["VARCHAR(50)", "INT"]):
         """
         Creates a table in the database
         """
-        ...
+        # Validate table name
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
 
-    def create_project(self):
-        """
-        Creates a new project in the database.
-        """
-        ...
+        #Validate each column has a type and vice versa
+        if len(column_name) != len(column_type):
+            raise HTTPException(status_code=400, detail="Each column must have a type and vice versa")
 
-    def create_user(self):
+        column_defs = []
+
+        column_defs.append("id INT PRIMARY KEY AUTO_INCREMENT")
+
+        #removes whitespace and capitalizes
+        for c, t in zip(column_name, column_type):
+            c = c.strip()
+            t = t.strip().upper()
+
+            #validates column name
+            if not valid_identifier(c):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {c}")
+
+            #validates allowed types
+            if t not in self.ALLOWED_TYPES:
+                raise HTTPException(status_code=400, detail=f"Invalid type: {t}")
+
+            #Adds valid column definition to list
+            column_defs.append(f"{c} {t}")
+
+        #Checks if there are valid columns to create the table with
+        if not column_defs:
+            raise HTTPException(status_code=400, detail="No valid columns")
+
+        #Joins column definitions into a string for the SQL query
+        cols = ", ".join(column_defs)
+
+        query = f"CREATE TABLE {table_name} ({cols})"
+
+        print("success!")
+        self.cursor.execute(query)
+        self.connection.commit()
+
+        return "Table created!"
+
+    def create_project(self, name: str):
+        """
+        Creates a new project in the database.'
+
+        TODO: Return created project.
+        """
+        self._insert_rows("Projects", ["name"], [[f"{name}"]])
+
+    def create_user(self, name: str):
         """
         Creates a new user in the database.
-        """
-        ...
 
-    def create_group(self):
+        TODO: Return created user
+        """
+        self._insert_rows("Users", ["name"], [[f"{name}"]])
+
+    def create_group(self, name: str):
         """
         Creates a new group in the database.
+
+        TODO: Return created group
         """
-        ...
+        self._insert_rows("Groups", ["name"], [[f"{name}"]])
