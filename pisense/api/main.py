@@ -7,6 +7,8 @@ app = FastAPI()
 
 app.include_router(weather_router)
 
+print("Starting server...")
+
 
 @app.get("/")
 async def root():
