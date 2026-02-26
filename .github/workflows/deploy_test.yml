@@ -10,16 +10,18 @@ jobs:
     runs-on: PiSense-Amber-Deploy
 
     steps:
-      - name: Checkout directly into production directory
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          path: /home/amber/PiSense/PiSense_Backend
 
-      - name: Sync dependencies with uv
+      - name: Sync files to production directory
+        run: |
+          rsync -av --delete $GITHUB_WORKSPACE/ /home/amber/PiSense/PiSense_Backend/
+
+      - name: Install dependencies with uv
         working-directory: /home/amber/PiSense/PiSense_Backend
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          uv sync
+          /home/amber/.local/bin/uv sync
 
       - name: Restart backend service
         run: |
