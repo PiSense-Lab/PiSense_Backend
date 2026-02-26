@@ -1,0 +1,26 @@
+name: Deploy Branch on Push
+
+on:
+  push:
+    branches:
+      - amber-test-deploy
+
+jobs:
+  deploy:
+    runs-on: PiSense-Amber-Deploy
+
+    steps:
+      - name: Checkout directly into production directory
+        uses: actions/checkout@v4
+        with:
+          path: /home/amber/PiSense/PiSense_Backend
+
+      - name: Sync dependencies with uv
+        working-directory: /home/amber/PiSense/PiSense_Backend
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          uv sync
+
+      - name: Restart backend service
+        run: |
+          sudo systemctl restart pisense-backend
