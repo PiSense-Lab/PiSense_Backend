@@ -12,3 +12,18 @@ services:
       - ${PORT}:3306
     volumes:
       - ./db_data:/var/lib/mysql
+    networks:
+      - pisense-network
+  
+  pisense:
+    image: pisense:latest
+    container_name: pisense
+    restart: always
+    ports:
+      - 8000:8000
+    networks:
+      - pisense-network
+
+networks:
+  pisense-network:
+

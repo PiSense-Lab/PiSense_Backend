@@ -35,3 +35,8 @@ app.include_router(weather_router)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+@app.get("/database")
+async def root():
+    db = Database()
+    return {"message": f"{db.get_users()}"}

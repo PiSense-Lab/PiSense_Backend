@@ -39,7 +39,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Build Docker image
-      run: docker build -t pisense:latest ./docker
+      run: docker buildx build -f docker/Dockerfile . -t pisense:latest
 
     - name: Run tests in the built image
       run: docker run pisense:latest
