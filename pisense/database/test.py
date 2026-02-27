@@ -1,6 +1,6 @@
 from typing import List
 import mariadb
-from pisense.database.validate import validate_value
+from validate import validate_value
 from fastapi import HTTPException
 import sys
 import re
@@ -23,8 +23,8 @@ ALLOWED_TYPES = {"INT", "VARCHAR(50)", "BOOL", "DATE", "TIME"}
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
 
-#Create a new table from input from front end. Expects form data with 'table_name', 'column_name[]', and 'column_type[]'
 
+#Create a new table from input from front end. Expects form data with 'table_name', 'column_name[]', and 'column_type[]'
 def create_table(
     table_name: str = "test2",
     column_name: List[str] = ["name", "value"],
@@ -86,7 +86,7 @@ def insert_rows(table_name: str, column_name: List[str], rows: List[List[str]]):
 
     # Fetch column types from the existing table
     cur = conn.cursor()
-    cur.execute(f"DESCRIBE {table_name}")
+    cur.execute(f"DESCRIBE `{table_name}`")
     schema = {col[0]: col[1].upper() for col in cur.fetchall()}  # {column_name: column_type}
 
     # Make sure all columns exist
@@ -108,6 +108,6 @@ def insert_rows(table_name: str, column_name: List[str], rows: List[List[str]]):
             validate_value(val, schema[col])
 
         cur.execute(query, row)  # safe parameter binding
-
+    print("Rows inserted successfully!")
     conn.commit()
     return f"{len(rows)} rows inserted!"

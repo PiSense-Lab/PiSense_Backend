@@ -1,5 +1,5 @@
 import unittest
-from pisense.database.validate import validate_value, ValidationError
+from pisense.backend.classes import validate_value, ValidationError
 
 
 class TestValidateValue(unittest.TestCase):
@@ -41,6 +41,9 @@ class TestValidateValue(unittest.TestCase):
 
         with self.assertRaises(ValidationError):
             validate_value("notabool", "BOOL")
+
+    def test_validate_null(self):
+        self.assertIsNone(validate_value("", "INT"))
 
 if __name__ == "__main__":
     unittest.main()
