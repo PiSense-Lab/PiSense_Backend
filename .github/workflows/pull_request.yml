@@ -30,3 +30,19 @@ jobs:
     - name: Run tests
       # Runs nox tests with dependency group `tests`
       run: uv run --group tests nox
+    
+    build-docker:
+      runs-on: ubuntu-latest
+      env:
+        FORCE_COLOR: "1"
+      steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t pisense:latest ./docker
+
+      - name: Run tests in the built image
+        run: docker run pisense:latest
+
+      - name: Its working
+        run: docker ps
