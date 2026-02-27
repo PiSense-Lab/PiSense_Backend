@@ -2,7 +2,7 @@ class ValidationError(Exception):
     pass
 def validate_value(value, col_type):
     col_type = col_type.upper()
-    
+
     if col_type == "INT":
         try:
             int(value)
@@ -12,7 +12,7 @@ def validate_value(value, col_type):
         try:
             float(value)
         except ValueError:
-            raise ValidationError("Value is not DECIMAL")    
+            raise ValidationError("Value is not DECIMAL")
     elif col_type.startswith("VARCHAR"):
         max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
         if len(str(value)) > max_len:
@@ -38,4 +38,4 @@ def validate_value(value, col_type):
                 raise ValueError()
         except ValueError:
             raise ValidationError("Value is not valid bool")
-        
+

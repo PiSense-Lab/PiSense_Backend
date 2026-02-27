@@ -18,42 +18,6 @@ def database_to_group(group: tuple) -> "Group":
 def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
 
-
-def validate_value(value, col_type):
-    col_type = col_type.upper()
-
-    if col_type == "INT":
-        try:
-            int(value)
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not an INT")
-    elif col_type == "DECIMAL":
-        try:
-            float(value)
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a DECIMAL")
-    elif col_type.startswith("VARCHAR"):
-        max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
-        if len(str(value)) > max_len:
-            raise HTTPException(status_code=400, detail=f"Value {value} exceeds max length {max_len}")
-    elif col_type == "DATE":
-        import datetime
-        try:
-            datetime.datetime.strptime(value, "%Y-%m-%d")
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid DATE")
-    elif col_type == "TIME":
-        import datetime
-        try:
-            datetime.datetime.strptime(value, "%H:%M:%S")
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid TIME")
-    elif col_type == "BOOL":
-        try:
-            bool(value)
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid BOOLEAN")
-
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
 
@@ -174,7 +138,7 @@ class Database():
     @property
     def connection(self) -> Connection:
         return self._connection
-    
+
     def _get_rows(self, table: str, columns: List[str] = [], where_condition: str = "") -> list[tuple]:
 
         # Validate table name
@@ -185,19 +149,19 @@ class Database():
         for col in columns:
             if not valid_identifier(col.strip()):
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
-            
+
         cols = "*"
         if columns:
             cols = ", ".join(col.strip() for col in columns)
 
-        
+
         where = ""
         if where_condition:
             where = f" WHERE {where_condition}"
 
 
         sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
-    
+
         self.cursor.execute(sql_str)
 
         out = self.cursor.fetchall()
@@ -342,15 +306,15 @@ class Database():
             raise DatabaseError("No Where condition set, please set a parameter,")
 
         users = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
-        
-        
+
+
         if len(users) == 0:
             raise DatabaseError("No group found.")
         if len(users) > 1:
             raise DatabaseError("More than one group found, tighten constraints or use `get_groups` function.")
-        
+
         return database_to_user(users[0])
-    
+
     def get_project(self, id: int | None = None, name: str | None = None) -> Project:
         """
         Returns a project from the database
@@ -374,13 +338,13 @@ class Database():
             raise DatabaseError("No Where condition set, please set a parameter,")
 
         users = self._get_rows("Projects", ["id", "name"], where_condition=where_condition)
-        
-        
+
+
         if len(users) == 0:
             raise DatabaseError("No project found.")
         if len(users) > 1:
             raise DatabaseError("More than one project found, tighten constraints or use `get_projects` function.")
-        
+
         return database_to_user(users[0])
 
     def get_user(self, id: int | None = None, name: str | None = None) -> User:
@@ -408,13 +372,13 @@ class Database():
             raise DatabaseError("No Where condition set, please set a parameter,")
 
         users = self._get_rows("Users", ["id", "name"], where_condition=where_condition)
-        
-        
+
+
         if len(users) == 0:
             raise DatabaseError("No user found.")
         if len(users) > 1:
             raise DatabaseError("More than one user found, tighten constraints or use `get_users` function.")
-        
+
         return database_to_user(users[0])
 
     def get_table(self):

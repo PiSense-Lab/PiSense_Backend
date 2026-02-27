@@ -7,12 +7,12 @@ from pisense.backend.classes import Database
 from fastapi import FastAPI
 from pisense.backend.routes.weather import router as weather_router
 
+
 # to start server: source .venv/bin/activate && fastapi dev pisense/api/main.py
-
-ENV_FILE_PATH = ".env" # root of the repository
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    ENV_FILE_PATH = ".env" # root of the repository
+
     # Startup code
     load_dotenv(dotenv_path=ENV_FILE_PATH) # Loads .env file into environment
 
@@ -34,5 +34,4 @@ app.include_router(weather_router)
 
 @app.get("/")
 async def root():
-    print(Database())
     return {"message": "Hello World"}
