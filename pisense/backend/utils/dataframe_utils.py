@@ -4,24 +4,24 @@ from sqlalchemy import create_engine
 
 
 try:
-    creation_string = "mariadb://admin:ilovepisense@192.158.1.90:3306/PiSensee"
+    creation_string = "mariadb://admin:ilovepisensee@192.158.1.90:3306/PiSense"
     engine = create_engine(creation_string)
 except Exception as e:
     print(f"Error connecting to d: {e}")
 
 
-def toJSON(df):
+def toJSON(df: DataFrame):
     return df.to_json()
 
 
 # Writes a DataFrame to the MariaDB database given
 #   by the engine named at the top of the file.
 #   if_exists mode can either be 'replace' or 'append'.
-def toSQL(df, tablename, mode="replace"):
+def toSQL(df: pd.DataFrame, tablename: str, eng, mode: str = "replace"):
     try:
         df.to_sql(
             tablename,
-            con=engine,
+            con=eng,
             if_exists=mode,
             index=False)
         return 200  # Change once actually connected
@@ -32,7 +32,7 @@ def toSQL(df, tablename, mode="replace"):
 
 # reads the table given by tablename and returns a pd.DataFrame
 #   con is the SQLAlchemy engine named at the top of the file.
-def readSQL(tableName):
+def readSQL(tableName: str, eng):
     try:
         return pd.read_sql_table(tableName, con=engine)
     except Exception as e:
@@ -42,7 +42,7 @@ def readSQL(tableName):
 
 # list_of_values must be formatted
 #   [{col_name(time) : value(time), col_name(measurement) : value(measurement)]
-def addRow(df, list_of_values, loca=-1):
+def addRow(df: pd.DataFrame, list_of_values: List[str], loca=-1):
     try:
         # eventually have sorted by timestamp
         # left = 0
@@ -64,7 +64,7 @@ def addRow(df, list_of_values, loca=-1):
         return print(e)
 
 
-def editRow(df, row, col, value):
+def editRow(df: pd.DataFrame, row: int, col: int, value: float || int):
     try:
         df.loc[row, col] = value
         return 1
