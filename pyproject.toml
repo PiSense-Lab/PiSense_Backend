@@ -17,6 +17,7 @@ dependencies = [
     "retry-requests>=2.0.0",
     "mariadb>=1.1.14",
     "sqlalchemy>=2.0.46",
+    "mysqlclient>=2.2.8",
 ]
 
 [dependency-groups]

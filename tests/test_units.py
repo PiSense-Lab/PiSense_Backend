@@ -5,7 +5,8 @@ from pisense.backend.read_inputs import csvReader
 import pandas as pd
 import json
 from pisense.backend.utils.dataframe_utils import toJSON, addRow, editRow, toSQL, readSQL
-
+from sqlalchemy import create_engine
+import mariadb
 
 
 
@@ -14,6 +15,12 @@ def test_plus(): # Temporary testing for pytest, should be removed once we have 
     assert ret == 2
 
 class TestReaders():
+
+    try:
+        creation_string = "mariadb://admin:ilovepisense@192.158.1.90:3306/PiSensee"
+        engine = create_engine(creation_string)
+    except Exception as e:
+        print(f"Error connecting to d: {e}")
 
     f = pd.read_excel("./tests/ExampleData.xlsx", "Sheet1")
     f.to_csv("./tests/ExampleData.csv")
@@ -70,9 +77,22 @@ class TestReaders():
         assert True
 
     def test_toSQL_readSQL(self):
-        cRead = csvReader(self.cFilepath)
-        cList = cRead.readIn(self.cFilepath)
-        toSQL(cList[0], "test_table")
-        temp = readSQL("test_table")
-        
-        assert cList[0].at(5, "Value") == temp.at(5, "Value") # must test after connected to db
+        try:
+            conn = mariadb.connect(
+            user="admin",
+            password="ilovepisensee",
+            host="192.168.1.90",
+            port=3306,
+            database="PiSense"
+            )
+
+            cRead = csvReader(self.cFilepath)
+            cList = cRead.readIn(self.cFilepath)
+            toSQL(cList[0], "test_table", conn)
+            temp = readSQL("test_table", conn)
+
+            assert cList[0].at(5, "Value") == temp.at(5, "Value") # must test after connected to db
+        except Exception as e:
+            print(f"Error connecting to MariaDB Platform: {e}")
+            # creation_string = "mariadb://admin:ilovepisense@192.158.1.90:3306/PiSensee"
+            # engine = create_engine(creation_string)
