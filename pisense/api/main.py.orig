@@ -9,15 +9,18 @@ from pisense.backend.routes.weather import router as weather_router
 from pisense.backend.routes.datasheets import router as tables_router
 
 
+<<<<<<< HEAD
 ENV_FILE_PATH = ".env" # root of the repository
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+=======
 # to start server: source .venv/bin/activate && fastapi dev pisense/api/main.py
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ENV_FILE_PATH = ".env" # root of the repository
 
+>>>>>>> main
     # Startup code
     load_dotenv(dotenv_path=ENV_FILE_PATH) # Loads .env file into environment
 
@@ -36,7 +39,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(weather_router)
+<<<<<<< HEAD
 app.include_router(tables_router)
+=======
+>>>>>>> main
 
 @app.get("/")
 async def root():

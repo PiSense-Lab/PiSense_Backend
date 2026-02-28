@@ -8,9 +8,12 @@ import sys
 from fastapi import HTTPException
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
+<<<<<<< HEAD
 from pisense.backend.utils.dataframe_utils import toJSON
 from pandas import read_sql_table
 from sqlalchemy import select, delete
+=======
+>>>>>>> main
 
 def database_to_user(user: tuple) -> "User":
     return User(user[0], user[1])
@@ -21,6 +24,7 @@ def database_to_group(group: tuple) -> "Group":
 def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
 
+<<<<<<< HEAD
 
 def validate_value(value, col_type):
     col_type = col_type.upper()
@@ -67,7 +71,11 @@ class Group():
     def __init__(self, id: int, name: str):
         self.id = id
         self.name = name
+<<<<<<< HEAD
+    
+=======
 
+>>>>>>> main
     def __str__(self):
         return f"{self.name}"
 
@@ -422,11 +430,16 @@ class Database():
 
         return database_to_user(users[0])
 
+<<<<<<< HEAD
     def get_table(self, table_name: str | None = None):
+=======
+    def get_table(self):
+>>>>>>> main
         """
         Returns a table from the database
 
         :return: Table from the database.
+<<<<<<< HEAD
         :rtype: pd.DataFrame ( Make a table object? )
         """
         if not valid_identifier(table_name):
@@ -444,6 +457,11 @@ class Database():
             raise DatabaseError("More than one table found with that tablename")
 
         return raw_df
+=======
+        :rtype: ??? ( Make a table object? )
+        """
+        ...
+>>>>>>> main
 
     def create_table(self, table_name: str = "test2", column_name: List[str] = ["name", "value"], column_type: List[str] = ["VARCHAR(50)", "INT"]):
         """
