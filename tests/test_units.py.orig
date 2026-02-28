@@ -14,14 +14,7 @@ def test_plus(): # Temporary testing for pytest, should be removed once we have 
     ret = plus(1, 1)
     assert ret == 2
 
-<<<<<<< HEAD
 class TestReaders():
-
-    try:
-        creation_string = "mariadb://admin:ilovepisense@192.158.1.90:3306/PiSensee"
-        engine = create_engine(creation_string)
-    except Exception as e:
-        print(f"Error connecting to d: {e}")
 
     f = pd.read_excel("./tests/ExampleData.xlsx", "Sheet1")
     f.to_csv("./tests/ExampleData.csv")
@@ -77,25 +70,23 @@ class TestReaders():
     def test_editRow(self):
         assert True
 
-    def test_toSQL_readSQL(self):
-        try:
-            conn = mariadb.connect(
-            user="admin",
-            password="ilovepisensee",
-            host="192.168.1.90",
-            port=3306,
-            database="PiSense"
-            )
+    # def test_toSQL_readSQL(self):
+    #    try:
+    #        conn = mariadb.connect(
+    #        user="admin",
+    #        password="ilovepisensee",
+    #        host="192.168.1.90",
+    #        port=3306,
+    #        database="PiSense"
+    #        )
 
-            cRead = csvReader(self.cFilepath)
-            cList = cRead.readIn(self.cFilepath)
-            toSQL(cList[0], "test_table", conn)
-            temp = readSQL("test_table", conn)
+    #        cRead = csvReader(self.cFilepath)
+    #        cList = cRead.readIn(self.cFilepath)
+    #        toSQL(cList[0], "test_table", conn)
+    #        temp = readSQL("test_table", conn)
 
-            assert cList[0].at(5, "Value") == temp.at(5, "Value") # must test after connected to db
-        except Exception as e:
-            print(f"Error connecting to MariaDB Platform: {e}")
+    #        assert cList[0].at(5, "Value") == temp.at(5, "Value") # must test after connected to db
+    #    except Exception as e:
+    #        print(f"Error connecting to MariaDB Platform: {e}")
             # creation_string = "mariadb://admin:ilovepisense@192.158.1.90:3306/PiSensee"
             # engine = create_engine(creation_string)
-=======
->>>>>>> ndobo-db-connection

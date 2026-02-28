@@ -14,8 +14,8 @@ dependencies = [
     "pandas>=3.0.1",
     "pydantic>=2.12.5",
 =======
+>>>>>>> main
     "python-dotenv>=1.2.1",
->>>>>>> ndobo-db-connection
     "openmeteo-requests>=1.7.5",
     "pandas>=3.0.1",
     "requests-cache>=1.3.0",
