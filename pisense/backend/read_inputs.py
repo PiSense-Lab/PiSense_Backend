@@ -1,6 +1,5 @@
 # pisense/backend/read_inputs.py
 import pandas as pd
-import numpy as np
 
 # base class of Reader to be inherited by various input file readers
 class Reader():

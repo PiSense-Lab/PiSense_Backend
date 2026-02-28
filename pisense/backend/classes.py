@@ -8,6 +8,9 @@ import sys
 from fastapi import HTTPException
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
+from pisense.backend.utils.dataframe_utils import toJSON
+from pandas import read_sql_table
+from sqlalchemy import select, delete
 
 def database_to_user(user: tuple) -> "User":
     return User(user[0], user[1])
@@ -62,7 +65,7 @@ class Group():
     def __init__(self, id: int, name: str):
         self.id = id
         self.name = name
-
+    
     def __str__(self):
         return f"{self.name}"
 
@@ -174,7 +177,7 @@ class Database():
     @property
     def connection(self) -> Connection:
         return self._connection
-    
+
     def _get_rows(self, table: str, columns: List[str] = [], where_condition: str = "") -> list[tuple]:
 
         # Validate table name
@@ -185,19 +188,19 @@ class Database():
         for col in columns:
             if not valid_identifier(col.strip()):
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
-            
+
         cols = "*"
         if columns:
             cols = ", ".join(col.strip() for col in columns)
 
-        
+
         where = ""
         if where_condition:
             where = f" WHERE {where_condition}"
 
 
         sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
-    
+
         self.cursor.execute(sql_str)
 
         out = self.cursor.fetchall()
@@ -342,15 +345,15 @@ class Database():
             raise DatabaseError("No Where condition set, please set a parameter,")
 
         users = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
-        
-        
+
+
         if len(users) == 0:
             raise DatabaseError("No group found.")
         if len(users) > 1:
             raise DatabaseError("More than one group found, tighten constraints or use `get_groups` function.")
-        
+
         return database_to_user(users[0])
-    
+
     def get_project(self, id: int | None = None, name: str | None = None) -> Project:
         """
         Returns a project from the database
@@ -374,13 +377,13 @@ class Database():
             raise DatabaseError("No Where condition set, please set a parameter,")
 
         users = self._get_rows("Projects", ["id", "name"], where_condition=where_condition)
-        
-        
+
+
         if len(users) == 0:
             raise DatabaseError("No project found.")
         if len(users) > 1:
             raise DatabaseError("More than one project found, tighten constraints or use `get_projects` function.")
-        
+
         return database_to_user(users[0])
 
     def get_user(self, id: int | None = None, name: str | None = None) -> User:
@@ -408,23 +411,37 @@ class Database():
             raise DatabaseError("No Where condition set, please set a parameter,")
 
         users = self._get_rows("Users", ["id", "name"], where_condition=where_condition)
-        
-        
+
+
         if len(users) == 0:
             raise DatabaseError("No user found.")
         if len(users) > 1:
             raise DatabaseError("More than one user found, tighten constraints or use `get_users` function.")
-        
+
         return database_to_user(users[0])
 
-    def get_table(self):
+    def get_table(self, table_name: str | None = None):
         """
         Returns a table from the database
 
         :return: Table from the database.
-        :rtype: ??? ( Make a table object? )
+        :rtype: pd.DataFrame ( Make a table object? )
         """
-        ...
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+        if table_name is not None:
+            raw_df = pd.read_sql_table(table_name, con=self.connection)
+        else:
+            # logic to get all tables    
+            
+
+
+        if len(raw_df) == 0:
+            raise DatabaseError("No table found")
+        if len(raw_df) > 0:
+            raise DatabaseError("More than one table found with that tablename")
+
+        return raw_df
 
     def create_table(self, table_name: str = "test2", column_name: List[str] = ["name", "value"], column_type: List[str] = ["VARCHAR(50)", "INT"]):
         """
