@@ -1,28 +1,27 @@
-from datetime import datetime
-from fastapi import HTTPException, APIRouter, Depends
-from pisense.backend.models.table_models import DataTable
+from fastapi import APIRouter, Depends
 from pisense.backend.classes import Database
-from pisense.backend.utils.dataframe_utils import toJSON, readSQL
+from pisense.backend.models.table_models import DataTable
 
 
 router = APIRouter(prefix="/datatables")
 
-@router.get("")
-def read_tables(
-    db = Depends(Database())
-):
-    res = readSQL(eng = db.connection())
-    return 
+@router.get("", response_model=list[DataTable])
+async def read_tables():
+    db =  Depends(Database())
+    res = db.get_table()
+
+    return res
 
 @router.get("/{tablename}")
-def read_single_table(
-    tablename: str | None = None,
-    db = Depends(Database())
-):
-    if tablename is not None:
-        res = db.get_table(table_name=tablename)
-    else:
-        raise HTTPException(status_code=400, detail="Tablename cannot be None")
-    
-    
-    return toJSON(res)
+async def read_single_table(
+        tablename: str
+        ):
+    db =  Depends(Database())
+    res = db.get_table(tablename)
+
+    return res
+
+# @router.post("/upload_file", status_code=201)
+# async def upload_file():
+#     db = Depends(Database())
+#     res =

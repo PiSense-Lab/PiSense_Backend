@@ -1,11 +1,10 @@
 import pandas as pd
-import mariadb
 
 def toJSON(df: pd.DataFrame):
     return df.to_json()
 
 
-# Writes a DataFrame to the MariaDB database 
+# Writes a DataFrame to the MariaDB database
 #   if_exists mode can either be 'replace' or 'append'.
 def toSQL(df: pd.DataFrame, tablename: str, eng, mode: str = "replace"):
     try:

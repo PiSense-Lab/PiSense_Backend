@@ -1,4 +1,4 @@
-
+import  pandas as pd
 import re
 from typing import List
 
@@ -8,9 +8,6 @@ import sys
 from fastapi import HTTPException
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
-from pisense.backend.utils.dataframe_utils import toJSON
-from pandas import read_sql_table
-from sqlalchemy import select, delete
 
 def database_to_user(user: tuple) -> "User":
     return User(user[0], user[1])
@@ -22,7 +19,7 @@ def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
 
 
-def validate_value(value, col_type):
+def validate_val(value, col_type):
     col_type = col_type.upper()
 
     if col_type == "INT":
@@ -57,8 +54,6 @@ def validate_value(value, col_type):
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Value {value} is not a valid BOOLEAN")
 
-=======
->>>>>>> main
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
 
@@ -163,7 +158,7 @@ class Database():
                 logging.error("Did not return a connection object")
                 sys.exit(1)
         except mariadb.Error as e:
-            logging.error(f"Error connecting to MariaDB Platform: {e}")
+            logging.error(f"Host: {host} Error connecting to MariaDB Platform: {e}")
             sys.exit(1)
 
         # create cursor -> _cursor
@@ -422,7 +417,7 @@ class Database():
 
         return database_to_user(users[0])
 
-    def get_table(self, table_name: str | None = None):
+    def get_table(self, table_name: str | None = None, user_id: int | None = None):
         """
         Returns a table from the database
 
@@ -433,9 +428,7 @@ class Database():
             raise HTTPException(status_code=400, detail="Invalid table name")
         if table_name is not None:
             raw_df = pd.read_sql_table(table_name, con=self.connection)
-        else:
-            # logic to get all tables    
-            
+
 
 
         if len(raw_df) == 0:
