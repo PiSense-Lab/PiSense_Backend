@@ -1,4 +1,3 @@
-from pisense.backend.tests import plus
 from pisense.backend.read_inputs import Reader
 from pisense.backend.read_inputs import xclReader
 from pisense.backend.read_inputs import csvReader
@@ -8,11 +7,6 @@ from pisense.backend.utils.dataframe_utils import toJSON, addRow, editRow, toSQL
 from sqlalchemy import create_engine
 import mariadb
 
-
-
-def test_plus(): # Temporary testing for pytest, should be removed once we have real code
-    ret = plus(1, 1)
-    assert ret == 2
 
 class TestReaders():
 
