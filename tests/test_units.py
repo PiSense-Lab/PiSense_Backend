@@ -68,7 +68,7 @@ class TestReaders():
     #    try:
     #        conn = mariadb.connect(
     #        user="admin",
-    #        password="ilovepisensee",
+    #        password="",
     #        host="192.168.1.90",
     #        port=3306,
     #        database="PiSense"
