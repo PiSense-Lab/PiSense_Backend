@@ -38,5 +38,4 @@ app.include_router(tables_router)
 
 @app.get("/")
 async def root():
-    print(Database())
     return {"message": "Hello World"}
