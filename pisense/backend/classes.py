@@ -1,4 +1,4 @@
-
+import  pandas as pd
 import re
 from typing import List
 
@@ -17,6 +17,42 @@ def database_to_group(group: tuple) -> "Group":
 
 def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
+
+
+def validate_val(value, col_type):
+    col_type = col_type.upper()
+
+    if col_type == "INT":
+        try:
+            int(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not an INT")
+    elif col_type == "DECIMAL":
+        try:
+            float(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a DECIMAL")
+    elif col_type.startswith("VARCHAR"):
+        max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
+        if len(str(value)) > max_len:
+            raise HTTPException(status_code=400, detail=f"Value {value} exceeds max length {max_len}")
+    elif col_type == "DATE":
+        import datetime
+        try:
+            datetime.datetime.strptime(value, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid DATE")
+    elif col_type == "TIME":
+        import datetime
+        try:
+            datetime.datetime.strptime(value, "%H:%M:%S")
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid TIME")
+    elif col_type == "BOOL":
+        try:
+            bool(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid BOOLEAN")
 
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
@@ -122,7 +158,7 @@ class Database():
                 logging.error("Did not return a connection object")
                 sys.exit(1)
         except mariadb.Error as e:
-            logging.error(f"Error connecting to MariaDB Platform: {e}")
+            logging.error(f"Host: {host} Error connecting to MariaDB Platform: {e}")
             sys.exit(1)
 
         # create cursor -> _cursor
@@ -381,14 +417,26 @@ class Database():
 
         return database_to_user(users[0])
 
-    def get_table(self):
+    def get_table(self, table_name: str | None = None, user_id: int | None = None):
         """
         Returns a table from the database
 
         :return: Table from the database.
-        :rtype: ??? ( Make a table object? )
+        :rtype: pd.DataFrame ( Make a table object? )
         """
-        ...
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+        if table_name is not None:
+            raw_df = pd.read_sql_table(table_name, con=self.connection)
+
+
+
+        if len(raw_df) == 0:
+            raise DatabaseError("No table found")
+        if len(raw_df) > 0:
+            raise DatabaseError("More than one table found with that tablename")
+
+        return raw_df
 
     def create_table(self, table_name: str = "test2", column_name: List[str] = ["name", "value"], column_type: List[str] = ["VARCHAR(50)", "INT"]):
         """
