@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies with uv
         working-directory: /home/pisense/backend/PiSense_Backend
         run: |
-          /home/amber/.local/bin/uv sync
+          /home/pisense/.local/bin/uv sync
 
       - name: Restart backend service
         run: |

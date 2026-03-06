@@ -15,7 +15,7 @@ jobs:
 
       - name: Sync files to production directory
         run: |
-          rsync -av --delete $GITHUB_WORKSPACE/ /home/amber/PiSense/PiSense_Backend/
+          rsync -av --delete --exclude='.env' --exclude='.venv' $GITHUB_WORKSPACE/ /home/amber/PiSense/PiSense_Backend/
 
       - name: Install dependencies with uv
         working-directory: /home/amber/PiSense/PiSense_Backend
