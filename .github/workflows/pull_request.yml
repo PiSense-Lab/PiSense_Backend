@@ -60,12 +60,12 @@ jobs:
 
   build-compose:
     runs-on: ubuntu-latest
+    needs: build-docker
     env:
       FORCE_COLOR: "1"
     steps:
     - uses: actions/checkout@v4
-    needs:
-    - build-docker
+
 
     - name: Get remote image
       run: docker image pull mariadb:12.2
