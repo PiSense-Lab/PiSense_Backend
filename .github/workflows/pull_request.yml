@@ -49,8 +49,9 @@ jobs:
         MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
         MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
         MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
-        MARIADB_PORT: ${{ env.TEST_MARIADB_PORT }}
-        MARIADB_HOST: ${{ env.TEST_MARIADB_HOST }}
+        MARIADB_PORT: 3306
+        MARIADB_HOST: mariadb
+        PISENSE_BACKEND_PORT: 8000
 
     - name: Check if .env exists
       run: ls -a
@@ -83,8 +84,9 @@ jobs:
         MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
         MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
         MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
-        MARIADB_PORT: ${{ env.TEST_MARIADB_PORT }}
-        MARIADB_HOST: ${{ env.TEST_MARIADB_HOST }}
+        MARIADB_PORT: 3306
+        MARIADB_HOST: mariadb
+        PISENSE_BACKEND_PORT: 8000
       
     - name: Check if .env exists
       run: ls -a docker
