@@ -57,7 +57,7 @@ jobs:
       run: ls -a
 
     - name: Build Docker image
-      run: docker buildx build -f docker/Dockerfile . -t pisense:latest
+      run: docker buildx build -f docker/pisense-dockerfile . -t pisense:latest
 
   build-compose:
     runs-on: ubuntu-latest
