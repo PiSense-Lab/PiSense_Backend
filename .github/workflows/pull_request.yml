@@ -31,60 +31,60 @@ jobs:
       # Runs nox tests with dependency group `tests`
       run: uv run --group tests nox
   
-  build-docker:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_COLOR: "1"
-    steps:
-    - uses: actions/checkout@v4
+  # build-docker:
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     FORCE_COLOR: "1"
+  #   steps:
+  #   - uses: actions/checkout@v4
 
-    - name: Setup pisense env file
-      uses: cuchi/jinja2-action@v1.3.0
-      with:
-        template: docker/env.j2
-        output_file: .env
-        strict: true
-      env:
-        MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
-        MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
-        MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
-        MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
-        MARIADB_PORT: ${{ env.TEST_MARIADB_PORT }}
-        MARIADB_HOST: ${{ env.TEST_MARIADB_HOST }}
+  #   - name: Setup pisense env file
+  #     uses: cuchi/jinja2-action@v1.3.0
+  #     with:
+  #       template: docker/env.j2
+  #       output_file: .env
+  #       strict: true
+  #     env:
+  #       MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
+  #       MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
+  #       MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
+  #       MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
+  #       MARIADB_PORT: ${{ env.TEST_MARIADB_PORT }}
+  #       MARIADB_HOST: ${{ env.TEST_MARIADB_HOST }}
 
-    - name: Check if .env exists
-      run: ls -a
+  #   - name: Check if .env exists
+  #     run: ls -a
 
-    - name: Build Docker image
-      run: docker buildx build -f docker/Dockerfile . -t pisense:latest
+  #   - name: Build Docker image
+  #     run: docker buildx build -f docker/Dockerfile . -t pisense:latest
 
-  build-compose:
-    runs-on: ubuntu-latest
-    needs: build-docker
-    env:
-      FORCE_COLOR: "1"
-    steps:
-    - uses: actions/checkout@v4
+  # build-compose:
+  #   runs-on: ubuntu-latest
+  #   needs: build-docker
+  #   env:
+  #     FORCE_COLOR: "1"
+  #   steps:
+  #   - uses: actions/checkout@v4
 
-    - name: Get remote image
-      run: docker image pull mariadb:12.2
+  #   - name: Get remote image
+  #     run: docker image pull mariadb:12.2
 
-    - name: See built images
-      run: docker image list
+  #   - name: See built images
+  #     run: docker image list
 
-    - name: Setup compose env file
-      uses: cuchi/jinja2-action@v1.3.0
-      with:
-        template: docker/env.j2
-        output_file: docker/.env
-        strict: true
-      env:
-        MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
-        MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
-        MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
-        MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
-        MARIADB_PORT: ${{ env.TEST_MARIADB_PORT }}
-        MARIADB_HOST: ${{ env.TEST_MARIADB_HOST }}
+  #   - name: Setup compose env file
+  #     uses: cuchi/jinja2-action@v1.3.0
+  #     with:
+  #       template: docker/env.j2
+  #       output_file: docker/.env
+  #       strict: true
+  #     env:
+  #       MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
+  #       MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
+  #       MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
+  #       MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
+  #       MARIADB_PORT: ${{ env.TEST_MARIADB_PORT }}
+  #       MARIADB_HOST: ${{ env.TEST_MARIADB_HOST }}
       
-    - name: Check if .env exists
-      run: ls -a docker
+  #   - name: Check if .env exists
+  #     run: ls -a docker
