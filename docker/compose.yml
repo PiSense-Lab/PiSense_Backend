@@ -9,7 +9,7 @@ services:
       MARIADB_DATABASE: "${MARIADB_DATABASE}"
       MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
     ports:
-      - ${PORT}:3306
+      - ${MARIADB_PORT}:3306
     volumes:
       - ./db_data:/var/lib/mysql
     networks:
@@ -20,10 +20,9 @@ services:
     container_name: pisense
     restart: always
     ports:
-      - 8000:8000
+      - ${PISENSE_BACKEND_PORT}:8000
     networks:
       - pisense-network
 
 networks:
   pisense-network:
-

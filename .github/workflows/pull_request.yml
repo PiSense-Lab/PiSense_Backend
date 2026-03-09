@@ -38,11 +38,54 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Setup pisense env file
+      uses: cuchi/jinja2-action@v1.3.0
+      with:
+        template: docker/env.j2
+        output_file: .env
+        strict: true
+      env:
+        MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
+        MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
+        MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
+        MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
+        MARIADB_PORT: ${{ env.TEST_MARIADB_PORT }}
+        MARIADB_HOST: ${{ env.TEST_MARIADB_HOST }}
+
+    - name: Check if .env exists
+      run: ls -a
+
     - name: Build Docker image
       run: docker buildx build -f docker/Dockerfile . -t pisense:latest
 
-    - name: Run tests in the built image
-      run: docker run pisense:latest
+  build-compose:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: "1"
+    steps:
+    - uses: actions/checkout@v4
+    needs:
+    - build-docker
 
-    - name: Its working
-      run: docker ps
+    - name: Get remote image
+      run: docker image pull mariadb:12.2
+
+    - name: See built images
+      run: docker image list
+
+    - name: Setup compose env file
+      uses: cuchi/jinja2-action@v1.3.0
+      with:
+        template: docker/env.j2
+        output_file: docker/.env
+        strict: true
+      env:
+        MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
+        MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
+        MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
+        MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
+        MARIADB_PORT: ${{ env.TEST_MARIADB_PORT }}
+        MARIADB_HOST: ${{ env.TEST_MARIADB_HOST }}
+      
+    - name: Check if .env exists
+      run: ls -a docker
