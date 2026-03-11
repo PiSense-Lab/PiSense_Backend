@@ -254,6 +254,51 @@ class Database():
 
         self.connection.commit()
         return f"{len(rows)} rows inserted!"
+    
+    def _add_column(self, table_name: str, column_name: List[str], column_type: List[str]):
+        # Validate table name
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+        
+        # Validate column names
+        for col in column_name:
+            if not valid_identifier(col.strip()):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+            
+        #Validate each column has a type and vice versa
+        if len(column_name) != len(column_type):
+            raise HTTPException(status_code=400, detail="Each column must have a type and vice versa")
+
+        column_defs = []
+        for c, t in zip(column_name, column_type):
+            c = c.strip()
+            t = t.strip().upper()
+
+            #validates column name
+            if not valid_identifier(c):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {c}")
+
+            #validates allowed types
+            if t not in self.ALLOWED_TYPES:
+                raise HTTPException(status_code=400, detail=f"Invalid type: {t}")
+
+            #Adds valid column definition to list
+            column_defs.append(f"ADD COLUMN {c} {t}")
+
+        #Checks if there are valid columns to create the table with
+        if not column_defs:
+            raise HTTPException(status_code=400, detail="No valid columns")
+
+        #Joins column definitions into a string for the SQL query
+        cols = ", ".join(column_defs)
+
+        query = f"ALTER TABLE {table_name} {', '.join(column_defs)}"
+
+        print("success!")
+        self.cursor.execute(query)
+        self.connection.commit()
+
+        return "Column Added!"
 
     def get_groups(self, name: str | None = None) -> list[Group]:
         """
@@ -434,7 +479,7 @@ class Database():
         """
         ...
 
-    def create_table(self, table_name: str = "test2", column_name: List[str] = ["name", "value"], column_type: List[str] = ["VARCHAR(50)", "INT"]):
+    def create_table(self, table_name: str = "test3", column_name: List[str] = ["name", "value"], column_type: List[str] = ["VARCHAR(50)", "INT"]):
         """
         Creates a table in the database
         """
@@ -475,7 +520,7 @@ class Database():
 
         query = f"CREATE TABLE {table_name} ({cols})"
 
-        print("success!")
+        print("Table success!")
         self.cursor.execute(query)
         self.connection.commit()
 
@@ -504,3 +549,5 @@ class Database():
         TODO: Return created group
         """
         self._insert_rows("Groups", ["name"], [[f"{name}"]])
+
+    
