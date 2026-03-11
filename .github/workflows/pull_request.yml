@@ -78,7 +78,7 @@ jobs:
       run: docker buildx build -f docker/pisense-dockerfile . -t pisense:latest
 
     - name: List Images
-      run: docker images list
+      run: docker image list
 
     - name: Run Compose
       working-directory: ./docker
