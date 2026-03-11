@@ -1,5 +1,5 @@
 # import pytest
-from datetime import datetime
+from datetime import date, time
 
 from fastapi.testclient import TestClient
 from build.lib.pisense.backend.models.weather_models import HourlyRecord, DailyRecord
@@ -14,7 +14,7 @@ def test_root():
     assert response.json() == {"message": "Hello World"}
 
 def test_get_historical_weather():
-    response = client.get("/historical-weather")
+    response = client.get("/weather/historical-weather")
     assert response.status_code == 200
 
     data = response.json()
@@ -27,11 +27,12 @@ def test_get_historical_weather():
 
     # stronger checks
     for record in validated:
-        assert isinstance(record.date, datetime)
+        assert isinstance(record.date, date)
+        assert isinstance(record.time, time)
         assert isinstance(record.temperature_2m, float)
 
 def test_get_daily_weather():
-    response = client.get("/daily-weather")
+    response = client.get("/weather/daily-weather")
     assert response.status_code == 200
 
     data = response.json()
@@ -44,6 +45,7 @@ def test_get_daily_weather():
 
     # stronger checks
     for record in validated:
-        assert isinstance(record.date, datetime)
+        assert isinstance(record.date, date)
+        assert isinstance(record.time, time)
         assert isinstance(record.temperature_2m_max, float)
         assert isinstance(record.temperature_2m_min, float)

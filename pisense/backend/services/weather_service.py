@@ -18,13 +18,18 @@ def _build_hourly_records(hourly) -> list[HourlyRecord]:
     )
 
     df = pd.DataFrame({
-        "date": dates,
+        "datetime": dates,
         "temperature_2m": temps
     })
 
+    # split datetime
+    df["date"] = df["datetime"].dt.date
+    df["time"] = df["datetime"].dt.time
+
     return [
         HourlyRecord(
-            date=row.date.to_pydatetime(),
+            date=row.date,
+            time=row.time,
             temperature_2m=float(row.temperature_2m)
         )
         for row in df.itertuples(index=False)
@@ -47,14 +52,19 @@ def _build_daily_records(daily) -> list[DailyRecord]:
     )
 
     df = pd.DataFrame({
-        "date": dates,
+        "datetime": dates,
         "temperature_2m_max": temp_max,
         "temperature_2m_min": temp_min
     })
 
+    # split datetime
+    df["date"] = df["datetime"].dt.date
+    df["time"] = df["datetime"].dt.time
+
     return [
         DailyRecord(
-            date=row.date.to_pydatetime(),
+            date=row.date,
+            time=row.time,
             temperature_2m_max=float(row.temperature_2m_max),
             temperature_2m_min=float(row.temperature_2m_min)
         )
@@ -62,14 +72,15 @@ def _build_daily_records(daily) -> list[DailyRecord]:
     ]
 
 
-def get_forecast_weather():
+def get_forecast_weather(latitude: float, longitude: float, forecast_days: int):
     url = "https://api.open-meteo.com/v1/forecast"
 
     params = {
-        "latitude": 46.73,
-        "longitude": 94.69,
+        "latitude": latitude,
+        "longitude": longitude,
         "hourly": ["temperature_2m"],
         "temperature_unit": "fahrenheit",
+        "forecast_days": forecast_days,
     }
 
     responses = openmeteo_client.weather_api(
@@ -83,12 +94,12 @@ def get_forecast_weather():
     return _build_hourly_records(hourly)
 
 
-def get_forecast_day_weather():
+def get_forecast_day_weather(latitude: float, longitude: float):
     url = "https://api.open-meteo.com/v1/forecast"
 
     params = {
-        "latitude": 46.73,
-        "longitude": 94.69,
+        "latitude": latitude,
+        "longitude": longitude,
         "daily": ["temperature_2m_max", "temperature_2m_min"],
         "temperature_unit": "fahrenheit",
     }
