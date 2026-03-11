@@ -10,8 +10,15 @@ services:
       MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
     ports:
       - ${MARIADB_PORT}:3306
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
     volumes:
-      - ./db_data:/var/lib/mysql
+      - ./db_data:/var/lib/mysql # Persistant storage
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Initial Script
     networks:
       - pisense-network
   
@@ -23,6 +30,9 @@ services:
       - ${PISENSE_BACKEND_PORT}:8000
     networks:
       - pisense-network
+    depends_on:
+      mariadb:
+        condition: service_healthy
 
 networks:
   pisense-network:
