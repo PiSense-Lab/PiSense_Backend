@@ -86,3 +86,6 @@ jobs:
 
     - name: List Containers
       run: docker ps
+
+    - name: Query Api
+      run: curl 0.0.0.0:8000/
