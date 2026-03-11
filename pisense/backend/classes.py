@@ -7,7 +7,6 @@ import logging
 import sys
 from fastapi import HTTPException
 from pisense.backend.exceptions import DatabaseError
-from pisense.database.validate import validate_value
 
 def database_to_user(user: tuple) -> "User":
     return User(user[0], user[1])
@@ -20,6 +19,7 @@ def database_to_project(project: tuple) -> "Project":
 
 class ValidationError(Exception):
     pass
+
 def validate_value(value, col_type):
 
     col_type = col_type.upper()
@@ -239,7 +239,7 @@ class Database():
 
         cols = ", ".join(col.strip() for col in column_name)
         placeholders = ", ".join(["?"] * len(column_name))
-        query = f"INSERT INTO `{table_name}` (`{cols}`) VALUES (`{placeholders}`)"
+        query = f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})"
 
         # Insert rows
         for row in rows:
@@ -254,17 +254,17 @@ class Database():
 
         self.connection.commit()
         return f"{len(rows)} rows inserted!"
-    
+
     def _add_column(self, table_name: str, column_name: List[str], column_type: List[str]):
         # Validate table name
         if not valid_identifier(table_name):
             raise HTTPException(status_code=400, detail="Invalid table name")
-        
+
         # Validate column names
         for col in column_name:
             if not valid_identifier(col.strip()):
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
-            
+
         #Validate each column has a type and vice versa
         if len(column_name) != len(column_type):
             raise HTTPException(status_code=400, detail="Each column must have a type and vice versa")
@@ -283,16 +283,13 @@ class Database():
                 raise HTTPException(status_code=400, detail=f"Invalid type: {t}")
 
             #Adds valid column definition to list
-            column_defs.append(f"ADD COLUMN {c} {t}")
+            column_defs.append(f"ADD COLUMN `{c}` {t}")
 
         #Checks if there are valid columns to create the table with
         if not column_defs:
             raise HTTPException(status_code=400, detail="No valid columns")
 
-        #Joins column definitions into a string for the SQL query
-        cols = ", ".join(column_defs)
-
-        query = f"ALTER TABLE {table_name} {', '.join(column_defs)}"
+        query = f"ALTER TABLE `{table_name}` {', '.join(column_defs)}"
 
         print("success!")
         self.cursor.execute(query)
@@ -491,7 +488,7 @@ class Database():
 
         return raw_df
 
-    def create_table(self, table_name: str = "test3", column_name: List[str] = ["name", "value"], column_type: List[str] = ["VARCHAR(50)", "INT"]):
+    def create_table(self, table_name: str = "test", column_name: List[str] = ["name", "email","age"], column_type: List[str] = ["VARCHAR(50)", "VARCHAR(50)", "INT"]):
         """
         Creates a table in the database
         """

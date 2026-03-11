@@ -18,4 +18,4 @@ host = os.getenv("HOST")
 
 db = Database(db_password=db_password,username=username,host=host) # Sets up database connection singleton
 
-db.create_table()
+db._add_column("test", ["number", "city"], ["INT", "VARCHAR(50)"])
