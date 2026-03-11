@@ -69,6 +69,7 @@ def get_forecast_weather():
         "latitude": 46.73,
         "longitude": 94.69,
         "hourly": ["temperature_2m"],
+        "temperature_unit": "fahrenheit",
     }
 
     responses = openmeteo_client.weather_api(
