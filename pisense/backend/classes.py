@@ -426,9 +426,18 @@ class Database():
         """
         if not valid_identifier(table_name):
             raise HTTPException(status_code=400, detail="Invalid table name")
-        if table_name is not None:
-            raw_df = pd.read_sql_table(table_name, con=self.connection)
 
+
+        if user_id and table_name:
+            query = f"SELECT * FROM {table_name} WHERE user_id={user_id}"
+
+        if table_name is not None:
+            query = f"SELECT * FROM {table_name}"
+
+        if table_name is None and user_id is not None:
+           query = f"SELECT * WHERE user_id={user_id}"
+
+        raw_df = pd.read_sql_table(query, con=self.connection)
 
 
         if len(raw_df) == 0:
@@ -484,6 +493,39 @@ class Database():
         self.connection.commit()
 
         return "Table created!"
+
+    def df_create_table(
+            self, 
+            table_name: str | None = None, 
+            df: pd.DataFrame | None = None,
+            user_id: int | None = None
+    ):
+        if df is None or isinstance(df, pd.DataFrame):
+            raise HTTPException(status_code=400, detail="Not a pandas DataFrame")
+
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Table name is not valid")
+
+        if user_id is None:
+            raise HTTPException(status_code=400, detail="No user ID given")
+
+        
+        for col_name in df.columns:
+
+            if not valid_identifier(col_name):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {col_name}")
+
+        try:
+            # if the table exists it will fail with a ValueError
+            df.to_sql(table_name, self._connection, ifexists="fail")
+            self.cursor.execute(
+                    "ALTER TABLE {table_name} OWNER TO {user_id}"
+                    )
+        except Exception as e:
+            print(f"Error: {e}")
+
+        return "Table created!"
+
 
     def create_project(self, name: str):
         """

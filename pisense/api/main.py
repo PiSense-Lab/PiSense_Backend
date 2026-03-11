@@ -7,6 +7,7 @@ from pisense.backend.classes import Database
 from fastapi import FastAPI
 from pisense.backend.routes.weather import router as weather_router
 from pisense.backend.routes.datasheets import router as tables_router
+from tests.tables_test import router as test_router
 
 
 ENV_FILE_PATH = ".env" # root of the repository
@@ -35,6 +36,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(weather_router)
 app.include_router(tables_router)
+app.include_router(test_router)
 
 @app.get("/")
 async def root():
