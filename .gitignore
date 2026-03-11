@@ -10,3 +10,4 @@ docker/db_data/*
 **/.cache.sqlite
 build/*
 .vscode/*
+*.pyc

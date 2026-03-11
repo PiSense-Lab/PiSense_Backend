@@ -1,0 +1,28 @@
+name: Deploy Branch on Push
+
+on:
+  push:
+    branches:
+      - amber-test-deploy
+
+jobs:
+  deploy:
+    runs-on: PiSense-Amber-Deploy
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync files to production directory
+        run: |
+          rsync -av --delete --exclude='.env' --exclude='.venv' $GITHUB_WORKSPACE/ /home/amber/PiSense/PiSense_Backend/
+
+      - name: Install dependencies with uv
+        working-directory: /home/amber/PiSense/PiSense_Backend
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          /home/amber/.local/bin/uv sync
+
+      - name: Restart backend service
+        run: |
+          sudo systemctl restart pisense-backend

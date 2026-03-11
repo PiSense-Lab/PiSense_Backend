@@ -1,4 +1,4 @@
-
+import  pandas as pd
 import re
 from typing import List
 
@@ -7,7 +7,7 @@ import logging
 import sys
 from fastapi import HTTPException
 from pisense.backend.exceptions import DatabaseError
-
+from pisense.database.validate import validate_value
 
 def database_to_user(user: tuple) -> "User":
     return User(user[0], user[1])
@@ -166,7 +166,7 @@ class Database():
                 logging.error("Did not return a connection object")
                 sys.exit(1)
         except mariadb.Error as e:
-            logging.error(f"Error connecting to MariaDB Platform: {e}")
+            logging.error(f"Host: {host} Error connecting to MariaDB Platform: {e}")
             sys.exit(1)
 
         # create cursor -> _cursor
@@ -470,14 +470,26 @@ class Database():
 
         return database_to_user(users[0])
 
-    def get_table(self):
+    def get_table(self, table_name: str | None = None, user_id: int | None = None):
         """
         Returns a table from the database
 
         :return: Table from the database.
-        :rtype: ??? ( Make a table object? )
+        :rtype: pd.DataFrame ( Make a table object? )
         """
-        ...
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+        if table_name is not None:
+            raw_df = pd.read_sql_table(table_name, con=self.connection)
+
+
+
+        if len(raw_df) == 0:
+            raise DatabaseError("No table found")
+        if len(raw_df) > 0:
+            raise DatabaseError("More than one table found with that tablename")
+
+        return raw_df
 
     def create_table(self, table_name: str = "test3", column_name: List[str] = ["name", "value"], column_type: List[str] = ["VARCHAR(50)", "INT"]):
         """
@@ -549,5 +561,3 @@ class Database():
         TODO: Return created group
         """
         self._insert_rows("Groups", ["name"], [[f"{name}"]])
-
-    
