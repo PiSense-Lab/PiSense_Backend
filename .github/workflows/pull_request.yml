@@ -78,7 +78,11 @@ jobs:
       run: docker buildx build -f docker/pisense-dockerfile . -t pisense:latest
 
     - name: List Images
-      run: docker ps
-      
-    - name: Check if .env exists
-      run: ls -a docker
+      run: docker images list
+
+    - name: Run Compose
+      working-directory: ./docker
+      runs: docker compose up -d
+
+    - name: List Containers
+      runs: docker ps
