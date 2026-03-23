@@ -18,4 +18,9 @@ host = os.getenv("HOST")
 
 db = Database(db_password=db_password,username=username,host=host) # Sets up database connection singleton
 
-db._add_column("test", ["number", "city"], ["INT", "VARCHAR(50)"])
+table_name = "survey_results_test"
+column_name = ["age", "city", "score"]
+column_type = ["INT", "VARCHAR(50)", "FLOAT"]
+project_id = 10   # your example project
+
+db.create_table(table_name, column_name, column_type, project_id)
