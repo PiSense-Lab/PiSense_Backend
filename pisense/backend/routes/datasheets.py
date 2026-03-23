@@ -2,32 +2,36 @@ from fastapi import APIRouter, Depends, File, UploadFile, status
 from io import BytesIO
 from typing import Annotated
 from pisense.backend.classes import Database
-from pisense.backend.models.table_models import DataTable
+from pisense.backend.models.table_models import DataTable, DataTables
 
 
 router = APIRouter(prefix="/datatables")
 
-@router.get("", response_model=list[DataTable])
+@router.get("", response_model=DataTables)
 async def read_tables(
-        user_id: int | None = None
+        project_id: int
 ):
-    db =  Depends(Database())
-    if user_id is None:
+    db =  Database()
+    if project_id is None:
         res = db.get_table()
     else:
-        res = db.get_table(user_id=user_id)
+        res = db.get_table(project_id=project_id)
 
-    return res
+    return {"root": res.to_dict(orient="records")}
 
 @router.get("/{tablename}", response_model=DataTable)
 async def read_single_table(
         tablename: str,
-        user_id: int
+        user_id: int | None = None
 ):
-    db =  Depends(Database())
-    res = db.get_table(tablename, user_id)
+    db = Database()
 
-    return res
+    if user_id is None:
+        res = db.get_table(tablename)
+    else:
+        res = db.get_table(tablename, user_id)
+
+    return {"data": res.to_dict(orient="records")}
 
 
 @router.post("/upload-csv/")
@@ -36,14 +40,14 @@ async def upload_csv(
         user_id: int,
         file: UploadFile = File(...),
 ):
-    db = Depends(Database())
+    db = Database()
     df = pd.read_csv(BytesIO(await file.read()))
     if tablename is None:
         tablename = file.filename
     db.df_create_table(tablename, df, user_id)
     return {"filename": file.filename, "rows_count": len(df)}
 
-
+# originally generated with AI
 @router.post("/read_excel/", status_code=201)
 async def upload_excel_file(
         user_id: int,
@@ -71,7 +75,7 @@ async def upload_excel_file(
             detail=f"Error processing Excel file: {e}"
         )
     
-    db = Depends(Database())
+    db = Database()
 
     for key, value in df:
         db.df_create_table(key, value, user_id)

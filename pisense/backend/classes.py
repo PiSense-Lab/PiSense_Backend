@@ -3,6 +3,7 @@ import re
 from typing import List
 
 from mariadb import Cursor, Connection, mariadb
+from sqlalchemy import create_engine, Engine, text
 import logging
 import sys
 from fastapi import HTTPException
@@ -126,7 +127,7 @@ class Database():
     Connection object to the database.
     """
 
-    _cursor: Cursor
+    # _cursor: Cursor
     _connection: Connection
     _instance: "Database" = None
     _initialized: bool = False
@@ -144,32 +145,37 @@ class Database():
             return
         self._initialized = True
         try:
-            self._connection = mariadb.connect(
-                user=username,
-                password=db_password,
-                host=host,
-                port=port,
-                database=database,
-                connect_timeout=10,
-                read_timeout=10,
-                write_timeout=10
-            )
-            if not isinstance(self._connection, Connection):
-                logging.error("Did not return a connection object")
-                sys.exit(1)
+            #self._connection = mariadb.connect(
+            #    user=username,
+            #    password=db_password,
+            #    host=host,
+            #    port=port,
+            #    database=database,
+            #    connect_timeout=10,
+            #    read_timeout=10,
+            #    write_timeout=10
+            #)
+
+            engine = create_engine(
+                    f"mariadb+mariadbconnector://{username}:{db_password}@{host}:{port}/{database}"
+                    )
+            self._connection = engine.connect()
+            #if not isinstance(self._connection, Connection): # Connection):
+            #    logging.error("Did not return a connection object")
+            #    sys.exit(1)
         except mariadb.Error as e:
             logging.error(f"Host: {host} Error connecting to MariaDB Platform: {e}")
             sys.exit(1)
 
         # create cursor -> _cursor
-        self._cursor: Cursor = self._connection.cursor()
+        # self._cursor: Cursor = self._connection.cursor()
 
-    @property
-    def cursor(self) -> Cursor:
-        if not isinstance(self._cursor, Cursor):
-            logging.error("Did not return a connection object")
-            sys.exit(1)
-        return self._cursor
+    # @property
+    # def cursor(self) -> Cursor:
+    #    if not isinstance(self._cursor, Cursor):
+    #        logging.error("Did not return a connection object")
+    #        sys.exit(1)
+    #    return self._cursor
 
     @property
     def connection(self) -> Connection:
@@ -198,9 +204,9 @@ class Database():
 
         sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
 
-        self.cursor.execute(sql_str)
+        res = self._connection.execute(text(sql_str))
 
-        out = self.cursor.fetchall()
+        out = res.fetchall()
 
         if isinstance(out, List):
             return out
@@ -221,8 +227,8 @@ class Database():
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
         # Fetch column types from the existing table
-        self.cursor.execute(f"DESCRIBE {table_name}")
-        schema = {col[0]: col[1].upper() for col in self.cursor.fetchall()}  # {column_name: column_type}
+        res = self._connection.execute(text(f"DESCRIBE {table_name}"))
+        schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
 
         # Make sure all columns exist
         for col in column_name:
@@ -230,8 +236,8 @@ class Database():
                 raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
 
         cols = ", ".join(col.strip() for col in column_name)
-        placeholders = ", ".join(["?"] * len(column_name))
-        query = f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})"
+        placeholders = ", ".join([f":{col}" for col in column_name])
+        query = text(f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})")
 
         # Insert rows
         for row in rows:
@@ -242,7 +248,9 @@ class Database():
             for val, col in zip(row, column_name):
                 validate_value(val, schema[col])
 
-            self.cursor.execute(query, row)  # safe parameter binding
+            d_rows = [{k: v} for k, v in zip(column_name, row)]
+            # print(query, d_rows)
+            self.connection.execute(query, d_rows)    #safe parameter binding
 
         self.connection.commit()
         return f"{len(rows)} rows inserted!"
@@ -417,7 +425,10 @@ class Database():
 
         return database_to_user(users[0])
 
-    def get_table(self, table_name: str | None = None, user_id: int | None = None):
+    def get_table(self, 
+                  table_name: str | None = None, 
+                  project_id: int | None = None
+                  ):
         """
         Returns a table from the database
 
@@ -428,22 +439,22 @@ class Database():
             raise HTTPException(status_code=400, detail="Invalid table name")
 
 
-        if user_id and table_name:
-            query = f"SELECT * FROM {table_name} WHERE user_id={user_id}"
+        if project_id and table_name:
+            query = f"SELECT * FROM {table_name} WHERE project_id={project_id}"
 
-        if table_name is not None:
-            query = f"SELECT * FROM {table_name}"
+        if table_name is not None and project_id is None:
+            query = table_name
 
-        if table_name is None and user_id is not None:
-           query = f"SELECT * WHERE user_id={user_id}"
+        if table_name is None and project_id is not None:
+           query = f"SELECT * WHERE project_id={project_id}"
 
         raw_df = pd.read_sql_table(query, con=self.connection)
 
 
         if len(raw_df) == 0:
             raise DatabaseError("No table found")
-        if len(raw_df) > 0:
-            raise DatabaseError("More than one table found with that tablename")
+        # if len(raw_df) > 1:
+        #    raise DatabaseError(f"More than one table found with tablename: {table_name}")
 
         return raw_df
 
@@ -489,7 +500,7 @@ class Database():
         query = f"CREATE TABLE {table_name} ({cols})"
 
         print("success!")
-        self.cursor.execute(query)
+        self._connection.execute(text(query))
         self.connection.commit()
 
         return "Table created!"
@@ -498,29 +509,25 @@ class Database():
             self, 
             table_name: str | None = None, 
             df: pd.DataFrame | None = None,
-            user_id: int | None = None
     ):
-        if df is None or isinstance(df, pd.DataFrame):
+        if df is None or not isinstance(df, pd.DataFrame):
             raise HTTPException(status_code=400, detail="Not a pandas DataFrame")
 
         if not valid_identifier(table_name):
             raise HTTPException(status_code=400, detail="Table name is not valid")
 
-        if user_id is None:
-            raise HTTPException(status_code=400, detail="No user ID given")
-
         
-        for col_name in df.columns:
-
-            if not valid_identifier(col_name):
-                raise HTTPException(status_code=400, detail=f"Invalid column name: {col_name}")
+        #for col_name in df.columns:
+#
+#            if not valid_identifier(col_name):
+#                raise HTTPException(status_code=400, detail=f"Invalid column name: {col_name}")
 
         try:
             # if the table exists it will fail with a ValueError
-            df.to_sql(table_name, self._connection, ifexists="fail")
-            self.cursor.execute(
-                    "ALTER TABLE {table_name} OWNER TO {user_id}"
-                    )
+            df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
+            # self._connection.execute(text(
+            #        "ALTER TABLE {table_name} OWNER TO {project_id}"
+            #        ))
         except Exception as e:
             print(f"Error: {e}")
 
@@ -533,7 +540,9 @@ class Database():
 
         TODO: Return created project.
         """
-        self._insert_rows("Projects", ["name"], [[f"{name}"]])
+        self._insert_rows("projects", 
+                          ["project_name"], 
+                          [[f"{name}"]])
 
     def create_user(self, name: str):
         """

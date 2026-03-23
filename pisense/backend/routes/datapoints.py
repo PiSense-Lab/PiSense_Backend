@@ -9,3 +9,4 @@ async def add_datapoint(
         time: str | None = None
         value: int | None = None
 ):
+    time = time
