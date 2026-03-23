@@ -29,16 +29,16 @@ CREATE TABLE user_projects (
     user_id INT DEFAULT NULL,
     project_id INT DEFAULT NULL,
     role_id INT DEFAULT NULL
-)
+);
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    role ENUM('admin', 'analyst', 'viewer')
+    role ENUM('admin', 'analyst', 'viewer'),
     username VARCHAR(50) UNIQUE DEFAULT NULL,
     email VARCHAR(100) DEFAULT NULL,
     password VARCHAR(255) UNIQUE DEFAULT NULL,
     firstname VARCHAR(50) DEFAULT NULL,
     lastname VARCHAR(50) DEFAULT NULL
-)
+);
 
 
