@@ -52,7 +52,7 @@ jobs:
         # MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
         # MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
         # MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
-        MARIADB_DATABASE: database
+        MARIADB_DATABASE: pisense
         MARIADB_USER: normal_user
         MARIADB_PASSWORD: normal_password
         MARIADB_ROOT_PASSWORD: super_password
@@ -71,7 +71,7 @@ jobs:
         # MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
         # MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
         # MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
-        MARIADB_DATABASE: database
+        MARIADB_DATABASE: pisense
         MARIADB_USER: normal_user
         MARIADB_PASSWORD: normal_password
         MARIADB_ROOT_PASSWORD: super_password
