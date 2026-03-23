@@ -426,7 +426,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        users = self._get_rows("Users", ["id", "name"], where_condition=where_condition)
+        users = self._get_rows("users", ["id", "name"], where_condition=where_condition)
         for u in users:
             ret.append(database_to_user(u))
         return ret
@@ -450,7 +450,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        projects = self._get_rows("Projects", ["id", "name"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["id", "name"], where_condition=where_condition)
         for p in projects:
             ret.append(database_to_project(p))
         return ret
@@ -477,7 +477,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
+        users = self._get_rows("groups", ["id", "name"], where_condition=where_condition)
 
 
         if len(users) == 0:
@@ -509,7 +509,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("Projects", ["id", "name"], where_condition=where_condition)
+        users = self._get_rows("projects", ["id", "name"], where_condition=where_condition)
 
 
         if len(users) == 0:
@@ -631,7 +631,7 @@ class Database():
 
         TODO: Return created project.
         """
-        self._insert_rows("Projects", ["name"], [[f"{name}"]])
+        self._insert_rows("projects", ["name"], [[f"{name}"]])
 
     def create_user(self, name: str):
         """
@@ -647,4 +647,4 @@ class Database():
 
         TODO: Return created group
         """
-        self._insert_rows("Groups", ["name"], [[f"{name}"]])
+        self._insert_rows("groups", ["name"], [[f"{name}"]])

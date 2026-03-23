@@ -33,7 +33,7 @@ select = ["E", "F", "W"]
 ignore = ["E501"]
 
 [tool.ruff]
-include = ["test/*", "pisense/*"]
+include = ["test/*", "pisense/*", "e2e/*"]
 
 [tool.setuptools.packages.find]
 include = ["pisense*"]

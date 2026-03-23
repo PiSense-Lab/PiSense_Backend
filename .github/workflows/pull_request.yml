@@ -30,3 +30,54 @@ jobs:
     - name: Run tests
       # Runs nox tests with dependency group `tests`
       run: uv run --group tests nox
+
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: "1"
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Get remote image
+      run: docker image pull mariadb:12.2
+
+    - name: Setup pisense env file
+      uses: cuchi/jinja2-action@v1.3.0
+      with:
+        template: docker/env.j2
+        output_file: .env
+        strict: true
+      env:
+        MARIADB_DATABASE: PiSense
+        MARIADB_USER: test_admin
+        MARIADB_PASSWORD: test_admin_password
+        MARIADB_ROOT_PASSWORD: super_password
+        MARIADB_PORT: 3306
+        MARIADB_HOST: mariadb
+        PISENSE_BACKEND_PORT: 8000
+
+    - name: Setup compose env file
+      uses: cuchi/jinja2-action@v1.3.0
+      with:
+        template: docker/env.j2
+        output_file: docker/.env
+        strict: true
+      env:
+        MARIADB_DATABASE: PiSense
+        MARIADB_USER: test_admin
+        MARIADB_PASSWORD: test_admin_password
+        MARIADB_ROOT_PASSWORD: super_password
+        MARIADB_PORT: 3306
+        MARIADB_HOST: mariadb
+        PISENSE_BACKEND_PORT: 8000
+
+    - name: Build Docker image
+      run: docker buildx build -f docker/pisense-dockerfile . -t pisense:latest
+
+    - name: Run Compose
+      working-directory: ./docker
+      run: docker compose up -d
+
+    - name: Run tests
+      # Runs nox tests with dependency group `tests`
+      run: docker exec pisense uv run --group tests nox -s e2e
