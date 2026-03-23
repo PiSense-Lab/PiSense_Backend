@@ -40,5 +40,3 @@ CREATE TABLE users (
     firstname VARCHAR(50) DEFAULT NULL,
     lastname VARCHAR(50) DEFAULT NULL
 );
-
-

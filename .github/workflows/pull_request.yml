@@ -79,10 +79,14 @@ jobs:
 
     - name: Run Compose
       working-directory: ./docker
-      run: docker compose up -d
+      run: docker compose up
 
     - name: List Containers
       run: docker ps
 
     - name: Query Api
       run: curl 0.0.0.0:8000/
+
+    - name: Run tests
+      # Runs nox tests with dependency group `tests`
+      run: uv run --group tests nox -s e2e
