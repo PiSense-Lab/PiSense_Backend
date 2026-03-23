@@ -7,6 +7,8 @@ import os
 cache_dir = os.path.dirname(os.path.realpath(__file__))
 cache_path = os.path.join(cache_dir, '.cache')
 
+print(cache_path)
+
 cache_session = requests_cache.CachedSession(
     cache_path,
     expire_after=3600,
