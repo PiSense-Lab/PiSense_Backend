@@ -11,9 +11,6 @@ from pisense.backend.exceptions import DatabaseError
 def database_to_user(user: tuple) -> "User":
     return User(user[0], user[1])
 
-def database_to_group(group: tuple) -> "Group":
-    return Group(group[0], group[1])
-
 def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
 
@@ -65,40 +62,21 @@ def validate_value(value, col_type):
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
 
-class Group():
-
-    def __init__(self, id: int, name: str):
-        self.id = id
-        self.name = name
-
-    def __str__(self):
-        return f"{self.name}"
-
-    @property
-    def users(self) -> list["User"]:
-        """
-        Returns a list of users that are a part of this group
-
-        :return: list of users that are a part of this group
-        :rtype: list[User]
-        """
-        ...
-
-    @property
-    def projects(self) -> list["Project"]:
-        """
-        Returns a list of projects owned by this object
-
-        :return: list of projects owned by this object
-        :rtype: list[Project]
-        """
-        ...
+class USER_ROLES:
+    admin = 1
+    analyst = 2
+    viewer = 3
 
 class User():
 
-    def __init__(self, id: int, name: str):
+    def __init__(self, id: int, role: USER_ROLES, username: str, email: str, firstname: str, lastname: str):
         self.id = id
-        self.name = name
+        self.role = role
+        self.username = username
+        self.email = email
+        self.firstname = firstname
+        self.lastname = lastname
+
 
     def __str__(self):
         return f"{self.name}"
@@ -108,10 +86,14 @@ class User():
         """
         Returns a list of projects owned by this object
 
+        Gets information from `user_projects` table
+
         :return: list of projects owned by this object
         :rtype: list[Project]
         """
-        ...
+        sql_cmd = []
+        db = Database()
+        projects = db.get_user_projects()
 
 class Project():
 
@@ -383,30 +365,6 @@ class Database():
 
         return {"message": f"Table '{table_name}' linked to project {project_id} successfully"}
 
-    def get_groups(self, name: str | None = None) -> list[Group]:
-        """
-        Returns a list of Groups. WHERE clause uses LIKE.
-
-        :return: List of Groups
-        :rtype: list[Group]
-        """
-        where = []
-        where_condition = ""
-        if name:
-            where.append(f"name LIKE '%{name}%'")
-
-        if len(where) > 0:
-            where_condition = f"{where[0]}"
-            if len(where) > 1:
-                for w in range(1, len(where)):
-                    where_condition = f"{where_condition} AND {where[w]}"
-
-        ret = []
-        groups = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
-        for g in groups:
-            ret.append(database_to_group(g))
-        return ret
-
     def get_users(self, name: str | None = None) -> list[User]:
         """
         Returns a list of users.
@@ -454,38 +412,6 @@ class Database():
         for p in projects:
             ret.append(database_to_project(p))
         return ret
-
-    def get_group(self, id: int | None = None, name: str | None = None) -> Group:
-        """
-        Returns a group from the database
-
-        :return: Group from the database
-        :rtype: Project
-        """
-        where = []
-        where_condition = ""
-        if id:
-            where.append(f"id = {id}")
-        if name:
-            where.append(f"name = '{name}'")
-
-        if len(where) > 0:
-            where_condition = f"{where[0]}"
-            if len(where) > 1:
-                for w in range(1, len(where)):
-                    where_condition = f"{where_condition} AND {where[w]}"
-        else:
-            raise DatabaseError("No Where condition set, please set a parameter,")
-
-        users = self._get_rows("groups", ["id", "name"], where_condition=where_condition)
-
-
-        if len(users) == 0:
-            raise DatabaseError("No group found.")
-        if len(users) > 1:
-            raise DatabaseError("More than one group found, tighten constraints or use `get_groups` function.")
-
-        return database_to_user(users[0])
 
     def get_project(self, id: int | None = None, name: str | None = None) -> Project:
         """
@@ -552,6 +478,9 @@ class Database():
             raise DatabaseError("More than one user found, tighten constraints or use `get_users` function.")
 
         return database_to_user(users[0])
+
+    def get_user_projects(self, user_id: int):
+        return self._get_rows("user_projects", ["user_id", "project_id", "role_id"], where_condition=f"user_id = {user_id}")
 
     def get_table(self, table_name: str | None = None, user_id: int | None = None):
         """
@@ -641,10 +570,3 @@ class Database():
         """
         self._insert_rows("Users", ["name"], [[f"{name}"]])
 
-    def create_group(self, name: str):
-        """
-        Creates a new group in the database.
-
-        TODO: Return created group
-        """
-        self._insert_rows("groups", ["name"], [[f"{name}"]])
