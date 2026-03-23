@@ -36,11 +36,12 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENTRYPOINT []
 
 # Use the non-root user to run our application
-USER nonroot
 
 RUN chown nonroot:nonroot /app -R
 
 RUN ls -l
+
+USER nonroot
 
 # Run the FastAPI application by default
 # Uses `uv run` to sync dependencies on startup, respecting UV_NO_DEV
