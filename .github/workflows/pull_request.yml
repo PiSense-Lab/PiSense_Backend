@@ -90,7 +90,7 @@ jobs:
 
     - name: Run Compose
       working-directory: ./docker
-      run: docker compose up
+      run: docker compose up -d
 
     - name: List Containers
       run: docker ps
