@@ -56,9 +56,6 @@ jobs:
         MARIADB_HOST: mariadb
         PISENSE_BACKEND_PORT: 8000
 
-    - name: Check if .env exists
-      run: ls -a
-
     - name: Setup compose env file
       uses: cuchi/jinja2-action@v1.3.0
       with:
