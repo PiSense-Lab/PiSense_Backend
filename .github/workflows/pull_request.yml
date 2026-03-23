@@ -77,6 +77,12 @@ jobs:
     - name: List Images
       run: docker image list
 
+    - name: debug
+      run: ls
+
+    - name: debug2
+      run : ls docker
+
     - name: Run Compose
       working-directory: ./docker
       run: docker compose up
