@@ -4,7 +4,7 @@ from retry_requests import retry
 
 # Cached + retry session
 cache_session = requests_cache.CachedSession(
-    ".cache",
+    "/.cache",
     expire_after=3600
 )
 
