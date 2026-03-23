@@ -3,14 +3,8 @@ import requests_cache
 from retry_requests import retry
 import os
 
-# Cached + retry session
-cache_dir = os.path.dirname(os.path.realpath(__file__))
-cache_path = os.path.join(cache_dir, '.cache')
-
-print(cache_path)
-
 cache_session = requests_cache.CachedSession(
-    cache_path,
+    ".cache",
     expire_after=3600,
     backend="filesystem"
 )
