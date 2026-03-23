@@ -1,6 +1,6 @@
 import  pandas as pd
 import re
-from typing import List
+from typing import List, Literal
 
 from mariadb import Cursor, Connection, mariadb
 from sqlalchemy import create_engine, Engine, text
@@ -448,6 +448,8 @@ class Database():
         if table_name is None and project_id is not None:
            query = f"SELECT * WHERE project_id={project_id}"
 
+
+
         raw_df = pd.read_sql_table(query, con=self.connection)
 
 
@@ -533,6 +535,57 @@ class Database():
 
         return "Table created!"
 
+    def modify_row(
+            self,
+            table_name: str,
+            row_num: int,
+            row_data: List[str] | None,
+            row_columns: List[str] | None,
+            mode: Literal["edit", "delete"]
+    ):
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Table name is not valid")
+
+        # Validate column names
+        for col in row_columns:
+            if not valid_identifier(col.strip()):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+
+        # Fetch column types from the existing table
+        res = self._connection.execute(text(f"DESCRIBE {table_name}"))
+        schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
+
+        # Make sure all columns exist
+        for col in row_columns:
+            if col not in schema:
+                raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
+
+
+        if mode == "edit":
+            if row_data is not None and row_columns is not None:
+                query = f"UPDATE {table_name} SET " # WHERE index={row_num}"
+
+                # for col, data in zip(row_columns, row_data):
+                e_query = ", ".join(f"{col} = {data}" for col, data in zip(row_columns, row_data))
+                query += e_query
+                query += f" WHERE `index`={row_num}"
+
+                return_msg = f"Row in {table_name} updated to {row_data}"
+
+            else:
+                raise HTTPException(status_code=400, detail="No row or column data")
+
+        if mode == "delete":
+            query = f"DELETE FROM {table_name} WHERE index={row_num}"
+
+            return_msg = f"Row in {table_name} at {row_num} deleted"
+
+
+        self.connection.execute(text(query))
+        self.connection.commit()
+
+        return return_msg
+
 
     def create_project(self, name: str):
         """
@@ -550,7 +603,7 @@ class Database():
 
         TODO: Return created user
         """
-        self._insert_rows("Users", ["name"], [[f"{name}"]])
+        self._insert_rows("users", ["name"], [[f"{name}"]])
 
     def create_group(self, name: str):
         """
@@ -558,4 +611,4 @@ class Database():
 
         TODO: Return created group
         """
-        self._insert_rows("Groups", ["name"], [[f"{name}"]])
+        self._insert_rows("groups", ["name"], [[f"{name}"]])

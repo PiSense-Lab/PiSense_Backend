@@ -13,7 +13,7 @@ async def test_upload(
         tablename: str
 ):
     db = Database()
-    df = pd.read_csv("./tests/ExampleData.csv")
+    df = pd.read_csv("./tests/ExampleData.csv", index_col=0)
     db.create_project(project_name)
     db.df_create_table(tablename, df)
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from io import BytesIO
-from typing import Annotated
+from typing import Annotated, List
 from pisense.backend.classes import Database
-from pisense.backend.models.table_models import DataTable, DataTables
+from pisense.backend.models.table_models import DataTable, DataTables, DataRow
 
 
 router = APIRouter(prefix="/datatables")
@@ -19,36 +19,64 @@ async def read_tables(
 
     return {"root": res.to_dict(orient="records")}
 
-@router.get("/{tablename}", response_model=DataTable)
+@router.get("/{table_name}", response_model=DataTable)
 async def read_single_table(
-        tablename: str,
+        table_name: str,
         user_id: int | None = None
 ):
     db = Database()
 
     if user_id is None:
-        res = db.get_table(tablename)
+        res = db.get_table(table_name)
     else:
-        res = db.get_table(tablename, user_id)
+        res = db.get_table(table_name, user_id)
 
     return {"data": res.to_dict(orient="records")}
 
+@router.patch("/edit_point", status_code=200)
+async def edit_point(
+        row_num: int,
+        row_data: List[int | float],
+        row_columns: List[str],
+        table_name: str
+):
+    db = Database()
+    db.modify_row(table_name, row_num, row_data=row_data, row_columns=row_columns, mode="edit")
 
-@router.post("/upload-csv/")
+@router.patch("/remove_point", status_code=200)
+async def remove_point(
+        row_num: int,
+        table_name: str
+):
+    db = Database()
+    db.modify_row(table_name, row_num,mode="delete")
+
+
+@router.post("/upload_manual", status_code=200)
+async def upload_manual(
+        json_in: str,
+        table_name: str
+):
+    db = Database()
+    df = pd.read_json(str, orient="records")
+    db.df_create_table(table_name, df)  # come back to for project_id
+    return {"table_name": table_name, "json": json_in}
+
+@router.post("/upload_csv/")
 async def upload_csv(
-        tablename: str | None,
+        table_name: str | None,
         user_id: int,
         file: UploadFile = File(...),
 ):
     db = Database()
     df = pd.read_csv(BytesIO(await file.read()))
-    if tablename is None:
-        tablename = file.filename
-    db.df_create_table(tablename, df, user_id)
+    if table_name is None:
+        table_name = file.filename
+    db.df_create_table(table_name, df)  # come back to for project_id
     return {"filename": file.filename, "rows_count": len(df)}
 
 # originally generated with AI
-@router.post("/read_excel/", status_code=201)
+@router.post("/upload_excel/", status_code=201)
 async def upload_excel_file(
         user_id: int,
         file: Annotated[UploadFile, File(...)],
