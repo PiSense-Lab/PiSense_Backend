@@ -1,7 +1,10 @@
 -- init.sql
 -- This script runs on database startup
 
-CREATE DATABASE IF NOT EXISTS PiSense;
+-- CREATE USER test_admin WITH ENCRYPTED PASSWORD 'test_admin_password';
+CREATE DATABASE PiSense;
+-- GRANT ALL PRIVILEGES ON DATABASE PiSense TO test_admin;
+
 USE PiSense;
 
 CREATE TABLE dataset (

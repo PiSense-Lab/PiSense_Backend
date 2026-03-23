@@ -39,8 +39,6 @@ ENTRYPOINT []
 
 RUN chown nonroot:nonroot /app -R
 
-RUN ls -l
-
 USER nonroot
 
 # Run the FastAPI application by default
