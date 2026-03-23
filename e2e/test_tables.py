@@ -6,7 +6,8 @@ from pisense.api.main import Database
 def test_get_datasets():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
-        datasets = db._get_rows("dataset") # Will fail if table doesn't exist
+        datasets = db._get_rows("dataset") # noqa: F841
+
 
 # CREATE TABLE dataset (
 #     dataset_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
@@ -17,7 +18,7 @@ def test_get_datasets():
 def test_get_projects_table():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
-        projects = db._get_rows("projects") # Will fail if table doesn't exist
+        projects = db._get_rows("projects") # noqa: F841
 
 # CREATE TABLE projects (
 #     project_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
@@ -30,7 +31,7 @@ def test_get_projects_table():
 def test_get_roles_table():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
-        roles = db._get_rows("roles") # Will fail if table doesn't exist
+        roles = db._get_rows("roles") # noqa: F841
 
 # CREATE TABLE roles (
 #     role_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
@@ -41,7 +42,7 @@ def test_get_roles_table():
 def test_get_user_projects_table():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
-        user_projects = db._get_rows("user_projects") # Will fail if table doesn't exist
+        user_projects = db._get_rows("user_projects") # noqa: F841
 
 
 # CREATE TABLE user_projects (
@@ -54,7 +55,7 @@ def test_get_user_projects_table():
 def test_get_users_table():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
-        users = db._get_rows("users") # Will fail if table doesn't exist
+        users = db._get_rows("users") # noqa: F841
 
 # CREATE TABLE users (
 #     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
