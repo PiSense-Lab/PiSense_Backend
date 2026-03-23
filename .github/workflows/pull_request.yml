@@ -97,4 +97,4 @@ jobs:
 
     - name: Run tests
       # Runs nox tests with dependency group `tests`
-      run: docker exec -it pisense uv run --group tests nox -s e2e
+      run: docker exec pisense uv run --group tests nox -s e2e
