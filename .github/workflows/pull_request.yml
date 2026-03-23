@@ -48,10 +48,14 @@ jobs:
         output_file: .env
         strict: true
       env:
-        MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
-        MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
-        MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
-        MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
+        # MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
+        # MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
+        # MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
+        # MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
+        MARIADB_DATABASE: database
+        MARIADB_USER: normal_user
+        MARIADB_PASSWORD: normal_password
+        MARIADB_ROOT_PASSWORD: super_password
         MARIADB_PORT: 3306
         MARIADB_HOST: mariadb
         PISENSE_BACKEND_PORT: 8000
@@ -63,10 +67,14 @@ jobs:
         output_file: docker/.env
         strict: true
       env:
-        MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
-        MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
-        MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
-        MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
+        # MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
+        # MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
+        # MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
+        # MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
+        MARIADB_DATABASE: database
+        MARIADB_USER: normal_user
+        MARIADB_PASSWORD: normal_password
+        MARIADB_ROOT_PASSWORD: super_password
         MARIADB_PORT: 3306
         MARIADB_HOST: mariadb
         PISENSE_BACKEND_PORT: 8000
@@ -76,12 +84,6 @@ jobs:
 
     - name: List Images
       run: docker image list
-
-    - name: debug
-      run: ls
-
-    - name: debug2
-      run : ls docker
 
     - name: Run Compose
       working-directory: ./docker
