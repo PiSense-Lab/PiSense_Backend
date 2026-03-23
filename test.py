@@ -18,9 +18,6 @@ host = os.getenv("HOST")
 
 db = Database(db_password=db_password,username=username,host=host) # Sets up database connection singleton
 
-table_name = "survey_results_test"
-column_name = ["age", "city", "score"]
-column_type = ["INT", "VARCHAR(50)", "FLOAT"]
-project_id = 10   # your example project
+ids = [1,4]
 
-db.create_table(table_name, column_name, column_type, project_id)
+db._delete_rows("test", ids)

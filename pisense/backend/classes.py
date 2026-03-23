@@ -355,6 +355,19 @@ class Database():
 
         return {"message": "Rows updated successfully"}
 
+    def _delete_rows(self, table_name: str, ids: List[int]):
+
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        placeholders = ", ".join(["%s"] * len(ids))
+        query = f"DELETE FROM {table_name} WHERE id IN ({placeholders})"
+
+        self.cursor.execute(query, ids)
+        self.connection.commit()
+
+        return {"message": "Rows deleted successfully"}
+    
     def register_dataset(self, project_id: int, table_name: str):
         """
         Link an existing table to a project by inserting it into the dataset table.
