@@ -22,7 +22,7 @@ ENV UV_NO_DEV=1
 ENV UV_TOOL_BIN_DIR=/usr/local/bin
 
 # Install c dependencies
-RUN apt-get update && apt-get install -y libmariadb3 libmariadb-dev python3-dev build-essential pkg-config sqlite3
+RUN apt-get update && apt-get install -y libmariadb3 libmariadb-dev python3-dev build-essential pkg-config
 
 # Then, add the rest of the project source code and install it
 COPY . /app
@@ -43,4 +43,5 @@ USER nonroot
 # Uses `fastapi dev` to enable hot-reloading when the `watch` sync occurs
 # Uses `--host 0.0.0.0` to allow access from outside the container
 # Note in production, you should use `fastapi run` instead
+WORKDIR /app
 CMD ["uv", "run", "fastapi", "dev", "--host", "0.0.0.0", "pisense/api/main.py"]

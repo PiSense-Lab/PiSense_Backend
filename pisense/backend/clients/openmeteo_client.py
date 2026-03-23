@@ -1,12 +1,11 @@
 import openmeteo_requests
 import requests_cache
 from retry_requests import retry
-import os
 
 cache_session = requests_cache.CachedSession(
     ".cache",
     expire_after=3600,
-    backend="filesystem"
+    #backend="filesystem"
 )
 
 retry_session = retry(
