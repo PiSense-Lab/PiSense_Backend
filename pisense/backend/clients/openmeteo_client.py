@@ -9,7 +9,8 @@ cache_path = os.path.join(cache_dir, '.cache')
 
 cache_session = requests_cache.CachedSession(
     cache_path,
-    expire_after=3600
+    expire_after=3600,
+    backend="sqlite"
 )
 
 retry_session = retry(

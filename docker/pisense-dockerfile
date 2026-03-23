@@ -22,7 +22,7 @@ ENV UV_NO_DEV=1
 ENV UV_TOOL_BIN_DIR=/usr/local/bin
 
 # Install c dependencies
-RUN apt-get update && apt-get install -y libmariadb3 libmariadb-dev python3-dev build-essential pkg-config
+RUN apt-get update && apt-get install -y libmariadb3 libmariadb-dev python3-dev build-essential pkg-config sqlite3
 
 # Then, add the rest of the project source code and install it
 COPY . /app
