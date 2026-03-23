@@ -18,6 +18,4 @@ host = os.getenv("HOST")
 
 db = Database(db_password=db_password,username=username,host=host) # Sets up database connection singleton
 
-ids = [1,4]
-
-db._delete_rows("test", ids)
+db._delete_column("test", "number")

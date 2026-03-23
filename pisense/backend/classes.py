@@ -11,9 +11,6 @@ from pisense.backend.exceptions import DatabaseError
 def database_to_user(user: tuple) -> "User":
     return User(user[0], user[1])
 
-def database_to_group(group: tuple) -> "Group":
-    return Group(group[0], group[1])
-
 def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
 
@@ -64,35 +61,6 @@ def validate_value(value, col_type):
 
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
-
-class Group():
-
-    def __init__(self, id: int, name: str):
-        self.id = id
-        self.name = name
-
-    def __str__(self):
-        return f"{self.name}"
-
-    @property
-    def users(self) -> list["User"]:
-        """
-        Returns a list of users that are a part of this group
-
-        :return: list of users that are a part of this group
-        :rtype: list[User]
-        """
-        ...
-
-    @property
-    def projects(self) -> list["Project"]:
-        """
-        Returns a list of projects owned by this object
-
-        :return: list of projects owned by this object
-        :rtype: list[Project]
-        """
-        ...
 
 class User():
 
@@ -300,6 +268,47 @@ class Database():
 
         return "Column Added!"
 
+    def _delete_column(self, table_name: str, column_name: str):
+        """
+        Deletes a column from a table
+        """
+
+        # Validate table name
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        # Validate column name
+        column_name = column_name.strip()
+        if not valid_identifier(column_name):
+            raise HTTPException(status_code=400, detail="Invalid column name")
+
+        # Prevent deleting primary key
+        if column_name.lower() == "id":
+            raise HTTPException(status_code=400, detail="Cannot delete primary key column")
+
+        # Check table exists
+        self.cursor.execute("SHOW TABLES LIKE %s", (table_name,))
+        if not self.cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Table does not exist")
+
+        # Check column exists
+        self.cursor.execute(f"DESCRIBE {table_name}")
+        columns = [col[0] for col in self.cursor.fetchall()]
+
+        if column_name not in columns:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Column '{column_name}' does not exist in table '{table_name}'"
+            )
+
+        # Execute DROP COLUMN
+        query = f"ALTER TABLE {table_name} DROP COLUMN {column_name}"
+        self.cursor.execute(query)
+
+        self.connection.commit()
+
+        return {"message": f"Column '{column_name}' deleted successfully"}
+    
     def _alter_data(self, table_name: str, column_name: List[str], row: List[List[str]]):
         """
         Edits data in existing row
@@ -396,30 +405,6 @@ class Database():
 
         return {"message": f"Table '{table_name}' linked to project {project_id} successfully"}
 
-    def get_groups(self, name: str | None = None) -> list[Group]:
-        """
-        Returns a list of Groups. WHERE clause uses LIKE.
-
-        :return: List of Groups
-        :rtype: list[Group]
-        """
-        where = []
-        where_condition = ""
-        if name:
-            where.append(f"name LIKE '%{name}%'")
-
-        if len(where) > 0:
-            where_condition = f"{where[0]}"
-            if len(where) > 1:
-                for w in range(1, len(where)):
-                    where_condition = f"{where_condition} AND {where[w]}"
-
-        ret = []
-        groups = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
-        for g in groups:
-            ret.append(database_to_group(g))
-        return ret
-
     def get_users(self, name: str | None = None) -> list[User]:
         """
         Returns a list of users.
@@ -443,62 +428,6 @@ class Database():
         for u in users:
             ret.append(database_to_user(u))
         return ret
-
-    def get_projects(self, name: str | None = None, owner: User | Group | None = None) -> list[Project]:
-        """
-        Returns a list of projects. Returns all projects if owner is None otherwise only return projects owned by owner
-
-        :return: List of projects.
-        :rtype: list[Project]
-        """
-        where = []
-        where_condition = ""
-        if name:
-            where.append(f"name LIKE '%{name}%'")
-
-        if len(where) > 0:
-            where_condition = f"{where[0]}"
-            if len(where) > 1:
-                for w in range(1, len(where)):
-                    where_condition = f"{where_condition} AND {where[w]}"
-
-        ret = []
-        projects = self._get_rows("Projects", ["id", "name"], where_condition=where_condition)
-        for p in projects:
-            ret.append(database_to_project(p))
-        return ret
-
-    def get_group(self, id: int | None = None, name: str | None = None) -> Group:
-        """
-        Returns a group from the database
-
-        :return: Group from the database
-        :rtype: Project
-        """
-        where = []
-        where_condition = ""
-        if id:
-            where.append(f"id = {id}")
-        if name:
-            where.append(f"name = '{name}'")
-
-        if len(where) > 0:
-            where_condition = f"{where[0]}"
-            if len(where) > 1:
-                for w in range(1, len(where)):
-                    where_condition = f"{where_condition} AND {where[w]}"
-        else:
-            raise DatabaseError("No Where condition set, please set a parameter,")
-
-        users = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
-
-
-        if len(users) == 0:
-            raise DatabaseError("No group found.")
-        if len(users) > 1:
-            raise DatabaseError("More than one group found, tighten constraints or use `get_groups` function.")
-
-        return database_to_user(users[0])
 
     def get_project(self, id: int | None = None, name: str | None = None) -> Project:
         """
@@ -653,11 +582,3 @@ class Database():
         TODO: Return created user
         """
         self._insert_rows("Users", ["name"], [[f"{name}"]])
-
-    def create_group(self, name: str):
-        """
-        Creates a new group in the database.
-
-        TODO: Return created group
-        """
-        self._insert_rows("Groups", ["name"], [[f"{name}"]])
