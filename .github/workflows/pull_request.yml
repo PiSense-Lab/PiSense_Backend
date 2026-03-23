@@ -85,6 +85,9 @@ jobs:
     - name: List Images
       run: docker image list
 
+    - name: Cat env file
+      run: cat docker/.env
+
     - name: Run Compose
       working-directory: ./docker
       run: docker compose up
