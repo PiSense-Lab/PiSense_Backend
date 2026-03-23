@@ -8,7 +8,6 @@ def test_get_datasets():
         db = Database()
         datasets = db._get_rows("dataset") # noqa: F841
 
-
 # CREATE TABLE dataset (
 #     dataset_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
 #     project_id INT DEFAULT NULL,
@@ -43,7 +42,6 @@ def test_get_user_projects_table():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
         user_projects = db._get_rows("user_projects") # noqa: F841
-
 
 # CREATE TABLE user_projects (
 #     user_projects_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,

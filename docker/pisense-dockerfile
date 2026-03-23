@@ -35,10 +35,9 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Reset the entrypoint, don't invoke `uv`
 ENTRYPOINT []
 
-# Use the non-root user to run our application
-
 RUN chown nonroot:nonroot /app -R
 
+# Use the non-root user to run our application
 USER nonroot
 
 # Run the FastAPI application by default
@@ -46,5 +45,4 @@ USER nonroot
 # Uses `fastapi dev` to enable hot-reloading when the `watch` sync occurs
 # Uses `--host 0.0.0.0` to allow access from outside the container
 # Note in production, you should use `fastapi run` instead
-WORKDIR /app
 CMD ["uv", "run", "fastapi", "dev", "--host", "0.0.0.0", "pisense/api/main.py"]

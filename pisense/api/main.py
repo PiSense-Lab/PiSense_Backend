@@ -39,8 +39,3 @@ app.include_router(tables_router)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
-@app.get("/database")
-async def database():
-    db = Database()
-    return {"message": f"{db.get_users()}"}

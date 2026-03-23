@@ -31,7 +31,7 @@ jobs:
       # Runs nox tests with dependency group `tests`
       run: uv run --group tests nox
 
-  build-compose:
+  e2e:
     runs-on: ubuntu-latest
     env:
       FORCE_COLOR: "1"
@@ -48,10 +48,6 @@ jobs:
         output_file: .env
         strict: true
       env:
-        # MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
-        # MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
-        # MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
-        # MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
         MARIADB_DATABASE: PiSense
         MARIADB_USER: test_admin
         MARIADB_PASSWORD: test_admin_password
@@ -67,10 +63,6 @@ jobs:
         output_file: docker/.env
         strict: true
       env:
-        # MARIADB_DATABASE: ${{ env.TEST_MARIADB_DATABASE }}
-        # MARIADB_USER: ${{ env.TEST_MARIADB_USER }}
-        # MARIADB_PASSWORD: ${{ env.TEST_MARIADB_PASSWORD }}
-        # MARIADB_ROOT_PASSWORD: ${{ env.TEST_MARIADB_ROOT_PASSWORD }}
         MARIADB_DATABASE: PiSense
         MARIADB_USER: test_admin
         MARIADB_PASSWORD: test_admin_password
@@ -82,18 +74,9 @@ jobs:
     - name: Build Docker image
       run: docker buildx build -f docker/pisense-dockerfile . -t pisense:latest
 
-    - name: List Images
-      run: docker image list
-
-    - name: Cat env file
-      run: cat docker/.env
-
     - name: Run Compose
       working-directory: ./docker
       run: docker compose up -d
-
-    - name: List Containers
-      run: docker ps
 
     - name: Run tests
       # Runs nox tests with dependency group `tests`
