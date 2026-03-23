@@ -12,7 +12,7 @@ print(cache_path)
 cache_session = requests_cache.CachedSession(
     cache_path,
     expire_after=3600,
-    backend="sqlite"
+    backend="filesystem"
 )
 
 retry_session = retry(
