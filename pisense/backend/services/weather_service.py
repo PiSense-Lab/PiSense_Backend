@@ -1,40 +1,21 @@
 import pandas as pd
 from pisense.backend.models.weather_models import HourlyRecord, DailyRecord
 from pisense.backend.clients.openmeteo_client import openmeteo_client
+from pisense.backend.utils.weather_utils import map_to_models, add_date_time_columns, build_dataframe
 
 
 def _build_hourly_records(hourly) -> list[HourlyRecord]:
-    """
-    Shared transformer for hourly weather blocks.
-    """
-
-    temps = hourly.Variables(0).ValuesAsNumpy()
-
-    dates = pd.date_range(
-        start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
-        end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
-        freq=pd.Timedelta(seconds=hourly.Interval()),
-        inclusive="left"
-    )
-
-    df = pd.DataFrame({
-        "datetime": dates,
-        "temperature_2m": temps
+    df = build_dataframe(hourly, {
+        "temperature_2m": 0
     })
 
-    # split datetime
-    df["date"] = df["datetime"].dt.date
-    df["time"] = df["datetime"].dt.time
+    df = add_date_time_columns(df)
 
-    return [
-        HourlyRecord(
-            date=row.date,
-            time=row.time,
-            temperature_2m=float(row.temperature_2m)
-        )
-        for row in df.itertuples(index=False)
-    ]
-
+    return map_to_models(df, HourlyRecord, {
+        "date": "date",
+        "time": "time",
+        "temperature_2m": "temperature_2m"
+    })
 
 def _build_daily_records(daily) -> list[DailyRecord]:
     """
