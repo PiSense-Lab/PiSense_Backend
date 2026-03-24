@@ -55,3 +55,4 @@ This will run an api at http://0.0.0.0:8000
 
 Navigating to http://0.0.0.0:8000/docs will give you access to the docs page which is very useful for development and testing
 
+sudo apt-get install python3-dev

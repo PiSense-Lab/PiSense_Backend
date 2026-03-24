@@ -7,7 +7,6 @@ import logging
 import sys
 from fastapi import HTTPException
 from pisense.backend.exceptions import DatabaseError
-from pisense.database.validate import validate_value
 
 def database_to_user(user: tuple) -> "User":
     return User(user[0], user[1])
@@ -18,41 +17,50 @@ def database_to_group(group: tuple) -> "Group":
 def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
 
+class ValidationError(Exception):
+    pass
 
-def validate_val(value, col_type):
+def validate_value(value, col_type):
+
     col_type = col_type.upper()
+    if value is None or value == "":
+        return None
 
-    if col_type == "INT":
+    elif col_type == "INT":
         try:
             int(value)
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not an INT")
+            raise ValidationError("Value is not INT")
     elif col_type == "DECIMAL":
         try:
             float(value)
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a DECIMAL")
+            raise ValidationError("Value is not DECIMAL")
     elif col_type.startswith("VARCHAR"):
         max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
         if len(str(value)) > max_len:
-            raise HTTPException(status_code=400, detail=f"Value {value} exceeds max length {max_len}")
+            raise ValidationError("Value is not correct length")
     elif col_type == "DATE":
         import datetime
         try:
             datetime.datetime.strptime(value, "%Y-%m-%d")
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid DATE")
+            raise ValidationError("Value is not valid date")
     elif col_type == "TIME":
         import datetime
         try:
             datetime.datetime.strptime(value, "%H:%M:%S")
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid TIME")
+            raise ValidationError("Value is not valid time")
     elif col_type == "BOOL":
         try:
-            bool(value)
+            # Accept Python booleans
+            if isinstance(value, bool):
+                pass
+            else:
+                raise ValueError()
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid BOOLEAN")
+            raise ValidationError("Value is not valid bool")
 
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
@@ -131,7 +139,7 @@ class Database():
     _instance: "Database" = None
     _initialized: bool = False
 
-    ALLOWED_TYPES = {"INT", "VARCHAR(50)", "BOOL", "DATE", "TIME"}
+    ALLOWED_TYPES = {"INT", "VARCHAR(50)", "BOOL", "DATE", "TIME", "FLOAT"}
 
     def __new__(cls, *args, **kwargs) -> "Database": # Singleton implementation, returns existing instance if it exists
         if cls._instance is None:
@@ -247,6 +255,134 @@ class Database():
         self.connection.commit()
         return f"{len(rows)} rows inserted!"
 
+    def _add_column(self, table_name: str, column_name: List[str], column_type: List[str]):
+        """
+        Adds column(s) to existing table
+        """
+        # Validate table name
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        # Validate column names
+        for col in column_name:
+            if not valid_identifier(col.strip()):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+
+        #Validate each column has a type and vice versa
+        if len(column_name) != len(column_type):
+            raise HTTPException(status_code=400, detail="Each column must have a type and vice versa")
+
+        column_defs = []
+        for c, t in zip(column_name, column_type):
+            c = c.strip()
+            t = t.strip().upper()
+
+            #validates column name
+            if not valid_identifier(c):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {c}")
+
+            #validates allowed types
+            if t not in self.ALLOWED_TYPES:
+                raise HTTPException(status_code=400, detail=f"Invalid type: {t}")
+
+            #Adds valid column definition to list
+            column_defs.append(f"ADD COLUMN `{c}` {t}")
+
+        #Checks if there are valid columns to create the table with
+        if not column_defs:
+            raise HTTPException(status_code=400, detail="No valid columns")
+
+        query = f"ALTER TABLE `{table_name}` {', '.join(column_defs)}"
+
+        print("success!")
+        self.cursor.execute(query)
+        self.connection.commit()
+
+        return "Column Added!"
+
+    def _alter_data(self, table_name: str, column_name: List[str], row: List[List[str]]):
+        """
+        Edits data in existing row
+        """
+
+        # Validate table name
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        # Validate column names
+        for col in column_name:
+            if not valid_identifier(col.strip()):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+
+        # Fetch column types from the existing table
+        self.cursor.execute(f"DESCRIBE {table_name}")
+        schema = {col[0]: col[1].upper() for col in self.cursor.fetchall()}
+
+        # Make sure all columns exist
+        for col in column_name:
+            if col not in schema:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Column {col} does not exist in table {table_name}"
+                )
+
+        # Validate row structure
+        for r in row:
+            if len(r) != len(column_name) + 1:   # +1 for row id
+                raise HTTPException(
+                    status_code=400,
+                    detail="Row length must match columns + row id"
+                )
+
+        # Validate values
+        for r in row:
+            for col, value in zip(column_name, r[:-1]):
+                col_type = schema[col]
+                validate_value(value, col_type)
+
+        # Build update query
+        set_clause = ", ".join([f"{col} = %s" for col in column_name])
+        query = f"UPDATE {table_name} SET {set_clause} WHERE id = %s"
+
+        # Execute updates
+        for r in row:
+            values = r[:-1]
+            row_id = r[-1]
+
+            self.cursor.execute(query, (*values, row_id))
+
+            self.connection.commit()
+
+        return {"message": "Rows updated successfully"}
+
+    def register_dataset(self, project_id: int, table_name: str):
+        """
+        Link an existing table to a project by inserting it into the dataset table.
+        """
+        # Validate table name
+        if not valid_identifier(table_name):
+            raise ValueError("Invalid table name")
+
+        # Make sure project exists
+        self.cursor.execute("SELECT project_id FROM projects WHERE project_id = %s", (project_id,))
+        if not self.cursor.fetchone():
+            raise ValueError(f"Project with ID {project_id} does not exist")
+
+        # Optional: check if the table is already registered
+        self.cursor.execute("SELECT dataset_id FROM dataset WHERE table_name = %s AND project_id = %s",
+                            (table_name, project_id))
+        if self.cursor.fetchone():
+            raise ValueError(f"Table '{table_name}' is already linked to project {project_id}")
+
+        # Insert into dataset
+        self.cursor.execute(
+            "INSERT INTO dataset (project_id, table_name) VALUES (%s, %s)",
+            (project_id, table_name)
+        )
+        self.connection.commit()
+
+        return {"message": f"Table '{table_name}' linked to project {project_id} successfully"}
+
     def get_groups(self, name: str | None = None) -> list[Group]:
         """
         Returns a list of Groups. WHERE clause uses LIKE.
@@ -290,7 +426,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        users = self._get_rows("Users", ["id", "name"], where_condition=where_condition)
+        users = self._get_rows("users", ["id", "name"], where_condition=where_condition)
         for u in users:
             ret.append(database_to_user(u))
         return ret
@@ -314,7 +450,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        projects = self._get_rows("Projects", ["id", "name"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["id", "name"], where_condition=where_condition)
         for p in projects:
             ret.append(database_to_project(p))
         return ret
@@ -341,7 +477,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
+        users = self._get_rows("groups", ["id", "name"], where_condition=where_condition)
 
 
         if len(users) == 0:
@@ -373,7 +509,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("Projects", ["id", "name"], where_condition=where_condition)
+        users = self._get_rows("projects", ["id", "name"], where_condition=where_condition)
 
 
         if len(users) == 0:
@@ -438,7 +574,7 @@ class Database():
 
         return raw_df
 
-    def create_table(self, table_name: str = "test2", column_name: List[str] = ["name", "value"], column_type: List[str] = ["VARCHAR(50)", "INT"]):
+    def create_table(self, table_name: str, column_name: List[str], column_type: List[str], project_id: int):
         """
         Creates a table in the database
         """
@@ -479,8 +615,12 @@ class Database():
 
         query = f"CREATE TABLE {table_name} ({cols})"
 
-        print("success!")
+        print("Table success!")
         self.cursor.execute(query)
+
+        #Creates dataset row to connect project to the table
+        self.register_dataset(project_id, table_name)
+
         self.connection.commit()
 
         return "Table created!"
@@ -491,7 +631,7 @@ class Database():
 
         TODO: Return created project.
         """
-        self._insert_rows("Projects", ["name"], [[f"{name}"]])
+        self._insert_rows("projects", ["name"], [[f"{name}"]])
 
     def create_user(self, name: str):
         """
@@ -507,4 +647,4 @@ class Database():
 
         TODO: Return created group
         """
-        self._insert_rows("Groups", ["name"], [[f"{name}"]])
+        self._insert_rows("groups", ["name"], [[f"{name}"]])

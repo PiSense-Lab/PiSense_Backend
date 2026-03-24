@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     # Access environment variables using os.getenv
     db_password = os.getenv("MARIADB_PASSWORD")
     username = os.getenv("MARIADB_USER")
-    host = os.getenv("HOST")
+    host = os.getenv("MARIADB_HOST")
 
     Database(db_password=db_password, host=host, username=username)# Sets up database connection singleton
 
