@@ -572,8 +572,6 @@ class Database():
                     ):
         """
         Creates a new user in the database.
-
-        TODO: Return created user
         """
         columns = ["username", "role"]
         output = [f"{username}", str(role.name)]
