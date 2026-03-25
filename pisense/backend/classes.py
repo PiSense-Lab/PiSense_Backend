@@ -556,7 +556,6 @@ class Database():
         """
         if not valid_identifier(table_name):
             raise HTTPException(status_code=400, detail="Invalid table name")
-<<<<<<< HEAD
 
 
         if project_id and table_name:

@@ -7,10 +7,6 @@ from pisense.backend.classes import Database
 from fastapi import FastAPI
 from pisense.backend.routes.weather import router as weather_router
 from pisense.backend.routes.datasheets import router as tables_router
-<<<<<<< HEAD
-from tests.tables_test import router as test_router
-=======
->>>>>>> main
 
 
 ENV_FILE_PATH = ".env" # root of the repository
