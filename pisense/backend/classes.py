@@ -80,7 +80,7 @@ class User():
         self.lastname = lastname
 
     def __str__(self):
-        return f"{self.username}"
+        return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
 
     @property
     def projects(self) -> list["Project"]:
