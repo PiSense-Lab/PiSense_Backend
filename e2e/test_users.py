@@ -28,7 +28,7 @@ def test_create_get_users():
         assert user.role == role
         assert user.email == email
 
-        username = "test_username_viewer_email_firstname_lastname_password"
+        username = "test_username_viewer_email_firstname"
         role = USER_ROLES.viewer
         email = 'goodemail@email.com'
         firstname = 'bill'
