@@ -580,19 +580,19 @@ class Database():
 
         if not isinstance(email, type(None)):
             columns.append("email")
-            output.append([email])
+            output.append(email)
 
         if not isinstance(password, type(None)):
             columns.append("password")
-            output.append([password])
+            output.append(password)
 
         if not isinstance(firstname, type(None)):
             columns.append("firstname")
-            output.append([firstname])
+            output.append(firstname)
 
         if not isinstance(lastname, type(None)):
             columns.append("lastname")
-            output.append([lastname])
+            output.append(lastname)
 
         print(f"column: {columns}")
         print(f"output: {output}")
