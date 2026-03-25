@@ -134,6 +134,9 @@ def get_weather_forecast(
         "latitude": latitude,
         "longitude": longitude,
         "forecast_days": forecast_days,
+        "wind_speed_unit": "mph",
+        "temperature_unit": "fahrenheit",
+        "precipitation_unit": "inch",
     }
 
     if hourly_fields:
