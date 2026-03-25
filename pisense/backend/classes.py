@@ -1,6 +1,7 @@
 import  pandas as pd
 import re
 from typing import List
+from enum import Enum
 
 from mariadb import Cursor, Connection, mariadb
 import logging
@@ -62,7 +63,7 @@ def validate_value(value, col_type):
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
 
-class USER_ROLES:
+class USER_ROLES(Enum):
     admin = 1
     analyst = 2
     viewer = 3
@@ -562,11 +563,51 @@ class Database():
         """
         self._insert_rows("projects", ["name"], [[f"{name}"]])
 
-    def create_user(self, name: str):
+    def create_user(self, 
+                    name: str, 
+                    role: USER_ROLES, 
+                    username: str | None = None, 
+                    email: str | None = None,
+                    password: str | None = None,
+                    firstname: str | None = None,
+                    lastname: str | None = None
+                    ):
         """
         Creates a new user in the database.
 
         TODO: Return created user
         """
-        self._insert_rows("Users", ["name"], [[f"{name}"]])
+        columns = ["name", "role"]
+        output = [[f"{name}"], [role.name]]
 
+        if not isinstance(username, type(None)):
+            columns.append("username")
+            output.append([username])
+
+        if not isinstance(email, type(None)):
+            columns.append("email")
+            output.append([email])
+
+        if not isinstance(password, type(None)):
+            columns.append("password")
+            output.append([password])
+
+        if not isinstance(firstname, type(None)):
+            columns.append("firstname")
+            output.append([firstname])
+
+        if not isinstance(lastname, type(None)):
+            columns.append("lastname")
+            output.append([lastname])
+
+        self._insert_rows("Users", columns, output)
+
+# CREATE TABLE users (
+#     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+#     role ENUM('admin', 'analyst', 'viewer'),
+#     username VARCHAR(50) UNIQUE DEFAULT NULL,
+#     email VARCHAR(100) DEFAULT NULL,
+#     password VARCHAR(255) UNIQUE DEFAULT NULL,
+#     firstname VARCHAR(50) DEFAULT NULL,
+#     lastname VARCHAR(50) DEFAULT NULL
+# );
