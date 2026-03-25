@@ -39,6 +39,10 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(weather_router)
 app.include_router(tables_router)
+<<<<<<< HEAD
+app.include_router(test_router)
+=======
+>>>>>>> main
 
 @app.get("/")
 async def root():

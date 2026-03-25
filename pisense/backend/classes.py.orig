@@ -8,7 +8,7 @@ import logging
 import sys
 from fastapi import HTTPException
 from pisense.backend.exceptions import DatabaseError
-from pisense.database.validate import validate_value
+
 def database_to_user(user: tuple) -> "User":
     return User(user[0], user[1])
 
@@ -18,6 +18,17 @@ def database_to_group(group: tuple) -> "Group":
 def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
 
+<<<<<<< HEAD
+
+def validate_val(value, col_type):
+    col_type = col_type.upper()
+
+    if col_type == "INT":
+        try:
+            int(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not an INT")
+=======
 class ValidationError(Exception):
     pass
 
@@ -32,26 +43,47 @@ def validate_value(value, col_type):
             int(value)
         except ValueError:
             raise ValidationError("Value is not INT")
+>>>>>>> main
     elif col_type == "DECIMAL":
         try:
             float(value)
         except ValueError:
+<<<<<<< HEAD
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a DECIMAL")
+    elif col_type.startswith("VARCHAR"):
+        max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
+        if len(str(value)) > max_len:
+            raise HTTPException(status_code=400, detail=f"Value {value} exceeds max length {max_len}")
+=======
             raise ValidationError("Value is not DECIMAL")
     elif col_type.startswith("VARCHAR"):
         max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
         if len(str(value)) > max_len:
             raise ValidationError("Value is not correct length")
+>>>>>>> main
     elif col_type == "DATE":
         import datetime
         try:
             datetime.datetime.strptime(value, "%Y-%m-%d")
         except ValueError:
+<<<<<<< HEAD
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid DATE")
+=======
             raise ValidationError("Value is not valid date")
+>>>>>>> main
     elif col_type == "TIME":
         import datetime
         try:
             datetime.datetime.strptime(value, "%H:%M:%S")
         except ValueError:
+<<<<<<< HEAD
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid TIME")
+    elif col_type == "BOOL":
+        try:
+            bool(value)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Value {value} is not a valid BOOLEAN")
+=======
             raise ValidationError("Value is not valid time")
     elif col_type == "BOOL":
         try:
@@ -62,6 +94,7 @@ def validate_value(value, col_type):
                 raise ValueError()
         except ValueError:
             raise ValidationError("Value is not valid bool")
+>>>>>>> main
 
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
@@ -153,11 +186,24 @@ class Database():
             return
         self._initialized = True
         try:
+            #self._connection = mariadb.connect(
+            #    user=username,
+            #    password=db_password,
+            #    host=host,
+            #    port=port,
+            #    database=database,
+            #    connect_timeout=10,
+            #    read_timeout=10,
+            #    write_timeout=10
+            #)
 
             engine = create_engine(
                     f"mariadb+mariadbconnector://{username}:{db_password}@{host}:{port}/{database}"
                     )
             self._connection = engine.connect()
+            #if not isinstance(self._connection, Connection): # Connection):
+            #    logging.error("Did not return a connection object")
+            #    sys.exit(1)
         except mariadb.Error as e:
             logging.error(f"Host: {host} Error connecting to MariaDB Platform: {e}")
             sys.exit(1)
@@ -244,6 +290,7 @@ class Database():
                 validate_value(val, schema[col])
 
             d_rows = [{k: v} for k, v in zip(column_name, row)]
+            # print(query, d_rows)
             self.connection.execute(query, d_rows)    #safe parameter binding
 
         self.connection.commit()
@@ -547,7 +594,14 @@ class Database():
 
         return database_to_user(users[0])
 
+<<<<<<< HEAD
+    def get_table(self, 
+                  table_name: str | None = None, 
+                  project_id: int | None = None
+                  ):
+=======
     def get_table(self, table_name: str | None = None, user_id: int | None = None):
+>>>>>>> main
         """
         Returns a table from the database
 
@@ -577,6 +631,19 @@ class Database():
             raise DatabaseError("No table found")
         # if len(raw_df) > 1:
         #    raise DatabaseError(f"More than one table found with tablename: {table_name}")
+
+        return raw_df
+=======
+        if table_name is not None:
+            raw_df = pd.read_sql_table(table_name, con=self.connection)
+>>>>>>> main
+
+
+
+        if len(raw_df) == 0:
+            raise DatabaseError("No table found")
+        if len(raw_df) > 0:
+            raise DatabaseError("More than one table found with that tablename")
 
         return raw_df
 
@@ -621,12 +688,17 @@ class Database():
 
         query = f"CREATE TABLE {table_name} ({cols})"
 
+<<<<<<< HEAD
+        print("success!")
         self._connection.execute(text(query))
+=======
         print("Table success!")
+        self.cursor.execute(query)
 
         #Creates dataset row to connect project to the table
         self.register_dataset(project_id, table_name)
 
+>>>>>>> main
         self.connection.commit()
 
         return "Table created!"
@@ -717,9 +789,13 @@ class Database():
 
         TODO: Return created project.
         """
+<<<<<<< HEAD
         self._insert_rows("projects", 
                           ["project_name"], 
                           [[f"{name}"]])
+=======
+        self._insert_rows("projects", ["name"], [[f"{name}"]])
+>>>>>>> main
 
     def create_user(self, name: str):
         """

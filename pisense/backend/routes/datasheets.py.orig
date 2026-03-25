@@ -1,12 +1,19 @@
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from io import BytesIO
 from typing import Annotated, List
 from pisense.backend.classes import Database
 from pisense.backend.models.table_models import DataTable, DataTables, DataRow
+=======
+from fastapi import APIRouter, Depends
+from pisense.backend.classes import Database
+from pisense.backend.models.table_models import DataTable
+>>>>>>> main
 
 
 router = APIRouter(prefix="/datatables")
 
+<<<<<<< HEAD
 @router.get("", response_model=DataTables)
 async def read_tables(
         project_id: int
@@ -117,3 +124,26 @@ async def upload_excel_file(
         # You can return the data in JSON format for the client
         "data_sample": df.head().to_dict(orient="records") 
     }
+
+=======
+@router.get("", response_model=list[DataTable])
+async def read_tables():
+    db =  Depends(Database())
+    res = db.get_table()
+
+    return res
+
+@router.get("/{tablename}")
+async def read_single_table(
+        tablename: str
+        ):
+    db =  Depends(Database())
+    res = db.get_table(tablename)
+
+    return res
+
+# @router.post("/upload_file", status_code=201)
+# async def upload_file():
+#     db = Depends(Database())
+#     res =
+>>>>>>> main
