@@ -1,5 +1,5 @@
 from pydantic import BaseModel, RootModel, ConfigDict
-from typing import List, Union
+from typing import List
 from datetime import time
 
 class DataPoint(BaseModel):

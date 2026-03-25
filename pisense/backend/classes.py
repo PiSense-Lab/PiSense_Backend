@@ -2,8 +2,8 @@ import  pandas as pd
 import re
 from typing import List, Literal
 
-from mariadb import Cursor, Connection, mariadb
-from sqlalchemy import create_engine, Engine, text
+from mariadb import Connection, mariadb
+from sqlalchemy import create_engine, text
 import logging
 import sys
 from fastapi import HTTPException
@@ -20,48 +20,6 @@ def database_to_project(project: tuple) -> "Project":
 
 class ValidationError(Exception):
     pass
-
-def validate_value(value, col_type):
-
-    col_type = col_type.upper()
-    if value is None or value == "":
-        return None
-
-    elif col_type == "INT":
-        try:
-            int(value)
-        except ValueError:
-            raise ValidationError("Value is not INT")
-    elif col_type == "DECIMAL":
-        try:
-            float(value)
-        except ValueError:
-            raise ValidationError("Value is not DECIMAL")
-    elif col_type.startswith("VARCHAR"):
-        max_len = int(col_type[col_type.find("(")+1 : col_type.find(")")])
-        if len(str(value)) > max_len:
-            raise ValidationError("Value is not correct length")
-    elif col_type == "DATE":
-        import datetime
-        try:
-            datetime.datetime.strptime(value, "%Y-%m-%d")
-        except ValueError:
-            raise ValidationError("Value is not valid date")
-    elif col_type == "TIME":
-        import datetime
-        try:
-            datetime.datetime.strptime(value, "%H:%M:%S")
-        except ValueError:
-            raise ValidationError("Value is not valid time")
-    elif col_type == "BOOL":
-        try:
-            # Accept Python booleans
-            if isinstance(value, bool):
-                pass
-            else:
-                raise ValueError()
-        except ValueError:
-            raise ValidationError("Value is not valid bool")
 
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
@@ -547,7 +505,7 @@ class Database():
 
         return database_to_user(users[0])
 
-    def get_table(self, table_name: str | None = None, user_id: int | None = None):
+    def get_table(self, table_name: str | None = None, project_id: int | None = None):
         """
         Returns a table from the database
 
@@ -631,8 +589,8 @@ class Database():
         return "Table created!"
 
     def df_create_table(
-            self, 
-            table_name: str | None = None, 
+            self,
+            table_name: str | None = None,
             df: pd.DataFrame | None = None,
     ):
         if df is None or not isinstance(df, pd.DataFrame):
@@ -641,7 +599,7 @@ class Database():
         if not valid_identifier(table_name):
             raise HTTPException(status_code=400, detail="Table name is not valid")
 
-        
+
         #for col_name in df.columns:
 #
 #            if not valid_identifier(col_name):
@@ -716,8 +674,8 @@ class Database():
 
         TODO: Return created project.
         """
-        self._insert_rows("projects", 
-                          ["project_name"], 
+        self._insert_rows("projects",
+                          ["project_name"],
                           [[f"{name}"]])
 
     def create_user(self, name: str):

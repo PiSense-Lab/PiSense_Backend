@@ -7,14 +7,14 @@ router = APIRouter(prefix="/testing")
 
 
 #for testing purposes 
-@router.post("/upload")
-async def test_upload(
-        project_name: str | None,
-        tablename: str
-):
-    db = Database()
-    df = pd.read_csv("./tests/ExampleData.csv", index_col=0)
-    db.create_project(project_name)
-    db.df_create_table(tablename, df)
-
-    return f"Table created with project: {project_name}, and tablename: {tablename}"
+#@router.post("/upload")
+#async def test_upload(
+#        project_name: str,
+#        tablename: str
+#):
+#    db = Database()
+#    df = pd.read_csv("./tests/ExampleData.csv", index_col=0)
+#    db.create_project(project_name)
+#    db.df_create_table(tablename, df)
+#
+#    return f"Table created with project: {project_name}, and tablename: {tablename}"

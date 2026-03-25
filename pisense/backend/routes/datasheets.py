@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, File, UploadFile, status, HTTPException
 from io import BytesIO
+import pandas as pd
 from typing import Annotated, List
 from pisense.backend.classes import Database
-from pisense.backend.models.table_models import DataTable, DataTables, DataRow
+from pisense.backend.models.table_models import DataTable, DataTables
 
 
 router = APIRouter(prefix="/datatables")
@@ -92,7 +93,7 @@ async def upload_excel_file(
 
     # Read the file content into memory
     content = await file.read()
-    
+
     # Use BytesIO to create a file-like object for pandas
     try:
         # df is not a dataframe it is a dict of dataframes
@@ -102,7 +103,7 @@ async def upload_excel_file(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Error processing Excel file: {e}"
         )
-    
+
     db = Database()
 
     for key, value in df:
@@ -115,5 +116,5 @@ async def upload_excel_file(
         "rows": len(df),
         "columns": len(df.columns),
         # You can return the data in JSON format for the client
-        "data_sample": df.head().to_dict(orient="records") 
+        "data_sample": df.head().to_dict(orient="records")
     }
