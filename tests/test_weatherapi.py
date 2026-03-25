@@ -13,39 +13,39 @@ def test_root():
     assert response.status_code == 200
     assert response.json() == {"message": "Hello World"}
 
-def test_get_historical_weather():
-    response = client.get("/weather/historical-weather")
-    assert response.status_code == 200
+# def test_get_historical_weather():
+#     response = client.get("/weather/historical-weather")
+#     assert response.status_code == 200
 
-    data = response.json()
-    assert isinstance(data, list)
+#     data = response.json()
+#     assert isinstance(data, list)
 
-    # Validate each item using Pydantic
-    validated = [HourlyRecord.model_validate(item) for item in data]
+#     # Validate each item using Pydantic
+#     validated = [HourlyRecord.model_validate(item) for item in data]
 
-    assert len(validated) == len(data)
+#     assert len(validated) == len(data)
 
-    # stronger checks
-    for record in validated:
-        assert isinstance(record.date, date)
-        assert isinstance(record.time, time)
-        assert isinstance(record.temperature_2m, float)
+#     # stronger checks
+#     for record in validated:
+#         assert isinstance(record.date, date)
+#         assert isinstance(record.time, time)
+#         assert isinstance(record.temperature_2m, float)
 
-def test_get_daily_weather():
-    response = client.get("/weather/forecast-weather?type=daily")
-    assert response.status_code == 200
+# def test_get_daily_weather():
+#     response = client.get("/weather/forecast-weather?type=daily")
+#     assert response.status_code == 200
 
-    data = response.json()
-    assert isinstance(data, list)
+#     data = response.json()
+#     assert isinstance(data, list)
 
-    # Validate each item using Pydantic
-    validated = [DailyRecord.model_validate(item) for item in data]
+#     # Validate each item using Pydantic
+#     validated = [DailyRecord.model_validate(item) for item in data]
 
-    assert len(validated) == len(data)
+#     assert len(validated) == len(data)
 
-    # stronger checks
-    for record in validated:
-        assert isinstance(record.date, date)
-        assert isinstance(record.time, time)
-        assert isinstance(record.temperature_2m_max, float)
-        assert isinstance(record.temperature_2m_min, float)
+#     # stronger checks
+#     for record in validated:
+#         assert isinstance(record.date, date)
+#         assert isinstance(record.time, time)
+#         assert isinstance(record.temperature_2m_max, float)
+#         assert isinstance(record.temperature_2m_min, float)

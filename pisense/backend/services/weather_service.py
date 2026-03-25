@@ -4,38 +4,47 @@ from pisense.backend.clients.openmeteo_client import openmeteo_client
 from pisense.backend.utils.weather_utils import map_to_models, add_date_time_columns, build_dataframe
 
 
-def _build_hourly_records(hourly) -> list[HourlyRecord]:
-    df = build_dataframe(hourly, HOURLY_VARIABLES)
+def _build_hourly_records(hourly, selected_fields) -> list[HourlyRecord]:
+    variable_map = {
+        field: idx for idx, field in enumerate(selected_fields)
+    }
 
+    df = build_dataframe(hourly, variable_map)
     df = add_date_time_columns(df)
 
     field_map = {
         "date": "date",
         "time": "time",
-        **{k: k for k in HOURLY_VARIABLES.keys()}
+        **{k: k for k in selected_fields}
     }
+
     return map_to_models(
         df,
         HourlyRecord,
         field_map,
-        float_fields=set(HOURLY_VARIABLES.keys())
+        float_fields=set(selected_fields)
     )
 
-def _build_daily_records(daily) -> list[DailyRecord]:
-    df = build_dataframe(daily, DAILY_VARIABLES)
+def _build_daily_records(daily, selected_fields) -> list[DailyRecord]:
+    variable_map = {
+        field: idx for idx, field in enumerate(selected_fields)
+    }
 
+    df = build_dataframe(daily, variable_map)
     df = add_date_time_columns(df)
 
     field_map = {
         "date": "date",
         "time": "time",
-        **{k: k for k in DAILY_VARIABLES.keys()}
+        **{k: k for k in selected_fields}
     }
+
     return map_to_models(
         df,
         DailyRecord,
         field_map,
-        float_fields=set(DAILY_VARIABLES.keys())
+        float_fields=set(selected_fields) - {"sunrise", "sunset"},
+        datetime_fields={"sunrise", "sunset"} & set(selected_fields)
     )
 
 def get_forecast_weather_hourly(latitude: float, longitude: float, forecast_days: int):
@@ -108,31 +117,44 @@ def get_historical_weather(latitude: float, longitude: float, start_date: str, e
 # testing function to call both hourly and daily
 # Daily - forcast days param
 # hourly - forcast days param, start_date, end_date
-def get_weather_forecast(latitude, longitude, hourly=False, daily=False, **kwargs):
-    url = "https://api.open-meteo.com/v1/forecast"
-
+# GET /get-forecast-weather?
+# latitude=44.8&
+# longitude=-91.5&
+# temperature_2m=true&
+# precipitation=true&
+# uv_index_max=true
+def get_weather_forecast(
+    latitude,
+    longitude,
+    forecast_days=7,
+    hourly_fields=None,
+    daily_fields=None
+):
     params = {
         "latitude": latitude,
         "longitude": longitude,
-        "temperature_unit": "fahrenheit",
-        **kwargs
+        "forecast_days": forecast_days,
     }
 
-    if hourly:
-        params["hourly"] = list(HOURLY_VARIABLES.keys())
+    if hourly_fields:
+        params["hourly"] = hourly_fields
 
-    if daily:
-        params["daily"] = list(DAILY_VARIABLES.keys())
+    if daily_fields:
+        params["daily"] = daily_fields
 
-    responses = openmeteo_client.weather_api(url, params=params)
+    responses = openmeteo_client.weather_api(
+        "https://api.open-meteo.com/v1/forecast",
+        params=params
+    )
+
     response = responses[0]
 
     result = {}
 
-    if hourly:
-        result["hourly"] = _build_hourly_records(response.Hourly())
+    if hourly_fields:
+        result["hourly"] = _build_hourly_records(response.Hourly(), hourly_fields)
 
-    if daily:
-        result["daily"] = _build_daily_records(response.Daily())
+    if daily_fields:
+        result["daily"] = _build_daily_records(response.Daily(), daily_fields)
 
     return result
