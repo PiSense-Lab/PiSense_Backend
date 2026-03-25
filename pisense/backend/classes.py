@@ -10,7 +10,8 @@ from fastapi import HTTPException
 from pisense.backend.exceptions import DatabaseError
 
 def database_to_user(user: tuple) -> "User":
-    return User(user[0], user[1])
+    #["id", "username", "firstname", "lastname", "role", "email"]
+    return User(id=user[0], username=user[1], firstname=user[2], lastname=user[3], role=user[4], email=user[5])
 
 def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
@@ -70,17 +71,16 @@ class USER_ROLES(Enum):
 
 class User():
 
-    def __init__(self, id: int, role: USER_ROLES, username: str, email: str, firstname: str, lastname: str):
+    def __init__(self, id: int, role: str, username: str, email: str, firstname: str, lastname: str):
         self.id = id
-        self.role = role
+        self.role = USER_ROLES[role]
         self.username = username
         self.email = email
         self.firstname = firstname
         self.lastname = lastname
 
-
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.username}"
 
     @property
     def projects(self) -> list["Project"]:
@@ -366,7 +366,7 @@ class Database():
 
         return {"message": f"Table '{table_name}' linked to project {project_id} successfully"}
 
-    def get_users(self, name: str | None = None) -> list[User]:
+    def get_users(self, username: str | None = None) -> list[User]:
         """
         Returns a list of users.
 
@@ -375,8 +375,8 @@ class Database():
         """
         where = []
         where_condition = ""
-        if name:
-            where.append(f"name LIKE '%{name}%'")
+        if username:
+            where.append(f"username LIKE '%{username}%'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -385,7 +385,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        users = self._get_rows("users", ["id", "name"], where_condition=where_condition)
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email"], where_condition=where_condition)
         for u in users:
             ret.append(database_to_user(u))
         return ret
@@ -446,7 +446,7 @@ class Database():
 
         return database_to_user(users[0])
 
-    def get_user(self, id: int | None = None, name: str | None = None) -> User:
+    def get_user(self, id: int | None = None, username: str | None = None) -> User:
         """
         Returns a user from the database
 
@@ -459,8 +459,8 @@ class Database():
         where_condition = ""
         if id:
             where.append(f"id = {id}")
-        if name:
-            where.append(f"name = '{name}'")
+        if username:
+            where.append(f"username = '{username}'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -470,8 +470,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("Users", ["id", "name"], where_condition=where_condition)
-
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email"], where_condition=where_condition)
 
         if len(users) == 0:
             raise DatabaseError("No user found.")

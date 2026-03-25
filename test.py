@@ -20,10 +20,11 @@ host = os.getenv("MARIADB_HOST")
 db = Database(db_password=db_password,username=username,host=host) # Sets up database connection singleton
 
 
-#db.create_user("test_user_1", USER_ROLES.admin)
-
-users = db._get_rows("users")
-print(users)
+username = "test_username_admin2"
+# db.create_user(username, USER_ROLES.admin)
+# users = db._get_rows("users", where_condition=f"username='{username}'")
+user = db.get_users()
+print(user)
 
 # table_name = "survey_results_test"
 # column_name = ["age", "city", "score"]
