@@ -390,7 +390,7 @@ class Database():
             ret.append(database_to_user(u))
         return ret
 
-    def get_projects(self, name: str | None = None, owner: User | Group | None = None) -> list[Project]:
+    def get_projects(self, name: str | None = None, owner: User | None = None) -> list[Project]:
         """
         Returns a list of projects. Returns all projects if owner is None otherwise only return projects owned by owner
 
@@ -563,10 +563,9 @@ class Database():
         """
         self._insert_rows("projects", ["name"], [[f"{name}"]])
 
-    def create_user(self, 
-                    name: str, 
+    def create_user(self,
+                    username: str, 
                     role: USER_ROLES, 
-                    username: str | None = None, 
                     email: str | None = None,
                     password: str | None = None,
                     firstname: str | None = None,
@@ -577,12 +576,8 @@ class Database():
 
         TODO: Return created user
         """
-        columns = ["name", "role"]
-        output = [[f"{name}"], [role.name]]
-
-        if not isinstance(username, type(None)):
-            columns.append("username")
-            output.append([username])
+        columns = ["username", "role"]
+        output = [f"{username}", str(role.name)]
 
         if not isinstance(email, type(None)):
             columns.append("email")
@@ -600,7 +595,10 @@ class Database():
             columns.append("lastname")
             output.append([lastname])
 
-        self._insert_rows("Users", columns, output)
+        print(f"column: {columns}")
+        print(f"output: {output}")
+
+        self._insert_rows("users", columns, [output])
 
 # CREATE TABLE users (
 #     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
