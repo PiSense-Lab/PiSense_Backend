@@ -75,3 +75,6 @@ def test_create_get_users():
             assert not isinstance(user.username, type(None))
             assert not isinstance(user.id, type(None))
             assert not isinstance(user.role, type(None))
+
+        users = db.get_users("somthing_random")
+        assert len(users) == 0
