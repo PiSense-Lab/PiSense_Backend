@@ -32,7 +32,7 @@ def test_get_historical_weather():
         assert isinstance(record.temperature_2m, float)
 
 def test_get_daily_weather():
-    response = client.get("/weather/daily-weather")
+    response = client.get("/weather/forecast-weather?type=daily")
     assert response.status_code == 200
 
     data = response.json()
