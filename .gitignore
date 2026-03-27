@@ -10,5 +10,6 @@ docker/db_data/*
 **/.cache.sqlite
 build/*
 .vscode/*
+pisense_backend.egg.info/*
 *.pyc
 .testvenv/*

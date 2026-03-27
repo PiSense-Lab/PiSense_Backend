@@ -42,5 +42,9 @@ class TestValidateValue(unittest.TestCase):
         with self.assertRaises(ValidationError):
             validate_value("notabool", "BOOL")
 
+    def test_validate_null(self):
+        with self.assertRaises(ValidationError):
+            self.assertIsNone(validate_value("", "INT"))
+
 if __name__ == "__main__":
     unittest.main()
