@@ -1,35 +1,32 @@
 from pydantic import BaseModel
-from datetime import date, datetime, time
+from datetime import date, time
 
-HOURLY_VARIABLES = {
-    "temperature_2m": 0,
-    "showers": 1,
-    "rain": 2,
-    "precipitation": 3,
-    "precipitation_probability": 4,
-    "apparent_temperature": 5,
-    "dew_point_2m": 6,
-    "relative_humidity_2m": 7,
-    "snowfall": 8,
-    "snow_depth": 9,
-}
+from typing import Literal
 
-DAILY_VARIABLES = {
-    "temperature_2m_max": 0,
-    "temperature_2m_min": 1,
-    "apparent_temperature_max": 2,
-    "apparent_temperature_min": 3,
-    "daylight_duration": 4,
-    "uv_index_max": 5,
-}
+ForecastType = Literal["hourly", "daily"]
+# these are the fields we want to extract from the API, and they also correspond to the fields in our Pydantic models
+HOURLY_FIELDS = [
+    "temperature_2m",
+    "showers",
+    "rain",
+    "precipitation",
+    "precipitation_probability",
+    "apparent_temperature",
+    "dew_point_2m",
+    "relative_humidity_2m",
+    "snowfall",
+    "snow_depth",
+]
 
-FIELD_TYPES = {
-    "temperature_2m": float,
-}
-
-ALL_HOURLY = set(HOURLY_VARIABLES.keys())
-ALL_DAILY = set(DAILY_VARIABLES.keys())
-
+DAILY_FIELDS = [
+    "temperature_2m_max",
+    "temperature_2m_min",
+    "apparent_temperature_max",
+    "apparent_temperature_min",
+    "daylight_duration",
+    "uv_index_max",
+]
+# these are the Pydantic models for the hourly and daily records, and the response model that contains both
 class HourlyRecord(BaseModel):
     date: date
     time: time
