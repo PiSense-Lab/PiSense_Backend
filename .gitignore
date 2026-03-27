@@ -13,4 +13,3 @@ build/*
 *.pyc
 .testvenv/*
 pisense_backend.egg.info/*
-.testvenv/*
