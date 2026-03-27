@@ -44,14 +44,14 @@ async def edit_point(
     db = Database()
     db.modify_row(table_name, row_num, row_data=row_data, row_columns=row_columns, mode="edit")
 
-@router.patch("/add_point", status_code=200)
-async def add_point(
-        row_data: List[int | float],
-        row_columns: List[str],
-        table_name: str
-):
-    db = Database()
-    db._insert_rows(row_columns, )
+# @router.patch("/add_point", status_code=200)
+# async def add_point(
+#         row_data: List[int | float],
+#         row_columns: List[str],
+#         table_name: str
+# ):
+#     db = Database()
+#     db._insert_rows(row_columns, )
 
 @router.patch("/remove_point", status_code=200)
 async def remove_point(
