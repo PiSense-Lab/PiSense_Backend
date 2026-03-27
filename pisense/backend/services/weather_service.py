@@ -1,74 +1,111 @@
 import pandas as pd
-from pisense.backend.models.weather_models import HourlyRecord, DailyRecord
+from pisense.backend.models.weather_models import HOURLY_FIELDS, DAILY_FIELDS, HourlyRecord, DailyRecord
 from pisense.backend.clients.openmeteo_client import openmeteo_client
+from pisense.backend.utils.weather_utils import map_to_models, add_date_time_columns, build_dataframe
 
-
+# helper functions to build hourly and daily records from the API response
 def _build_hourly_records(hourly) -> list[HourlyRecord]:
-    """
-    Shared transformer for hourly weather blocks.
-    """
+    selected_fields = HOURLY_FIELDS
 
-    temps = hourly.Variables(0).ValuesAsNumpy()
+    variable_map = {
+        field: idx for idx, field in enumerate(selected_fields)
+    }
 
-    dates = pd.date_range(
-        start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
-        end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
-        freq=pd.Timedelta(seconds=hourly.Interval()),
-        inclusive="left"
+    df = build_dataframe(hourly, variable_map)
+    df = add_date_time_columns(df)
+
+    field_map = {
+        "date": "date",
+        "time": "time",
+        **{k: k for k in selected_fields}
+    }
+
+    return map_to_models(
+        df,
+        HourlyRecord,
+        field_map,
+        float_fields=set(selected_fields)
     )
-
-    df = pd.DataFrame({
-        "date": dates,
-        "temperature_2m": temps
-    })
-
-    return [
-        HourlyRecord(
-            date=row.date.to_pydatetime(),
-            temperature_2m=float(row.temperature_2m)
-        )
-        for row in df.itertuples(index=False)
-    ]
-
 
 def _build_daily_records(daily) -> list[DailyRecord]:
-    """
-    Shared transformer for daily weather blocks.
-    """
+    selected_fields = DAILY_FIELDS
 
-    temp_max = daily.Variables(0).ValuesAsNumpy()
-    temp_min = daily.Variables(1).ValuesAsNumpy()
+    variable_map = {
+        field: idx for idx, field in enumerate(selected_fields)
+    }
 
-    dates = pd.date_range(
-        start=pd.to_datetime(daily.Time(), unit="s", utc=True),
-        end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
-        freq=pd.Timedelta(seconds=daily.Interval()),
-        inclusive="left"
+    df = build_dataframe(daily, variable_map)
+    df = add_date_time_columns(df)
+
+    field_map = {
+        "date": "date",
+        "time": "time",
+        **{k: k for k in selected_fields}
+    }
+
+    return map_to_models(
+        df,
+        DailyRecord,
+        field_map,
+        float_fields=set(selected_fields)
     )
 
-    df = pd.DataFrame({
-        "date": dates,
-        "temperature_2m_max": temp_max,
-        "temperature_2m_min": temp_min
-    })
-
-    return [
-        DailyRecord(
-            date=row.date.to_pydatetime(),
-            temperature_2m_max=float(row.temperature_2m_max),
-            temperature_2m_min=float(row.temperature_2m_min)
-        )
-        for row in df.itertuples(index=False)
-    ]
-
-
-def get_forecast_weather():
+# main functions to get forecast and historical weather, with options for hourly and daily
+def get_forecast_weather_hourly(latitude: float, longitude: float, forecast_days: int):
     url = "https://api.open-meteo.com/v1/forecast"
 
     params = {
-        "latitude": 46.73,
-        "longitude": 94.69,
-        "hourly": ["temperature_2m"],
+        "latitude": latitude,
+        "longitude": longitude,
+        "hourly": list(HOURLY_FIELDS),
+        "temperature_unit": "fahrenheit",
+        "forecast_days": forecast_days,
+    }
+
+    responses = openmeteo_client.weather_api(
+        url,
+        params=params
+    )
+
+    response = responses[0]
+    hourly = response.Hourly()
+    records = _build_hourly_records(hourly)
+
+    return {"hourly": records}
+
+
+def get_forecast_weather_daily(latitude: float, longitude: float, forecast_days: int):
+    url = "https://api.open-meteo.com/v1/forecast"
+
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": list(DAILY_FIELDS),
+        "temperature_unit": "fahrenheit",
+        "forecast_days": forecast_days,
+    }
+
+    responses = openmeteo_client.weather_api(
+        url,
+        params=params
+    )
+
+    response = responses[0]
+    daily = response.Daily()
+    records = _build_daily_records(daily)
+    return {"daily": records}
+
+# get the historical weather but daily and hourly, with start_date and end_date params
+def get_historical_weather_hourly(latitude: float, longitude: float, start_date: str, end_date: str):
+    url = "https://historical-forecast-api.open-meteo.com/v1/forecast"
+
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "start_date": start_date,
+        "end_date": end_date,
+        "hourly": list(HOURLY_FIELDS),
+        "temperature_unit": "fahrenheit",
     }
 
     responses = openmeteo_client.weather_api(
@@ -79,16 +116,18 @@ def get_forecast_weather():
     response = responses[0]
     hourly = response.Hourly()
 
-    return _build_hourly_records(hourly)
+    records = _build_hourly_records(hourly)
+    return {"hourly": records}
 
-
-def get_forecast_day_weather():
-    url = "https://api.open-meteo.com/v1/forecast"
+def get_historical_weather_daily(latitude: float, longitude: float, start_date: str, end_date: str):
+    url = "https://historical-forecast-api.open-meteo.com/v1/forecast"
 
     params = {
-        "latitude": 46.73,
-        "longitude": 94.69,
-        "daily": ["temperature_2m_max", "temperature_2m_min"],
+        "latitude": latitude,
+        "longitude": longitude,
+        "start_date": start_date,
+        "end_date": end_date,
+        "daily": list(DAILY_FIELDS),
         "temperature_unit": "fahrenheit",
     }
 
@@ -100,27 +139,5 @@ def get_forecast_day_weather():
     response = responses[0]
     daily = response.Daily()
 
-    return _build_daily_records(daily)
-
-
-def get_historical_weather():
-    url = "https://historical-forecast-api.open-meteo.com/v1/forecast"
-
-    params = {
-        "latitude": 46.73,
-        "longitude": 94.69,
-        "start_date": "2025-01-01",
-        "end_date": "2025-12-31",
-        "hourly": "temperature_2m",
-        "temperature_unit": "fahrenheit",
-    }
-
-    responses = openmeteo_client.weather_api(
-        url,
-        params=params
-    )
-
-    response = responses[0]
-    hourly = response.Hourly()
-
-    return _build_hourly_records(hourly)
+    records = _build_daily_records(daily)
+    return {"daily": records}
