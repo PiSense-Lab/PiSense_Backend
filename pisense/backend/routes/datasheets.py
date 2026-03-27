@@ -10,7 +10,7 @@ router = APIRouter(prefix="/datatables")
 
 @router.get("", response_model=DataTables)
 async def read_tables(
-        project_id: int
+        project_id: int | None
 ):
     db =  Database()
     if project_id is None:
@@ -23,14 +23,14 @@ async def read_tables(
 @router.get("/{table_name}", response_model=DataTable)
 async def read_single_table(
         table_name: str,
-        user_id: int | None = None
+        project_id: int | None = None
 ):
     db = Database()
 
-    if user_id is None:
+    if project_id is None:
         res = db.get_table(table_name)
     else:
-        res = db.get_table(table_name, user_id)
+        res = db.get_table(table_name, project_id)
 
     return {"data": res.to_dict(orient="records")}
 
@@ -43,6 +43,15 @@ async def edit_point(
 ):
     db = Database()
     db.modify_row(table_name, row_num, row_data=row_data, row_columns=row_columns, mode="edit")
+
+# @router.patch("/add_point", status_code=200)
+# async def add_point(
+#         row_data: List[int | float],
+#         row_columns: List[str],
+#         table_name: str
+# ):
+#     db = Database()
+#     db._insert_rows(row_columns, )
 
 @router.patch("/remove_point", status_code=200)
 async def remove_point(
@@ -66,7 +75,7 @@ async def upload_manual(
 @router.post("/upload_csv/")
 async def upload_csv(
         table_name: str | None,
-        user_id: int,
+        project_id: int | None,
         file: UploadFile = File(...),
 ):
     db = Database()
@@ -79,7 +88,7 @@ async def upload_csv(
 # originally generated with AI
 @router.post("/upload_excel/", status_code=201)
 async def upload_excel_file(
-        user_id: int,
+        project_id: int | None,
         file: Annotated[UploadFile, File(...)],
 ):
     """
@@ -107,7 +116,7 @@ async def upload_excel_file(
     db = Database()
 
     for key, value in df:
-        db.df_create_table(key, value, user_id)
+        db.df_create_table(key, value)
 
     # Process the DataFrame (e.g., convert to JSON or perform analysis)
     # Returning a dictionary, which FastAPI serializes to JSON

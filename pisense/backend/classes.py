@@ -523,7 +523,7 @@ class Database():
             query = table_name
 
         if table_name is None and project_id is not None:
-           query = f"SELECT * WHERE project_id={project_id}"
+            query = f"SELECT * WHERE project_id={project_id}"
 
 
 

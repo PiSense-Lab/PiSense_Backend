@@ -3,6 +3,7 @@ import logging
 import os
 from dotenv import load_dotenv
 from pisense.backend.classes import Database
+from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import FastAPI
 from pisense.backend.routes.weather import router as weather_router
@@ -32,6 +33,14 @@ async def lifespan(app: FastAPI):
     logging.info("Api Has Been Shutdown")
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust for security in production
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(weather_router)
 app.include_router(tables_router)
