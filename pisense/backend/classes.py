@@ -611,8 +611,7 @@ class Database():
         try:
             # if the table exists it will fail with a ValueError
             df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
-            self._connection.execute(text(
-                    ""))
+            # self._connection.execute(text(""))
         except Exception as e:
             print(f"Error: {e}")
 
