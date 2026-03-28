@@ -1,14 +1,18 @@
 from fastapi import APIRouter, File, UploadFile, status, HTTPException
 from io import BytesIO
 import pandas as pd
+import json
+from datetime import time
 from typing import Annotated, List
 from pisense.backend.classes import Database
-from pisense.backend.models.table_models import DataTable, DataTables
+from pisense.backend.models.table_models import DataTable
 
 
 router = APIRouter(prefix="/datatables")
 
-@router.get("", response_model=DataTables)
+# make it return the row numbers and the tablenames
+#   of all the tables in a project
+@router.get("")
 async def read_tables(
         project_id: int | None
 ):
@@ -46,12 +50,12 @@ async def edit_point(
 
 @router.patch("/add_point", status_code=200)
 async def add_point(
-        row_data: List[int | float],
+        row_data: List[List[int | float | time]],
         row_columns: List[str],
         table_name: str
 ):
     db = Database()
-    db._insert_rows(row_columns, )
+    db._insert_rows(table_name, row_columns, row_data)
 
 @router.patch("/remove_point", status_code=200)
 async def remove_point(
@@ -68,7 +72,7 @@ async def upload_manual(
         table_name: str
 ):
     db = Database()
-    df = pd.read_json(str, orient="records")
+    df = pd.DataFrame(json.loads(json_in))
     db.df_create_table(table_name, df)  # come back to for project_id
     return {"table_name": table_name, "json": json_in}
 
