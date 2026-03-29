@@ -90,10 +90,10 @@ async def upload_csv(
     return {"filename": file.filename, "rows_count": len(df)}
 
 # originally generated with AI
-@router.post("/upload_excel/", status_code=201)
+@router.post("/upload_excel/", status_code=200)
 async def upload_excel_file(
         project_id: int | None,
-        file: Annotated[UploadFile, File(...)],
+        file: UploadFile = File(...)
 ):
     """
     Receives an Excel file and processes it using pandas.
@@ -118,9 +118,7 @@ async def upload_excel_file(
         )
 
     db = Database()
-
-    for key, value in df:
-        db.df_create_table(key, value)
+    db.df_create_table(file.filename, df)
 
     # Process the DataFrame (e.g., convert to JSON or perform analysis)
     # Returning a dictionary, which FastAPI serializes to JSON
