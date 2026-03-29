@@ -190,6 +190,8 @@ class Database():
 
         cols = ", ".join(col.strip() for col in column_name)
         placeholders = ", ".join([f":{col}" for col in column_name])
+        cols = cols.replace("index", "`index`")
+        cols = cols.replace("DateTime", "`DateTime`")
         query = text(f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})")
 
         # Insert rows
@@ -201,7 +203,8 @@ class Database():
             for val, col in zip(row, column_name):
                 validate_value(val, schema[col])
 
-            d_rows = [{k: v} for k, v in zip(column_name, row)]
+
+            d_rows = dict(zip(column_name, row))
             self.connection.execute(query, d_rows)    #safe parameter binding
 
         self.connection.commit()
@@ -608,9 +611,7 @@ class Database():
         try:
             # if the table exists it will fail with a ValueError
             df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
-            # self._connection.execute(text(
-            #        "ALTER TABLE {table_name} OWNER TO {project_id}"
-            #        ))
+            # self._connection.execute(text(""))
         except Exception as e:
             print(f"Error: {e}")
 
