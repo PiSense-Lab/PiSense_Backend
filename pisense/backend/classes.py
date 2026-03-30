@@ -1,6 +1,7 @@
 import  pandas as pd
 import re
 from typing import List, Literal
+from enum import Enum
 
 from mariadb import Connection, mariadb
 from sqlalchemy import create_engine, text
@@ -10,10 +11,8 @@ from fastapi import HTTPException
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
 def database_to_user(user: tuple) -> "User":
-    return User(user[0], user[1])
-
-def database_to_group(group: tuple) -> "Group":
-    return Group(group[0], group[1])
+    #["id", "username", "firstname", "lastname", "role", "email"]
+    return User(id=user[0], username=user[1], firstname=user[2], lastname=user[3], role=user[4], email=user[5])
 
 def database_to_project(project: tuple) -> "Project":
     return Project(project[0], project[1])
@@ -24,53 +23,37 @@ class ValidationError(Exception):
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
 
-class Group():
-
-    def __init__(self, id: int, name: str):
-        self.id = id
-        self.name = name
-
-    def __str__(self):
-        return f"{self.name}"
-
-    @property
-    def users(self) -> list["User"]:
-        """
-        Returns a list of users that are a part of this group
-
-        :return: list of users that are a part of this group
-        :rtype: list[User]
-        """
-        ...
-
-    @property
-    def projects(self) -> list["Project"]:
-        """
-        Returns a list of projects owned by this object
-
-        :return: list of projects owned by this object
-        :rtype: list[Project]
-        """
-        ...
+class USER_ROLES(Enum):
+    admin = 1
+    analyst = 2
+    viewer = 3
 
 class User():
 
-    def __init__(self, id: int, name: str):
+    def __init__(self, id: int, role: str, username: str, email: str, firstname: str, lastname: str):
         self.id = id
-        self.name = name
+        self.role = USER_ROLES[role]
+        self.username = username
+        self.email = email
+        self.firstname = firstname
+        self.lastname = lastname
 
     def __str__(self):
-        return f"{self.name}"
+        return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
 
-    @property
-    def projects(self) -> list["Project"]:
-        """
-        Returns a list of projects owned by this object
+    # @property
+    # def projects(self) -> list["Project"]:
+    #     """
+    #     Returns a list of projects owned by this object
 
-        :return: list of projects owned by this object
-        :rtype: list[Project]
-        """
-        ...
+    #     Gets information from `user_projects` table
+
+    #     :return: list of projects owned by this object
+    #     :rtype: list[Project]
+    #     """
+    #     sql_cmd = []
+    #     db = Database()
+    #     projects = db.get_user_projects()
 
 class Project():
 
@@ -338,31 +321,7 @@ class Database():
 
         return {"message": f"Table '{table_name}' linked to project {project_id} successfully"}
 
-    def get_groups(self, name: str | None = None) -> list[Group]:
-        """
-        Returns a list of Groups. WHERE clause uses LIKE.
-
-        :return: List of Groups
-        :rtype: list[Group]
-        """
-        where = []
-        where_condition = ""
-        if name:
-            where.append(f"name LIKE '%{name}%'")
-
-        if len(where) > 0:
-            where_condition = f"{where[0]}"
-            if len(where) > 1:
-                for w in range(1, len(where)):
-                    where_condition = f"{where_condition} AND {where[w]}"
-
-        ret = []
-        groups = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
-        for g in groups:
-            ret.append(database_to_group(g))
-        return ret
-
-    def get_users(self, name: str | None = None) -> list[User]:
+    def get_users(self, username: str | None = None) -> list[User]:
         """
         Returns a list of users.
 
@@ -371,8 +330,8 @@ class Database():
         """
         where = []
         where_condition = ""
-        if name:
-            where.append(f"name LIKE '%{name}%'")
+        if username:
+            where.append(f"username LIKE '%{username}%'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -381,12 +340,12 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        users = self._get_rows("users", ["id", "name"], where_condition=where_condition)
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email"], where_condition=where_condition)
         for u in users:
             ret.append(database_to_user(u))
         return ret
 
-    def get_projects(self, name: str | None = None, owner: User | Group | None = None) -> list[Project]:
+    def get_projects(self, name: str | None = None, owner: User | None = None) -> list[Project]:
         """
         Returns a list of projects. Returns all projects if owner is None otherwise only return projects owned by owner
 
@@ -409,38 +368,6 @@ class Database():
         for p in projects:
             ret.append(database_to_project(p))
         return ret
-
-    def get_group(self, id: int | None = None, name: str | None = None) -> Group:
-        """
-        Returns a group from the database
-
-        :return: Group from the database
-        :rtype: Project
-        """
-        where = []
-        where_condition = ""
-        if id:
-            where.append(f"id = {id}")
-        if name:
-            where.append(f"name = '{name}'")
-
-        if len(where) > 0:
-            where_condition = f"{where[0]}"
-            if len(where) > 1:
-                for w in range(1, len(where)):
-                    where_condition = f"{where_condition} AND {where[w]}"
-        else:
-            raise DatabaseError("No Where condition set, please set a parameter,")
-
-        users = self._get_rows("groups", ["id", "name"], where_condition=where_condition)
-
-
-        if len(users) == 0:
-            raise DatabaseError("No group found.")
-        if len(users) > 1:
-            raise DatabaseError("More than one group found, tighten constraints or use `get_groups` function.")
-
-        return database_to_user(users[0])
 
     def get_project(self, id: int | None = None, name: str | None = None) -> Project:
         """
@@ -474,7 +401,7 @@ class Database():
 
         return database_to_user(users[0])
 
-    def get_user(self, id: int | None = None, name: str | None = None) -> User:
+    def get_user(self, id: int | None = None, username: str | None = None) -> User:
         """
         Returns a user from the database
 
@@ -487,8 +414,8 @@ class Database():
         where_condition = ""
         if id:
             where.append(f"id = {id}")
-        if name:
-            where.append(f"name = '{name}'")
+        if username:
+            where.append(f"username = '{username}'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -498,8 +425,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("Users", ["id", "name"], where_condition=where_condition)
-
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email"], where_condition=where_condition)
 
         if len(users) == 0:
             raise DatabaseError("No user found.")
@@ -507,6 +433,9 @@ class Database():
             raise DatabaseError("More than one user found, tighten constraints or use `get_users` function.")
 
         return database_to_user(users[0])
+
+    def get_user_projects(self, user_id: int):
+        return self._get_rows("user_projects", ["user_id", "project_id", "role_id"], where_condition=f"user_id = {user_id}")
 
     def get_table(self, table_name: str | None = None, project_id: int | None = None):
         """
@@ -679,18 +608,37 @@ class Database():
                           ["project_name"],
                           [[f"{name}"]])
 
-    def create_user(self, name: str):
+    def create_user(self,
+                    username: str,
+                    role: USER_ROLES,
+                    email: str | None = None,
+                    password: str | None = None,
+                    firstname: str | None = None,
+                    lastname: str | None = None
+                    ):
         """
         Creates a new user in the database.
-
-        TODO: Return created user
         """
-        self._insert_rows("users", ["name"], [[f"{name}"]])
+        columns = ["username", "role"]
+        output = [f"{username}", str(role.name)]
 
-    def create_group(self, name: str):
-        """
-        Creates a new group in the database.
+        if not isinstance(email, type(None)):
+            columns.append("email")
+            output.append(email)
 
-        TODO: Return created group
-        """
-        self._insert_rows("groups", ["name"], [[f"{name}"]])
+        if not isinstance(password, type(None)):
+            columns.append("password")
+            output.append(password)
+
+        if not isinstance(firstname, type(None)):
+            columns.append("firstname")
+            output.append(firstname)
+
+        if not isinstance(lastname, type(None)):
+            columns.append("lastname")
+            output.append(lastname)
+
+        print(f"column: {columns}")
+        print(f"output: {output}")
+
+        self._insert_rows("users", columns, [output])
