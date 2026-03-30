@@ -26,6 +26,7 @@ def test_create_get_projects():
         project = db.get_project( name = project_name)
         print(project)
         assert isinstance(project, Project)
+        assert isinstance(project.id, int)
         assert project.name == project_name
         assert project.description == description
         assert project.public == public
@@ -42,6 +43,7 @@ def test_create_get_projects():
         project = db.get_project( name = project_name)
         print(project)
         assert isinstance(project, Project)
+        assert isinstance(project.id, int)
         assert project.name == project_name
         assert project.description == description
         assert project.public == public
@@ -57,6 +59,7 @@ def test_create_get_projects():
         project = db.get_project( name = project_name)
         print(project)
         assert isinstance(project, Project)
+        assert isinstance(project.id, int)
         assert project.name == project_name
         assert project.description == description
         assert project.public == public

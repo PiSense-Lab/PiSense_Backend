@@ -375,7 +375,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        projects = self._get_rows("projects", ["id", "project_name", "description", "public", "archived"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
         for p in projects:
             ret.append(database_to_project(p))
         return ret
@@ -390,7 +390,7 @@ class Database():
         where = []
         where_condition = ""
         if id:
-            where.append(f"id = {id}")
+            where.append(f"project_id = {id}")
         if name:
             where.append(f"project_name = '{name}'")
 
@@ -402,7 +402,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("projects", ["id", "project_name", "description", "public", "archived"], where_condition=where_condition)
+        users = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
 
         if len(users) == 0:
             raise DatabaseError("No project found.")
