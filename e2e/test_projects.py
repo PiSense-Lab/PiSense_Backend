@@ -21,7 +21,6 @@ def test_create_get_projects():
         public = False
         archived = False
 
-        db.create_project( name = project_name, description=description, public=public, archived=archived)
         db.create_project( name = project_name )
         project = db.get_project( name = project_name)
         print(project)
@@ -39,7 +38,6 @@ def test_create_get_projects():
         archived = False
 
         db.create_project( name = project_name, description=description, public=public)
-        db.create_project( name = project_name )
         project = db.get_project( name = project_name)
         print(project)
         assert isinstance(project, Project)
@@ -55,7 +53,6 @@ def test_create_get_projects():
         archived = True
 
         db.create_project( name = project_name, description=description, public=public, archived=archived)
-        db.create_project( name = project_name )
         project = db.get_project( name = project_name)
         print(project)
         assert isinstance(project, Project)
