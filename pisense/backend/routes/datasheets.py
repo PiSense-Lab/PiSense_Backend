@@ -118,7 +118,7 @@ async def upload_excel_file(
         )
 
     db = Database()
-    db.df_create_table(file.filename, df)
+    db.df_create_table(file.filename.replace(".xlsx", ""), df)
 
     # Process the DataFrame (e.g., convert to JSON or perform analysis)
     # Returning a dictionary, which FastAPI serializes to JSON
