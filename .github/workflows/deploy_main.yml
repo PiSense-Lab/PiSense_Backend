@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: PiSense-Backend-Runner
+    runs-on: PiSense-Runner
 
     steps:
       - name: Checkout repository

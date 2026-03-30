@@ -1,11 +1,21 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel, ConfigDict
+from typing import List
+from datetime import time
+
+class DataPoint(BaseModel):
+    DateTime: time
+    Value: float | int | None
+
+class DataRow(BaseModel):
+    DateTime: time
+    Value: float | int | None
+    model_config = ConfigDict(
+            extra='allow'
+            )
 
 class DataTable(BaseModel):
-    time: str
-    user_id: int
-    value: float | int
-    e_val1: float | int | None
-    e_val2: float | int | None
-    e_val3: float | int | None
-    e_val4: float | int | None
-    e_val5: float | int | None
+    data: List[DataRow]
+
+class DataTables(RootModel):
+    root: List[DataTable]
+
