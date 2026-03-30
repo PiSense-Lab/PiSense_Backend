@@ -642,13 +642,3 @@ class Database():
         print(f"output: {output}")
 
         self._insert_rows("users", columns, [output])
-
-# CREATE TABLE users (
-#     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-#     role ENUM('admin', 'analyst', 'viewer'),
-#     username VARCHAR(50) UNIQUE DEFAULT NULL,
-#     email VARCHAR(100) DEFAULT NULL,
-#     password VARCHAR(255) UNIQUE DEFAULT NULL,
-#     firstname VARCHAR(50) DEFAULT NULL,
-#     lastname VARCHAR(50) DEFAULT NULL
-# );
