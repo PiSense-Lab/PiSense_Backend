@@ -12,10 +12,10 @@ from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
 def database_to_user(user: tuple) -> "User":
     #["id", "username", "firstname", "lastname", "role", "email"]
-    return User(id=user[0], username=user[1], firstname=user[2], lastname=user[3], role=user[4], email=user[5])
+    return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), role=str(user[4]), email=str(user[5]))
 
 def database_to_project(project: tuple) -> "Project":
-    return Project(project[0], project[1])
+    return Project(id=int(project[0]), name=str(project[1]), description=str(project[2]), public=bool(project[3]), archived=bool(project[4]))
 
 class ValidationError(Exception):
     pass
@@ -55,21 +55,32 @@ class User():
     #     db = Database()
     #     projects = db.get_user_projects()
 
+# CREATE TABLE projects (
+#     project_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+#     project_name VARCHAR(100) NOT NULL,
+#     description TEXT DEFAULT NULL,
+#     public TINYINT(1) DEFAULT NULL,
+#     archived TINYINT(1) DEFAULT NULL
+# );
+
 class Project():
 
-    def __init__(self, id: int, name: str, ):
+    def __init__(self, id: int, name: str, description: str, public: bool, archived: bool ):
         #owner: User | Group
         self.id = id
         self.name = name
+        self.description = description
+        self.public = public
+        self.archived = archived
         #self.owner = owner
 
     def __str__(self):
-        return f"{self.name}"
+        return f"({self.id}, {self.name}, `{self.description}`, public: {self.public}, archived: {self.archived})"
 
-    @property
-    def users(self) -> list["User"]:
-        """list of users that can access this project"""
-        ...
+    # @property
+    # def users(self) -> list["User"]:
+    #     """list of users that can access this project"""
+    #     ...
 
 class Database():
     """
@@ -345,7 +356,7 @@ class Database():
             ret.append(database_to_user(u))
         return ret
 
-    def get_projects(self, name: str | None = None, owner: User | None = None) -> list[Project]:
+    def get_projects(self, name: str | None = None) -> list[Project]:
         """
         Returns a list of projects. Returns all projects if owner is None otherwise only return projects owned by owner
 
@@ -355,7 +366,7 @@ class Database():
         where = []
         where_condition = ""
         if name:
-            where.append(f"name LIKE '%{name}%'")
+            where.append(f"project_name LIKE '%{name}%'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -364,7 +375,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        projects = self._get_rows("projects", ["id", "name"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["id", "project_name", "description", "public", "archived"], where_condition=where_condition)
         for p in projects:
             ret.append(database_to_project(p))
         return ret
@@ -381,7 +392,7 @@ class Database():
         if id:
             where.append(f"id = {id}")
         if name:
-            where.append(f"name = '{name}'")
+            where.append(f"project_name = '{name}'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -391,8 +402,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("projects", ["id", "name"], where_condition=where_condition)
-
+        users = self._get_rows("projects", ["id", "project_name", "description", "public", "archived"], where_condition=where_condition)
 
         if len(users) == 0:
             raise DatabaseError("No project found.")
@@ -598,15 +608,36 @@ class Database():
         return return_msg
 
 
-    def create_project(self, name: str):
+    def create_project(self, 
+                       name: str,
+                       description: str = "",
+                       public: bool = False,
+                       archived: bool = False
+                       ):
         """
         Creates a new project in the database.'
 
         TODO: Return created project.
         """
-        self._insert_rows("projects",
-                          ["project_name"],
-                          [[f"{name}"]])
+        columns = ["project_name"]
+        output = [f"{name}"]
+
+        if not isinstance(description, type(None)):
+            columns.append("description")
+            output.append(description)
+
+        if not isinstance(public, type(None)):
+            columns.append("public")
+            output.append(public)
+
+        if not isinstance(archived, type(None)):
+            columns.append("archived")
+            output.append(archived)
+
+        print(f"column: {columns}")
+        print(f"output: {output}")
+
+        self._insert_rows("projects", columns, [output])
 
     def create_user(self,
                     username: str,
@@ -637,8 +668,5 @@ class Database():
         if not isinstance(lastname, type(None)):
             columns.append("lastname")
             output.append(lastname)
-
-        print(f"column: {columns}")
-        print(f"output: {output}")
 
         self._insert_rows("users", columns, [output])
