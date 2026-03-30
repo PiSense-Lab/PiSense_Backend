@@ -82,19 +82,19 @@ class User():
     def __str__(self):
         return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
 
-    @property
-    def projects(self) -> list["Project"]:
-        """
-        Returns a list of projects owned by this object
+    # @property
+    # def projects(self) -> list["Project"]:
+    #     """
+    #     Returns a list of projects owned by this object
 
-        Gets information from `user_projects` table
+    #     Gets information from `user_projects` table
 
-        :return: list of projects owned by this object
-        :rtype: list[Project]
-        """
-        sql_cmd = []
-        db = Database()
-        projects = db.get_user_projects()
+    #     :return: list of projects owned by this object
+    #     :rtype: list[Project]
+    #     """
+    #     sql_cmd = []
+    #     db = Database()
+    #     projects = db.get_user_projects()
 
 class Project():
 
@@ -563,8 +563,8 @@ class Database():
         self._insert_rows("projects", ["name"], [[f"{name}"]])
 
     def create_user(self,
-                    username: str, 
-                    role: USER_ROLES, 
+                    username: str,
+                    role: USER_ROLES,
                     email: str | None = None,
                     password: str | None = None,
                     firstname: str | None = None,
