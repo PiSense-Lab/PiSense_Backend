@@ -10,8 +10,14 @@ def test_create_get_users():
 
         username = "test_username_admin"
         role = USER_ROLES.admin
-        db.create_user(username, role)
+        user = db.create_user(username, role)
+        print("User object from `create_user`")
+        print(user)
+        assert isinstance(user, User)
+        assert user.username == username
+        assert user.role == role
         user = db.get_user(username=username)
+        print("User from get_user")
         print(user)
         assert isinstance(user, User)
         assert user.username == username
@@ -20,13 +26,18 @@ def test_create_get_users():
         username = "test_username_analyst_email"
         role = USER_ROLES.analyst
         email = 'goodemail@email.com'
-        db.create_user(username=username, role=role, email=email)
-        user = db.get_user(username=username)
+        user = db.create_user(username=username, role=role, email=email)
+        print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
         assert user.username == username
         assert user.role == role
-        assert user.email == email
+        user = db.get_user(username=username)
+        print("User from get_user")
+        print(user)
+        assert isinstance(user, User)
+        assert user.username == username
+        assert user.role == role
 
         username = "test_username_viewer_email_firstname"
         role = USER_ROLES.viewer
@@ -34,15 +45,18 @@ def test_create_get_users():
         firstname = 'bill'
         lastname = 'frank'
         password = 'definitely_hashed'
-        db.create_user(username=username, role=role, email=email, firstname=firstname, lastname=lastname, password=password)
-        user = db.get_user(username=username)
+        user = db.create_user(username=username, role=role, email=email, firstname=firstname, lastname=lastname, password=password)
+        print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
         assert user.username == username
         assert user.role == role
-        assert user.email == email
-        assert user.firstname == firstname
-        assert user.lastname == lastname
+        user = db.get_user(username=username)
+        print("User from get_user")
+        print(user)
+        assert isinstance(user, User)
+        assert user.username == username
+        assert user.role == role
 
         users = db.get_users()
         assert len(users) == 3

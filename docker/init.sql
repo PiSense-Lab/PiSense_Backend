@@ -28,7 +28,7 @@ CREATE TABLE user_projects (
     user_projects_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     user_id INT DEFAULT NULL,
     project_id INT DEFAULT NULL,
-    role_id INT DEFAULT NULL
+    role ENUM("admin", "analyst", "viewer")
 );
 
 CREATE TABLE users (

@@ -8,19 +8,31 @@ def test_create_get_projects():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
 
+
         project_name = "test_project_base"
         description = ""
         public = False
         archived = False
 
-        db.create_project( name = project_name )
-        project = db.get_project( name = project_name)
+        project = db.create_project( name = project_name )
+        print("User object from `create_project`")
         print(project)
         assert isinstance(project, Project)
         assert isinstance(project.id, int)
         assert project.name == project_name
         assert project.description == description
         assert project.public == public
+        assert project.archived == archived
+
+        project = db.get_project( name = project_name)
+        print("User object from `get_project`")
+        print(project)
+        assert isinstance(project, Project)
+        assert isinstance(project.id, int)
+        assert project.name == project_name
+        assert project.description == description
+        assert project.public == public
+        assert project.archived == archived
         assert project.archived == archived
 
 
@@ -29,8 +41,8 @@ def test_create_get_projects():
         public = True
         archived = False
 
-        db.create_project( name = project_name, description=description, public=public)
-        project = db.get_project( name = project_name)
+        project = db.create_project( name = project_name, description=description, public=public)
+        print("User object from `create_project`")
         print(project)
         assert isinstance(project, Project)
         assert isinstance(project.id, int)
@@ -39,13 +51,34 @@ def test_create_get_projects():
         assert project.public == public
         assert project.archived == archived
 
+        project = db.get_project( name = project_name)
+        print("User object from `get_project`")
+        print(project)
+        assert isinstance(project, Project)
+        assert isinstance(project.id, int)
+        assert project.name == project_name
+        assert project.description == description
+        assert project.public == public
+        assert project.archived == archived
+
+
         project_name = "test_project_public_archived"
         description = "some description 2"
         public = True
         archived = True
 
-        db.create_project( name = project_name, description=description, public=public, archived=archived)
+        project = db.create_project( name = project_name, description=description, public=public, archived=archived)
+        print("User object from `create_project`")
+        print(project)
+        assert isinstance(project, Project)
+        assert isinstance(project.id, int)
+        assert project.name == project_name
+        assert project.description == description
+        assert project.public == public
+        assert project.archived == archived
+
         project = db.get_project( name = project_name)
+        print("User object from `get_project`")
         print(project)
         assert isinstance(project, Project)
         assert isinstance(project.id, int)

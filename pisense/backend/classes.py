@@ -1,13 +1,15 @@
+import mariadb
 import  pandas as pd
 import re
-from typing import List, Literal
+from typing import List, Literal, Tuple
 from enum import Enum
 
-from mariadb import Connection, mariadb
-from sqlalchemy import create_engine, text
+from sqlalchemy import Boolean, Column, Integer, MetaData, String, Text, create_engine, text, Connection, insert, Table
+from sqlalchemy import Enum as Enum_sql
 import logging
 import sys
 from fastapi import HTTPException
+import sqlalchemy
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
 def database_to_user(user: tuple) -> "User":
@@ -16,6 +18,14 @@ def database_to_user(user: tuple) -> "User":
 
 def database_to_project(project: tuple) -> "Project":
     return Project(id=int(project[0]), name=str(project[1]), description=str(project[2]), public=bool(project[3]), archived=bool(project[4]))
+
+def database_user_project_to_dict( user_project: tuple ) -> dict:
+    return {
+        "user_projects_id": user_project[0],
+        "user_id": user_project[1],
+        "project_id": user_project[2],
+        "role": user_project[3],
+    }
 
 class ValidationError(Exception):
     pass
@@ -40,6 +50,9 @@ class User():
 
     def __str__(self):
         return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
+    
+    # def set_password():
+    #     ...
 
     # @property
     # def projects(self) -> list["Project"]:
@@ -55,24 +68,20 @@ class User():
     #     db = Database()
     #     projects = db.get_user_projects()
 
-# CREATE TABLE projects (
-#     project_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-#     project_name VARCHAR(100) NOT NULL,
-#     description TEXT DEFAULT NULL,
-#     public TINYINT(1) DEFAULT NULL,
-#     archived TINYINT(1) DEFAULT NULL
-# );
-
 class Project():
 
-    def __init__(self, id: int, name: str, description: str, public: bool, archived: bool ):
-        #owner: User | Group
+    def __init__(self, id: int, name: str, description: str, public: bool, archived: bool, owner_id: User ):
         self.id = id
         self.name = name
         self.description = description
         self.public = public
         self.archived = archived
-        #self.owner = owner
+        self.owner_id = owner_id
+
+    @property
+    def owner(self) -> User:
+        ...
+        # Get owner from self.owner_id
 
     def __str__(self):
         return f"({self.id}, {self.name}, `{self.description}`, public: {self.public}, archived: {self.archived})"
@@ -88,7 +97,7 @@ class Database():
     """
 
     # _cursor: Cursor
-    _connection: Connection
+    connection: Connection
     _instance: "Database" = None
     _initialized: bool = False
 
@@ -100,7 +109,7 @@ class Database():
         return cls._instance
 
     def __init__(self, db_password: str = "", host: str = "", username: str = "admin", port: int = 3306, database: str = "PiSense"):
-        # Connect to db -> _connection
+        # Connect to db -> connection
         if self._initialized:
             return
         self._initialized = True
@@ -109,24 +118,43 @@ class Database():
             engine = create_engine(
                     f"mariadb+mariadbconnector://{username}:{db_password}@{host}:{port}/{database}"
                     )
-            self._connection = engine.connect()
-        except mariadb.Error as e:
+            self.connection = engine.connect()
+        except DatabaseError as e:
             logging.error(f"Host: {host} Error connecting to MariaDB Platform: {e}")
             sys.exit(1)
 
-        # create cursor -> _cursor
-        # self._cursor: Cursor = self._connection.cursor()
+        self.metadata = MetaData()
+        self.users_table = Table(
+                            "users",
+                            self.metadata,
+                            Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),
+                            Column("role", Enum_sql("admin", "analyst", "viewer")),
+                            Column("username", String(50), unique=True, default=None),
+                            Column("email", String(100), default=None),
+                            Column("password", String(255), unique=True, default=None),
+                            Column("firstname", String(50), default=None),
+                            Column("lastname", String(50), default=None),
+                        )
+        
+        self.projects_table = Table(
+                                "projects",
+                                self.metadata,
+                                Column("project_id", Integer, primary_key=True, autoincrement=True, nullable=False),
+                                Column("project_name", String(100), nullable=False),
+                                Column("description", Text, default=None),
+                                Column("public", Boolean, default=None),
+                                Column("archived", Boolean, default=None),
+                            )
 
-    # @property
-    # def cursor(self) -> Cursor:
-    #    if not isinstance(self._cursor, Cursor):
-    #        logging.error("Did not return a connection object")
-    #        sys.exit(1)
-    #    return self._cursor
+        self.user_projects_table = Table(
+                                "user_projects",
+                                self.metadata,
+                                Column("user_projects_id", Integer, primary_key=True, autoincrement=True, nullable=False),
+                                Column("user_id", Integer, default=None),
+                                Column("project_id", Integer, default=None),
+                                Column("role", Enum_sql("admin", "analyst", "viewer")),
+                            )
 
-    @property
-    def connection(self) -> Connection:
-        return self._connection
 
     def _get_rows(self, table: str, columns: List[str] = [], where_condition: str = "") -> list[tuple]:
 
@@ -151,7 +179,7 @@ class Database():
 
         sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
 
-        res = self._connection.execute(text(sql_str))
+        res = self.connection.execute(text(sql_str))
 
         out = res.fetchall()
 
@@ -174,7 +202,7 @@ class Database():
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
         # Fetch column types from the existing table
-        res = self._connection.execute(text(f"DESCRIBE {table_name}"))
+        res = self.connection.execute(text(f"DESCRIBE {table_name}"))
         schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
 
         # Make sure all columns exist
@@ -189,6 +217,7 @@ class Database():
         query = text(f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})")
 
         # Insert rows
+        output = []
         for row in rows:
             if len(row) != len(column_name):
                 raise HTTPException(status_code=400, detail="Row length does not match column length")
@@ -199,10 +228,39 @@ class Database():
 
 
             d_rows = dict(zip(column_name, row))
-            self.connection.execute(query, d_rows)    #safe parameter binding
+            self.connection.execute(query, d_rows).fetchall()    #safe parameter binding
 
         self.connection.commit()
         return f"{len(rows)} rows inserted!"
+
+    def _insert_row(self, table_name: str, key: List[str], value: List[str]) -> Tuple:
+        table: Table | None = None
+        if table_name == "users":
+            table = self.users_table
+
+        if table_name == "projects":
+            table = self.projects_table
+
+        if table_name == "user_projects":
+            table = self.user_projects_table
+
+        if isinstance(table, type(None)):
+            raise DatabaseError(f"Could not find table of type {table_name}, check spelling or implement sqlalchemy table")
+        
+
+        # Convert to dict, we should just pass though as dict in the first place
+        row = dict(zip(key, value))
+        
+        try:
+            stmt = insert(table).returning(table)
+            out = self.connection.execute(stmt, [row]).fetchone()
+            self.connection.commit()
+        except Exception as e:
+            raise DatabaseError(f"Error adding to database: {e}") from None # Hides very long and useless traceback
+
+        key.insert(0, "id") # Adds id column to the front of the final output
+    
+        return dict(zip(key, tuple(out)))
 
     def _add_column(self, table_name: str, column_name: List[str], column_type: List[str]):
         """
@@ -402,14 +460,14 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
 
-        if len(users) == 0:
+        if len(projects) == 0:
             raise DatabaseError("No project found.")
-        if len(users) > 1:
+        if len(projects) > 1:
             raise DatabaseError("More than one project found, tighten constraints or use `get_projects` function.")
 
-        return database_to_project(users[0])
+        return database_to_project(projects[0])
 
     def get_user(self, id: int | None = None, username: str | None = None) -> User:
         """
@@ -444,8 +502,30 @@ class Database():
 
         return database_to_user(users[0])
 
-    def get_user_projects(self, user_id: int):
-        return self._get_rows("user_projects", ["user_id", "project_id", "role_id"], where_condition=f"user_id = {user_id}")
+    def get_user_projects(self, user_id: int | None = None, project_id : int | None = None, role: str | None = None) -> list[dict]:
+        where = []
+        where_condition = ""
+
+        if user_id:
+            where.append(f"user_id = '{user_id}'")
+        if project_id:
+            where.append(f"project_id = '{project_id}'")
+        if role:
+            where.append(f"role = '{role}'")
+
+        if len(where) > 0:
+            where_condition = f"{where[0]}"
+            if len(where) > 1:
+                for w in range(1, len(where)):
+                    where_condition = f"{where_condition} AND {where[w]}"
+
+        out =  self._get_rows("user_projects", ["user_projects_id", "user_id", "project_id", "role"], where_condition=where_condition)
+
+        ret = []
+        for row in out:
+            ret.append(database_user_project_to_dict(row))
+
+        return ret
 
     def get_table(self, table_name: str | None = None, project_id: int | None = None):
         """
@@ -520,7 +600,7 @@ class Database():
 
         query = f"CREATE TABLE {table_name} ({cols})"
 
-        self._connection.execute(text(query))
+        self.connection.execute(text(query))
         print("Table success!")
 
         #Creates dataset row to connect project to the table
@@ -550,7 +630,7 @@ class Database():
         try:
             # if the table exists it will fail with a ValueError
             df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
-            # self._connection.execute(text(""))
+            # self.connection.execute(text(""))
         except Exception as e:
             print(f"Error: {e}")
 
@@ -573,7 +653,7 @@ class Database():
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
         # Fetch column types from the existing table
-        res = self._connection.execute(text(f"DESCRIBE {table_name}"))
+        res = self.connection.execute(text(f"DESCRIBE {table_name}"))
         schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
 
         # Make sure all columns exist
@@ -607,66 +687,47 @@ class Database():
 
         return return_msg
 
+    def create_user_projects(self, user_id: int, project_id: int, role: USER_ROLES ):
+        columns = ["user_id", "project_id", "role"]
+        output = [user_id, project_id, role.name]
+
+        return self._insert_row("user_projects", columns, output)
 
     def create_project(self,
                        name: str,
+                       owner_id: int,
                        description: str = "",
                        public: bool = False,
-                       archived: bool = False
-                       ):
+                       archived: bool = False,
+                       ) -> Project:
         """
-        Creates a new project in the database.'
-
-        TODO: Return created project.
+        Creates a new project in the database.
         """
-        columns = ["project_name"]
-        output = [f"{name}"]
+        columns = ["project_name", "description", "public", "archived"]
+        output = [name, description, public, archived]
 
-        if not isinstance(description, type(None)):
-            columns.append("description")
-            output.append(description)
+        project = self._insert_row("projects", columns, output)
 
-        if not isinstance(public, type(None)):
-            columns.append("public")
-            output.append(public)
+        # Create user_projects row
 
-        if not isinstance(archived, type(None)):
-            columns.append("archived")
-            output.append(archived)
+        user_project = self.create_user_projects(owner_id, project["id"], USER_ROLES.admin)
 
-        print(f"column: {columns}")
-        print(f"output: {output}")
-
-        self._insert_rows("projects", columns, [output])
+        return Project(id=project["id"], name=project["project_name"], description=project["description"], public=project["public"], archived=project["archived"], owner_id=user_project["user_id"])
 
     def create_user(self,
                     username: str,
                     role: USER_ROLES,
-                    email: str | None = None,
-                    password: str | None = None,
-                    firstname: str | None = None,
-                    lastname: str | None = None
+                    email: str | None = "",
+                    password: str | None = "",
+                    firstname: str | None = "",
+                    lastname: str | None = ""
                     ):
         """
         Creates a new user in the database.
         """
-        columns = ["username", "role"]
-        output = [f"{username}", str(role.name)]
+        columns = ["role", "username", "email", "password", "firstname", "lastname"]
+        output = [role.name, username, email, password, firstname, lastname]
 
-        if not isinstance(email, type(None)):
-            columns.append("email")
-            output.append(email)
+        user = self._insert_row("users", columns, output)
 
-        if not isinstance(password, type(None)):
-            columns.append("password")
-            output.append(password)
-
-        if not isinstance(firstname, type(None)):
-            columns.append("firstname")
-            output.append(firstname)
-
-        if not isinstance(lastname, type(None)):
-            columns.append("lastname")
-            output.append(lastname)
-
-        self._insert_rows("users", columns, [output])
+        return User(id=user["id"], role=user["role"], username=user["username"], email=user["email"], firstname=user["firstname"], lastname=user["lastname"])
