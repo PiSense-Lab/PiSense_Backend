@@ -41,7 +41,7 @@ def test_create_get_users():
 
         username = "test_username_viewer_email_firstname"
         role = USER_ROLES.viewer
-        email = 'goodemail@email.com'
+        email = 'goodemail2@email.com'
         firstname = 'bill'
         lastname = 'frank'
         password = 'definitely_hashed'
