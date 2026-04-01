@@ -18,4 +18,4 @@ def e2e(session):
     """Runs e2e testing with a database to connect to"""
     session.install("pytest") # Installs pytest and dependencies for testing FastAPI
     session.install(".")
-    session.run("pytest", "e2e", "--order-group-scope='module'")
+    session.run("pytest", "e2e", "--order-group-scope=module")
