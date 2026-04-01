@@ -8,14 +8,6 @@ def test_create_get_projects():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
 
-# CREATE TABLE projects (
-#     project_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-#     project_name VARCHAR(100) NOT NULL,
-#     description TEXT DEFAULT NULL,
-#     public TINYINT(1) DEFAULT NULL,
-#     archived TINYINT(1) DEFAULT NULL
-# );
-
         project_name = "test_project_base"
         description = ""
         public = False
@@ -48,7 +40,7 @@ def test_create_get_projects():
         assert project.archived == archived
 
         project_name = "test_project_public_archived"
-        description = "some description"
+        description = "some description 2"
         public = True
         archived = True
 

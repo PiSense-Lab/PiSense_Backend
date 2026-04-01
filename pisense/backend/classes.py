@@ -409,7 +409,7 @@ class Database():
         if len(users) > 1:
             raise DatabaseError("More than one project found, tighten constraints or use `get_projects` function.")
 
-        return database_to_user(users[0])
+        return database_to_project(users[0])
 
     def get_user(self, id: int | None = None, username: str | None = None) -> User:
         """
@@ -608,7 +608,7 @@ class Database():
         return return_msg
 
 
-    def create_project(self, 
+    def create_project(self,
                        name: str,
                        description: str = "",
                        public: bool = False,
