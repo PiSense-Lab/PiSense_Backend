@@ -2,16 +2,17 @@
 from fastapi.testclient import TestClient
 from pisense.api.main import app
 from pisense.backend.classes import USER_ROLES, Project, Database
+import pytest
 
-
+@pytest.mark.order(1) # global scope
 def test_create_get_projects():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
 
         # Assume these work as intended, create_user() is tested elsewhere
-        user1 = db.create_user("user_1", role=USER_ROLES.admin, email="user1@email.com")
-        user2 = db.create_user("user_2", role=USER_ROLES.admin, email="user2@email.com")
-        user3 = db.create_user("user_3", role=USER_ROLES.admin, email="user3@email.com")
+        user1 = db.create_user("user_1_project", role=USER_ROLES.admin, email="user1@email.com")
+        user2 = db.create_user("user_2_project", role=USER_ROLES.admin, email="user2@email.com")
+        user3 = db.create_user("user_3_project", role=USER_ROLES.admin, email="user3@email.com")
 
         project_name = "test_project_base"
         description = ""
