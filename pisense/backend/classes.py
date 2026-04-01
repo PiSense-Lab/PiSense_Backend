@@ -16,8 +16,18 @@ def database_to_user(user: tuple) -> "User":
     #["id", "username", "firstname", "lastname", "role", "email"]
     return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), role=str(user[4]), email=str(user[5]), password=str(user[6]))
 
-def database_to_project(project: tuple) -> "Project":
-    return Project(id=int(project[0]), name=str(project[1]), description=str(project[2]), public=bool(project[3]), archived=bool(project[4]))
+def database_to_project(project: tuple, database: "Database") -> "Project":
+    users = database.get_user_projects(project_id=project[0])
+    owner_id = None
+    for u in users:
+        if u["role"] == USER_ROLES.admin.name:
+            owner_id = u["user_id"]
+            break
+
+    if not owner_id:
+        raise DatabaseError(f"Could not find valid owner for project {project[0]} | {project[1]}")
+    
+    return Project(id=int(project[0]), name=str(project[1]), description=str(project[2]), public=bool(project[3]), archived=bool(project[4]), owner_id=owner_id)
 
 def database_user_project_to_dict( user_project: tuple ) -> dict:
     return {
@@ -410,7 +420,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email"], where_condition=where_condition)
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email", "password"], where_condition=where_condition)
         for u in users:
             ret.append(database_to_user(u))
         return ret
@@ -436,7 +446,7 @@ class Database():
         ret = []
         projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
         for p in projects:
-            ret.append(database_to_project(p))
+            ret.append(database_to_project(p, self))
         return ret
 
     def get_project(self, id: int | None = None, name: str | None = None) -> Project:
@@ -468,7 +478,7 @@ class Database():
         if len(projects) > 1:
             raise DatabaseError("More than one project found, tighten constraints or use `get_projects` function.")
 
-        return database_to_project(projects[0])
+        return database_to_project(projects[0], self)
 
     def get_user(self, id: int | None = None, username: str | None = None) -> User:
         """

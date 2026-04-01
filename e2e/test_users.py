@@ -8,10 +8,12 @@ def test_create_get_users():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
 
+
         username = "test_username_admin"
         email = "blank@email.com"
         password = "defnitly_hashed"
         role = USER_ROLES.admin
+
         user = db.create_user(username=username, role=role, email=email, password=password)
         print("User object from `create_user`")
         print(user)
@@ -20,6 +22,7 @@ def test_create_get_users():
         assert user.role == role
         assert user.email == email
         assert user.password == password
+
         user = db.get_user(username=username)
         print("User from get_user")
         print(user)
@@ -29,10 +32,12 @@ def test_create_get_users():
         assert user.email == email
         assert user.password == password
 
+
         username = "test_username_analyst_email"
         role = USER_ROLES.analyst
         email = 'goodemail@email.com'
         password = "defnitly_hashed"
+
         user = db.create_user(username=username, role=role, email=email, password=password)
         print("User object from `create_user`")
         print(user)
@@ -41,6 +46,7 @@ def test_create_get_users():
         assert user.role == role
         assert user.email == email
         assert user.password == password
+
         user = db.get_user(username=username)
         print("User from get_user")
         print(user)
@@ -49,6 +55,7 @@ def test_create_get_users():
         assert user.role == role
         assert user.email == email
         assert user.password == password
+
 
         username = "test_username_viewer_email_firstname"
         role = USER_ROLES.viewer
@@ -56,6 +63,7 @@ def test_create_get_users():
         firstname = 'bill'
         lastname = 'frank'
         password = 'definitely_hashed'
+
         user = db.create_user(username=username, role=role, email=email, firstname=firstname, lastname=lastname, password=password)
         print("User object from `create_user`")
         print(user)
@@ -66,6 +74,7 @@ def test_create_get_users():
         assert user.password == password
         assert user.firstname == firstname
         assert user.lastname == lastname
+
         user = db.get_user(username=username)
         print("User from get_user")
         print(user)
@@ -76,6 +85,7 @@ def test_create_get_users():
         assert user.password == password
         assert user.firstname == firstname
         assert user.lastname == lastname
+
 
         users = db.get_users()
         assert len(users) == 3
