@@ -14,7 +14,7 @@ from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
 def database_to_user(user: tuple) -> "User":
     #["id", "username", "firstname", "lastname", "role", "email"]
-    return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), role=str(user[4]), email=str(user[5]))
+    return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), role=str(user[4]), email=str(user[5]), password=str(user[6]))
 
 def database_to_project(project: tuple) -> "Project":
     return Project(id=int(project[0]), name=str(project[1]), description=str(project[2]), public=bool(project[3]), archived=bool(project[4]))
@@ -40,13 +40,14 @@ class USER_ROLES(Enum):
 
 class User():
 
-    def __init__(self, id: int, role: str, username: str, email: str, firstname: str, lastname: str):
+    def __init__(self, id: int, role: str, username: str, email: str, firstname: str, lastname: str, password: str):
         self.id = id
         self.role = USER_ROLES[role]
         self.username = username
         self.email = email
         self.firstname = firstname
         self.lastname = lastname
+        self.password = password
 
     def __str__(self):
         return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
@@ -493,7 +494,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email"], where_condition=where_condition)
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email", "password"], where_condition=where_condition)
 
         if len(users) == 0:
             raise DatabaseError("No user found.")
@@ -717,10 +718,10 @@ class Database():
     def create_user(self,
                     username: str,
                     role: USER_ROLES,
-                    email: str | None = "",
-                    password: str | None = "",
-                    firstname: str | None = "",
-                    lastname: str | None = ""
+                    email: str,
+                    password: str,
+                    firstname: str | None = None,
+                    lastname: str | None = None
                     ):
         """
         Creates a new user in the database.
@@ -730,4 +731,4 @@ class Database():
 
         user = self._insert_row("users", columns, output)
 
-        return User(id=user["id"], role=user["role"], username=user["username"], email=user["email"], firstname=user["firstname"], lastname=user["lastname"])
+        return User(id=user["id"], role=user["role"], username=user["username"], email=user["email"], firstname=user["firstname"], lastname=user["lastname"], password=user['password'])
