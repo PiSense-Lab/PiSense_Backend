@@ -36,7 +36,7 @@ CREATE TABLE users (
     role ENUM('admin', 'analyst', 'viewer'),
     username VARCHAR(50) UNIQUE DEFAULT NULL,
     email VARCHAR(100) DEFAULT NULL,
-    password VARCHAR(255) UNIQUE DEFAULT NULL,
+    password VARCHAR(255) DEFAULT NULL,
     firstname VARCHAR(50) DEFAULT NULL,
     lastname VARCHAR(50) DEFAULT NULL
 );
