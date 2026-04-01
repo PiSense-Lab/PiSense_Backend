@@ -1,4 +1,3 @@
-import mariadb
 import  pandas as pd
 import re
 from typing import List, Literal, Tuple
@@ -9,7 +8,6 @@ from sqlalchemy import Enum as Enum_sql
 import logging
 import sys
 from fastapi import HTTPException
-import sqlalchemy
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
 def database_to_user(user: tuple) -> "User":
@@ -26,7 +24,7 @@ def database_to_project(project: tuple, database: "Database") -> "Project":
 
     if not owner_id:
         raise DatabaseError(f"Could not find valid owner for project {project[0]} | {project[1]}")
-    
+
     return Project(id=int(project[0]), name=str(project[1]), description=str(project[2]), public=bool(project[3]), archived=bool(project[4]), owner_id=owner_id)
 
 def database_user_project_to_dict( user_project: tuple ) -> dict:
@@ -61,7 +59,7 @@ class User():
 
     def __str__(self):
         return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
-    
+
     # def set_password():
     #     ...
 
@@ -146,7 +144,7 @@ class Database():
                             Column("firstname", String(50), default=None),
                             Column("lastname", String(50), default=None),
                         )
-        
+
         self.projects_table = Table(
                                 "projects",
                                 self.metadata,
@@ -228,7 +226,6 @@ class Database():
         query = text(f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})")
 
         # Insert rows
-        output = []
         for row in rows:
             if len(row) != len(column_name):
                 raise HTTPException(status_code=400, detail="Row length does not match column length")
@@ -257,11 +254,11 @@ class Database():
 
         if isinstance(table, type(None)):
             raise DatabaseError(f"Could not find table of type {table_name}, check spelling or implement sqlalchemy table")
-        
+
 
         # Convert to dict, we should just pass though as dict in the first place
         row = dict(zip(key, value))
-        
+
         try:
             stmt = insert(table).returning(table)
             out = self.connection.execute(stmt, [row]).fetchone()
@@ -270,7 +267,7 @@ class Database():
             raise DatabaseError(f"Error adding to database: {e}") from None # Hides very long and useless traceback
 
         key.insert(0, "id") # Adds id column to the front of the final output
-    
+
         return dict(zip(key, tuple(out)))
 
     def _add_column(self, table_name: str, column_name: List[str], column_type: List[str]):

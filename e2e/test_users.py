@@ -9,7 +9,6 @@ def test_create_get_users():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
 
-
         username = "test_username_admin"
         email = "blank@email.com"
         password = "defnitly_hashed"
