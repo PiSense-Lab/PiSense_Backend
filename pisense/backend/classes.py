@@ -102,17 +102,7 @@ class Project():
     def users(self) -> list[dict]:
         """list of users that can access this project and their permission
         
-        ret:
-            [
-                {
-                    "user": user,
-                    "role": USER_ROLE
-                },
-                {
-                    "user": user2,
-                    "role": USER_ROLE
-                }
-            ]
+        ret: [ { "user": user, "role": USER_ROLE }, { "user": user2, "role": USER_ROLE } ]
         """
         users = []
         user_projects = Database().get_user_projects(project_id=self.id)
@@ -122,8 +112,8 @@ class Project():
         return users
     
     def add_user(self, user_id: int, role: USER_ROLES):
-        for user in self.users:
-            if user.id == user_id:
+        for up in self.users:
+            if up["user"].id == user_id:
                 raise DatabaseError("User is already in database.")
         
         Database().create_user_projects(user_id, self.id, role)
