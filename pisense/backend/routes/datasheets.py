@@ -65,6 +65,22 @@ async def remove_point(
     db = Database()
     db.modify_row(table_name, row_num,mode="delete")
 
+@router.patch("/add_column", status_code=200)
+async def remove_point(
+        column_name: List[str],
+        column_type: List[str],
+        table_name: str
+):
+    db = Database()
+    db._add_column(table_name, column_name, column_type)
+
+@router.patch("/delete_column", status_code=200)
+async def delete_column(
+        table_name: str,
+        column_name: List[str],
+):
+    db = Database()
+    db._add_column(table_name, column_name)
 
 @router.post("/upload_manual", status_code=200)
 async def upload_manual(
