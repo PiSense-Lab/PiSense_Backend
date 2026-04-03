@@ -35,6 +35,9 @@ def database_user_project_to_dict( user_project: tuple ) -> dict:
         "role": user_project[3],
     }
 
+def user_dict_to_user( u: dict ) -> "User":
+    return User(id=u["id"], role=u["role"], username=u["username"], email=u["email"], firstname=u["firstname"], lastname=u["lastname"], password=u['password'])
+
 class ValidationError(Exception):
     pass
 
@@ -95,10 +98,36 @@ class Project():
     def __str__(self):
         return f"({self.id}, {self.name}, `{self.description}`, public: {self.public}, archived: {self.archived})"
 
-    # @property
-    # def users(self) -> list["User"]:
-    #     """list of users that can access this project"""
-    #     ...
+    @property
+    def users(self) -> list[dict]:
+        """list of users that can access this project and their permission
+        
+        ret:
+            [
+                {
+                    "user": user,
+                    "role": USER_ROLE
+                },
+                {
+                    "user": user2,
+                    "role": USER_ROLE
+                }
+            ]
+        """
+        users = []
+        user_projects = Database().get_user_projects(project_id=self.id)
+        for up in user_projects:
+            user = Database().get_user(up['user_id'])
+            users.append({ "user": user, "role": USER_ROLES[up['role']] })
+        return users
+    
+    def add_user(self, user_id: int, role: USER_ROLES):
+        for user in self.users:
+            if user.id == user_id:
+                raise DatabaseError("User is already in database.")
+        
+        Database().create_user_projects(user_id, self.id, role)
+
 
 class Database():
     """
@@ -738,4 +767,4 @@ class Database():
 
         user = self._insert_row("users", columns, output)
 
-        return User(id=user["id"], role=user["role"], username=user["username"], email=user["email"], firstname=user["firstname"], lastname=user["lastname"], password=user['password'])
+        return user_dict_to_user(user)
