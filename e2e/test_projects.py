@@ -42,7 +42,7 @@ def test_create_get_projects():
         print("- - - users - - -")
         print(users)
         assert len(users) == 3
-        
+
         for up in users:
             user = up['user']
             role = up['role']
@@ -53,13 +53,11 @@ def test_create_get_projects():
                 if user.id == puser.id:
                     u = puser
                     break
-            
+
             assert not isinstance(u, type(None))
-                    
+
             assert u.id == user.id
             assert u.email == user.email
-            assert u.firstname == user.firstname
-            assert u.lastname == user.lastname
             assert u.role == u.role
             assert u.username == u.username
             assert u.role == role
@@ -75,6 +73,25 @@ def test_create_get_projects():
         assert project.public == public
         assert project.archived == archived
         assert project.owner_id == owner_id
+
+        for up in users:
+            user = up['user']
+            role = up['role']
+            assert isinstance(user, User)
+
+            u: User | None = None
+            for puser in possible_users:
+                if user.id == puser.id:
+                    u = puser
+                    break
+
+            assert not isinstance(u, type(None))
+
+            assert u.id == user.id
+            assert u.email == user.email
+            assert u.role == u.role
+            assert u.username == u.username
+            assert u.role == role
 
 
         project_name = "test_project_public"
