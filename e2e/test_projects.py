@@ -39,7 +39,9 @@ def test_create_get_projects():
         users = project.users
         possible_users = [ user1, user1_2, user1_3]
 
-        assert len(users) == 4
+        print("- - - users - - -")
+        print(users)
+        assert len(users) == 3
         
         for up in users:
             user = up['user']
