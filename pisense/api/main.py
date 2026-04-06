@@ -2,15 +2,14 @@ from contextlib import asynccontextmanager
 import logging
 import os
 from dotenv import load_dotenv
-from pisense.backend.classes import Database
+from pisense.backend.classes import Database, Authenticator
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import FastAPI
 from pisense.backend.routes.weather import router as weather_router
 from pisense.backend.routes.datasheets import router as tables_router
+from pisense.backend.routes.user import router as user_router
 
-
-ENV_FILE_PATH = ".env" # root of the repository
 
 # to start server: source .venv/bin/activate && fastapi dev pisense/api/main.py
 @asynccontextmanager
@@ -27,6 +26,8 @@ async def lifespan(app: FastAPI):
 
     Database(db_password=db_password, host=host, username=username)# Sets up database connection singleton
 
+    Authenticator(secret_key=os.getenv("SECRET_KEY"),algorithm=os.getenv("ALGORITHM"),access_token_expire_minutes=os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+
     yield # Run the api
 
     # Shutdown Code
@@ -34,16 +35,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+origins = [
+    "*" # Remove for production and replace with prod url
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust for security in production
-    allow_credentials=False,
+    allow_origins=origins,  # Adjust for security in production
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(weather_router)
 app.include_router(tables_router)
+app.include_router(user_router)
 
 @app.get("/")
 async def root():
