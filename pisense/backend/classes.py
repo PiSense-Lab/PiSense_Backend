@@ -55,7 +55,7 @@ class USER_ROLES(Enum):
     analyst = 2
     viewer = 3
 
-class User(BaseModel):
+class User():
 
     def __init__(self, id: int, role: str, username: str, email: str, firstname: str, lastname: str, hashed_password: str):
         self.id = id
@@ -759,8 +759,9 @@ class Database():
         """
         Creates a new user in the database.
         """
+        print(password)
         columns = ["role", "username", "email", "password", "firstname", "lastname"]
-        output = [role.name, username, email, password, firstname, lastname]
+        output = [role.name, username, email, Authenticator().hash_password(password), firstname, lastname]
 
         user = self._insert_row("users", columns, output)
 
@@ -769,7 +770,7 @@ class Database():
 
 class Authenticator():
 
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     _instance: "Authenticator" = None
@@ -796,7 +797,7 @@ class Authenticator():
 
     def authenticate_user(self, username: str, password: str) -> User:
         try:
-            user: User = self.get_user(username=username)
+            user: User = Database().get_user(username=username)
         except DatabaseError as e:
             raise e
         
@@ -821,3 +822,6 @@ class Authenticator():
             return payload
         except JWTError:
             raise HTTPException(status_code=403, detail="Token is invalid or expired")
+
+    def hash_password(self, password: str) -> str:
+        return self.pwd_context.hash(password)
