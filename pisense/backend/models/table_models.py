@@ -9,13 +9,10 @@ class DataPoint(BaseModel):
 class DataRow(BaseModel):
     DateTime: time
     Value: float | int | None
-    model_config = ConfigDict(
-            extra='allow'
-            )
+    model_config = ConfigDict(extra='allow')
 
 class DataTable(BaseModel):
     data: List[DataRow]
 
 class DataTables(RootModel):
     root: List[DataTable]
-
