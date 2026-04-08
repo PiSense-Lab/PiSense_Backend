@@ -1,9 +1,9 @@
-from fastapi import APIRouter, File, UploadFile, status, HTTPException
+from fastapi import APIRouter, File, Query, UploadFile, status, HTTPException
 from io import BytesIO
 import pandas as pd
 import json
 from datetime import time
-from typing import List
+from typing import List, Optional
 from pisense.backend.classes import Database
 from pisense.backend.models.table_models import DataTable
 
@@ -129,3 +129,8 @@ async def upload_excel_file(
         # You can return the data in JSON format for the client
         "data_sample": df.head().to_dict(orient="records")
     }
+
+@router.get("/projects")
+async def get_projects_endpoint(name: Optional[str] = Query(None)):
+    db = Database()
+    return db.get_projects(name=name)
