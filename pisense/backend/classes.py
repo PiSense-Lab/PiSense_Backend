@@ -792,7 +792,7 @@ class Authenticator():
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, secret_key: str = "", algorithm: str = "HS256", access_token_expire_minutes: int = 30):
+    def __init__(self):
         # Connect to db -> connection
         if self._initialized:
             return
@@ -800,8 +800,8 @@ class Authenticator():
 
         load_dotenv(dotenv_path=".env") # Loads .env file into environment
 
-        self.SECRET_KEY: str =os.getenv("SECRET_KEY")
-        self.ALGORITHM : str =os.getenv("ALGORITHM", "HS256")
+        self.SECRET_KEY: str = os.getenv("SECRET_KEY")
+        self.ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
         self.ACCESS_TOKEN_EXPIRE_MINUTES: int=os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
 
     def authenticate_user(self, username: str, password: str) -> User:
