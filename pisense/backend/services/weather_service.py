@@ -1,4 +1,3 @@
-import pandas as pd
 from pisense.backend.models.weather_models import HOURLY_FIELDS, DAILY_FIELDS, HourlyRecord, DailyRecord
 from pisense.backend.clients.openmeteo_client import openmeteo_client
 from pisense.backend.utils.weather_utils import map_to_models, add_date_time_columns, build_dataframe
