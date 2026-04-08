@@ -27,5 +27,5 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token= Authenticator().create_access_token(data={"sub": user.username}, expires_delta=timedelta(minutes=Authenticator.ACCESS_TOKEN_EXPIRE_MINUTES))
+    access_token= Authenticator().create_access_token(data={"sub": user.username}, expires_delta=timedelta(minutes=int(Authenticator().ACCESS_TOKEN_EXPIRE_MINUTES)))
     return {"access_token": access_token, "token_type": "bearer"}
