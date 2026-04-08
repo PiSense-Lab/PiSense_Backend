@@ -20,6 +20,8 @@ dependencies = [
     "mariadb>=1.1.14",
     "sqlalchemy>=2.0.46",
     "mysqlclient>=2.2.8",
+    "mkdocs-material>=9.7.6",
+    "mkdocstrings[python]>=1.0.3",
 ]
 
 [dependency-groups]

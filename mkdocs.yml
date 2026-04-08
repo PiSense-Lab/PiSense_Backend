@@ -1,0 +1,20 @@
+site_name: Project Name
+repo_name: PiSense_Backend
+ 
+theme:
+  name: material  # Requires: pip install mkdocs-material
+  palette:
+    scheme: default
+    primary: indigo
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - API Reference: api.md
+plugins:
+  - search
+  - mkdocstrings:  # Automatically extracts Python docstrings (Requires: pip install mkdocstrings)
+      handlers:
+        python:
+          paths: [pisense]
+markdown_extensions:
+  - footnotes
