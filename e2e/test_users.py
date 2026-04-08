@@ -14,7 +14,7 @@ def test_create_get_users():
         hashed_password = "defnitly_hashed"
         role = USER_ROLES.admin
 
-        user = db.create_user(username=username, role=role, email=email, assword=hashed_password)
+        user = db.create_user(username=username, role=role, email=email, password=hashed_password)
         print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
