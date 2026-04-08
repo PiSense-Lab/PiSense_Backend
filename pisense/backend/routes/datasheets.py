@@ -23,7 +23,7 @@ async def read_tables(
         project_id: ID of project to grab all table names from
 
     Returns: 
-        {root: all table names associated with project_id}  
+        (dict): root - all table names associated with project_id  
             - records styled dicts - see pandas.dataframe.to_dict
 
     Raises:
@@ -50,7 +50,7 @@ async def read_single_table(
         project_id: Project ID of the project the table is attatched to
 
     Returns: 
-        {data: table with same name as table_name}  
+        (dict): data - table with same name as table_name  
             - records styled dicts - see pandas.dataframe.to_dict
 
     Raises:
@@ -145,7 +145,10 @@ async def upload_manual(
         table_name: name of table to be uploaded
 
     Returns: 
-        {table_name: "", json: ""}
+        (str): 
+            table_name - name of table created
+        (str): 
+            json - inputted json string
 
     Raises:
 
@@ -165,15 +168,16 @@ async def upload_csv(
     Uploads a csv as a table to the database.
 
     params:
-        table_name: Name of the table to be created [^1] [^2]
+        table_name: Name of the table to be created[^1][^2]
         project_id: Project ID of project to add the table to.
         file: the file to be read and uploaded to the database. 
+
     [^1]: Cannot have same name as other table
     [^2]: Optional, if left blank tablename will take the csv filename
 
     Returns: 
-        filename: name of file of created table
-        rows_count: number of rows
+        (str): table_name - name of file of created table
+        (str): rows_count - number of rows
 
     Raises:
 
@@ -199,10 +203,10 @@ async def upload_excel_file(
         file: the file to be read and uploaded to the database
 
     Returns: 
-        filename: "",
-        rows: num of rows,
-        columns: num of cols,
-        data_sample: dataframe head - see pandas.dataframe.head
+        (str): filename - .xlsx file prefix,
+        (int): rows - num of rows,
+        (int): columns - num of cols,
+        (dict): data_sample - dataframe head - see pandas.dataframe.head
 
     Raises:
 

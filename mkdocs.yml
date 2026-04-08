@@ -10,6 +10,7 @@ nav:
   - Home: index.md
   - Usage: usage.md
   - API Reference: api.md
+  - Helpers: setup.md
 plugins:
   - search
   - mkdocstrings:  # Automatically extracts Python docstrings (Requires: pip install mkdocstrings)
