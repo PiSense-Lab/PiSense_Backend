@@ -1,14 +1,10 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, HTTPException
-from pisense.backend.classes import Authenticator, User
-from typing import Annotated
+from pisense.backend.classes import Authenticator
 
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from passlib.context import CryptContext
-from pydantic import BaseModel
-from jose import JWTError, jwt
+from fastapi import Depends, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 from pisense.backend.exceptions import DatabaseError
 

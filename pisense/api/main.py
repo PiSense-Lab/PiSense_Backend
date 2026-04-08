@@ -1,7 +1,5 @@
 from contextlib import asynccontextmanager
 import logging
-import os
-from dotenv import load_dotenv
 from pisense.backend.classes import Database, Authenticator
 from fastapi.middleware.cors import CORSMiddleware
 

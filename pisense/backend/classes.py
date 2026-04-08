@@ -11,7 +11,6 @@ import re
 from typing import List, Literal, Tuple
 from enum import Enum
 
-from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, Integer, MetaData, String, Text, create_engine, text, Connection, insert, Table
 from sqlalchemy import Enum as Enum_sql
 import logging
@@ -71,7 +70,7 @@ class User():
 
     def __str__(self):
         return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
-    
+
 
     # def set_password():
     #     ...
@@ -810,10 +809,10 @@ class Authenticator():
             user: User = Database().get_user(username=username)
         except DatabaseError as e:
             raise e
-        
+
         if pwd_context.verify(password, user.hashed_password):
             return user
-        
+
     def create_access_token(self, data: dict, expires_delta: timedelta | None = None):
         to_encode = data.copy()
         if expires_delta:
