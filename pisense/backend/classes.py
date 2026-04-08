@@ -1,22 +1,50 @@
+from datetime import datetime, timedelta, timezone
+from fastapi.security import OAuth2PasswordBearer
+from passlib.context import CryptContext
+
+import os
+from dotenv import load_dotenv
+
+from jose import JWTError, jwt
 import  pandas as pd
 import re
-from typing import List, Literal
+from typing import List, Literal, Tuple
+from enum import Enum
 
-from mariadb import Connection, mariadb
-from sqlalchemy import create_engine, text
+from sqlalchemy import Boolean, Column, Integer, MetaData, String, Text, create_engine, text, Connection, insert, Table
+from sqlalchemy import Enum as Enum_sql
 import logging
 import sys
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
 def database_to_user(user: tuple) -> "User":
-    return User(user[0], user[1])
+    #["id", "username", "firstname", "lastname", "role", "email"]
+    return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), role=str(user[4]), email=str(user[5]), hashed_password=str(user[6]))
 
-def database_to_group(group: tuple) -> "Group":
-    return Group(group[0], group[1])
+def database_to_project(project: tuple, database: "Database") -> "Project":
+    users = database.get_user_projects(project_id=project[0])
+    owner_id = None
+    for u in users:
+        if u["role"] == USER_ROLES.admin.name:
+            owner_id = u["user_id"]
+            break
 
-def database_to_project(project: tuple) -> "Project":
-    return Project(project[0], project[1])
+    if not owner_id:
+        raise DatabaseError(f"Could not find valid owner for project {project[0]} | {project[1]}")
+
+    return Project(id=int(project[0]), name=str(project[1]), description=str(project[2]), public=bool(project[3]), archived=bool(project[4]), owner_id=owner_id)
+
+def database_user_project_to_dict( user_project: tuple ) -> dict:
+    return {
+        "user_projects_id": user_project[0],
+        "user_id": user_project[1],
+        "project_id": user_project[2],
+        "role": user_project[3],
+    }
+
+def user_dict_to_user( u: dict ) -> "User":
+    return User(id=u["id"], role=u["role"], username=u["username"], email=u["email"], firstname=u["firstname"], lastname=u["lastname"], hashed_password=u['password'])
 
 class ValidationError(Exception):
     pass
@@ -24,69 +52,81 @@ class ValidationError(Exception):
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
 
-class Group():
-
-    def __init__(self, id: int, name: str):
-        self.id = id
-        self.name = name
-
-    def __str__(self):
-        return f"{self.name}"
-
-    @property
-    def users(self) -> list["User"]:
-        """
-        Returns a list of users that are a part of this group
-
-        :return: list of users that are a part of this group
-        :rtype: list[User]
-        """
-        ...
-
-    @property
-    def projects(self) -> list["Project"]:
-        """
-        Returns a list of projects owned by this object
-
-        :return: list of projects owned by this object
-        :rtype: list[Project]
-        """
-        ...
+class USER_ROLES(Enum):
+    admin = 1
+    analyst = 2
+    viewer = 3
 
 class User():
 
-    def __init__(self, id: int, name: str):
+    def __init__(self, id: int, role: str, username: str, email: str, firstname: str, lastname: str, hashed_password: str):
         self.id = id
-        self.name = name
+        self.role = USER_ROLES[role]
+        self.username = username
+        self.email = email
+        self.firstname = firstname
+        self.lastname = lastname
+        self.hashed_password = hashed_password
 
     def __str__(self):
-        return f"{self.name}"
+        return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
 
-    @property
-    def projects(self) -> list["Project"]:
-        """
-        Returns a list of projects owned by this object
 
-        :return: list of projects owned by this object
-        :rtype: list[Project]
-        """
-        ...
+    # def set_password():
+    #     ...
+
+    # @property
+    # def projects(self) -> list["Project"]:
+    #     """
+    #     Returns a list of projects owned by this object
+
+    #     Gets information from `user_projects` table
+
+    #     :return: list of projects owned by this object
+    #     :rtype: list[Project]
+    #     """
+    #     sql_cmd = []
+    #     db = Database()
+    #     projects = db.get_user_projects()
 
 class Project():
 
-    def __init__(self, id: int, name: str, ):
-        #owner: User | Group
+    def __init__(self, id: int, name: str, description: str, public: bool, archived: bool, owner_id: User ):
         self.id = id
         self.name = name
-        #self.owner = owner
-
-    def __str__(self):
-        return f"{self.name}"
+        self.description = description
+        self.public = public
+        self.archived = archived
+        self.owner_id = owner_id
 
     @property
-    def users(self) -> list["User"]:
-        """list of users that can access this project"""
+    def owner(self) -> User:
         ...
+        # Get owner from self.owner_id
+
+    def __str__(self):
+        return f"({self.id}, {self.name}, `{self.description}`, public: {self.public}, archived: {self.archived})"
+
+    @property
+    def users(self) -> list[dict]:
+        """list of users that can access this project and their permission
+
+        ret: [ { "user": user, "role": USER_ROLE }, { "user": user2, "role": USER_ROLE } ]
+        """
+        users = []
+        user_projects = Database().get_user_projects(project_id=self.id)
+        for up in user_projects:
+            user = Database().get_user(up['user_id'])
+            users.append({ "user": user, "role": USER_ROLES[up['role']] })
+        return users
+
+    def add_user(self, user_id: int, role: USER_ROLES):
+        for up in self.users:
+            if up["user"].id == user_id:
+                raise DatabaseError("User is already in database.")
+
+        Database().create_user_projects(user_id, self.id, role)
+
 
 class Database():
     """
@@ -94,7 +134,7 @@ class Database():
     """
 
     # _cursor: Cursor
-    _connection: Connection
+    connection: Connection
     _instance: "Database" = None
     _initialized: bool = False
 
@@ -105,34 +145,62 @@ class Database():
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, db_password: str = "", host: str = "", username: str = "admin", port: int = 3306, database: str = "PiSense"):
-        # Connect to db -> _connection
+    def __init__(self):
+        # Connect to db -> connection
         if self._initialized:
             return
         self._initialized = True
+
+        load_dotenv(dotenv_path=".env")
+
+        db_password = os.getenv("MARIADB_PASSWORD")
+        host = os.getenv("MARIADB_HOST")
+        username = os.getenv("MARIADB_USER", "admin")
+        port = os.getenv("MARIADB_PORT", 3306)
+        database = os.getenv("MARIADB_DATABASE", "PiSense")
+
         try:
 
             engine = create_engine(
                     f"mariadb+mariadbconnector://{username}:{db_password}@{host}:{port}/{database}"
                     )
-            self._connection = engine.connect()
-        except mariadb.Error as e:
+            self.connection = engine.connect()
+        except DatabaseError as e:
             logging.error(f"Host: {host} Error connecting to MariaDB Platform: {e}")
             sys.exit(1)
 
-        # create cursor -> _cursor
-        # self._cursor: Cursor = self._connection.cursor()
+        self.metadata = MetaData()
+        self.users_table = Table(
+                            "users",
+                            self.metadata,
+                            Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),
+                            Column("role", Enum_sql("admin", "analyst", "viewer")),
+                            Column("username", String(50), unique=True, default=None),
+                            Column("email", String(100), default=None),
+                            Column("password", String(255), unique=True, default=None),
+                            Column("firstname", String(50), default=None),
+                            Column("lastname", String(50), default=None),
+                        )
 
-    # @property
-    # def cursor(self) -> Cursor:
-    #    if not isinstance(self._cursor, Cursor):
-    #        logging.error("Did not return a connection object")
-    #        sys.exit(1)
-    #    return self._cursor
+        self.projects_table = Table(
+                                "projects",
+                                self.metadata,
+                                Column("project_id", Integer, primary_key=True, autoincrement=True, nullable=False),
+                                Column("project_name", String(100), nullable=False),
+                                Column("description", Text, default=None),
+                                Column("public", Boolean, default=None),
+                                Column("archived", Boolean, default=None),
+                            )
 
-    @property
-    def connection(self) -> Connection:
-        return self._connection
+        self.user_projects_table = Table(
+                                "user_projects",
+                                self.metadata,
+                                Column("user_projects_id", Integer, primary_key=True, autoincrement=True, nullable=False),
+                                Column("user_id", Integer, default=None),
+                                Column("project_id", Integer, default=None),
+                                Column("role", Enum_sql("admin", "analyst", "viewer")),
+                            )
+
 
     def _get_rows(self, table: str, columns: List[str] = [], where_condition: str = "") -> list[tuple]:
 
@@ -157,7 +225,7 @@ class Database():
 
         sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
 
-        res = self._connection.execute(text(sql_str))
+        res = self.connection.execute(text(sql_str))
 
         out = res.fetchall()
 
@@ -180,7 +248,7 @@ class Database():
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
         # Fetch column types from the existing table
-        res = self._connection.execute(text(f"DESCRIBE {table_name}"))
+        res = self.connection.execute(text(f"DESCRIBE {table_name}"))
         schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
 
         # Make sure all columns exist
@@ -190,6 +258,8 @@ class Database():
 
         cols = ", ".join(col.strip() for col in column_name)
         placeholders = ", ".join([f":{col}" for col in column_name])
+        cols = cols.replace("index", "`index`")
+        cols = cols.replace("DateTime", "`DateTime`")
         query = text(f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})")
 
         # Insert rows
@@ -201,11 +271,41 @@ class Database():
             for val, col in zip(row, column_name):
                 validate_value(val, schema[col])
 
-            d_rows = [{k: v} for k, v in zip(column_name, row)]
-            self.connection.execute(query, d_rows)    #safe parameter binding
+
+            d_rows = dict(zip(column_name, row))
+            self.connection.execute(query, d_rows).fetchall()    #safe parameter binding
 
         self.connection.commit()
         return f"{len(rows)} rows inserted!"
+
+    def _insert_row(self, table_name: str, key: List[str], value: List[str]) -> Tuple:
+        table: Table | None = None
+        if table_name == "users":
+            table = self.users_table
+
+        if table_name == "projects":
+            table = self.projects_table
+
+        if table_name == "user_projects":
+            table = self.user_projects_table
+
+        if isinstance(table, type(None)):
+            raise DatabaseError(f"Could not find table of type {table_name}, check spelling or implement sqlalchemy table")
+
+
+        # Convert to dict, we should just pass though as dict in the first place
+        row = dict(zip(key, value))
+
+        try:
+            stmt = insert(table).returning(table)
+            out = self.connection.execute(stmt, [row]).fetchone()
+            self.connection.commit()
+        except Exception as e:
+            raise DatabaseError(f"Error adding to database: {e}") from None # Hides very long and useless traceback
+
+        key.insert(0, "id") # Adds id column to the front of the final output
+
+        return dict(zip(key, tuple(out)))
 
     def _add_column(self, table_name: str, column_name: List[str], column_type: List[str]):
         """
@@ -335,31 +435,7 @@ class Database():
 
         return {"message": f"Table '{table_name}' linked to project {project_id} successfully"}
 
-    def get_groups(self, name: str | None = None) -> list[Group]:
-        """
-        Returns a list of Groups. WHERE clause uses LIKE.
-
-        :return: List of Groups
-        :rtype: list[Group]
-        """
-        where = []
-        where_condition = ""
-        if name:
-            where.append(f"name LIKE '%{name}%'")
-
-        if len(where) > 0:
-            where_condition = f"{where[0]}"
-            if len(where) > 1:
-                for w in range(1, len(where)):
-                    where_condition = f"{where_condition} AND {where[w]}"
-
-        ret = []
-        groups = self._get_rows("Groups", ["id", "name"], where_condition=where_condition)
-        for g in groups:
-            ret.append(database_to_group(g))
-        return ret
-
-    def get_users(self, name: str | None = None) -> list[User]:
+    def get_users(self, username: str | None = None) -> list[User]:
         """
         Returns a list of users.
 
@@ -368,8 +444,8 @@ class Database():
         """
         where = []
         where_condition = ""
-        if name:
-            where.append(f"name LIKE '%{name}%'")
+        if username:
+            where.append(f"username LIKE '%{username}%'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -378,12 +454,12 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        users = self._get_rows("users", ["id", "name"], where_condition=where_condition)
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email", "password"], where_condition=where_condition)
         for u in users:
             ret.append(database_to_user(u))
         return ret
 
-    def get_projects(self, name: str | None = None, owner: User | Group | None = None) -> list[Project]:
+    def get_projects(self, name: str | None = None) -> list[Project]:
         """
         Returns a list of projects. Returns all projects if owner is None otherwise only return projects owned by owner
 
@@ -393,7 +469,7 @@ class Database():
         where = []
         where_condition = ""
         if name:
-            where.append(f"name LIKE '%{name}%'")
+            where.append(f"project_name LIKE '%{name}%'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -402,42 +478,10 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        projects = self._get_rows("projects", ["id", "name"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
         for p in projects:
-            ret.append(database_to_project(p))
+            ret.append(database_to_project(p, self))
         return ret
-
-    def get_group(self, id: int | None = None, name: str | None = None) -> Group:
-        """
-        Returns a group from the database
-
-        :return: Group from the database
-        :rtype: Project
-        """
-        where = []
-        where_condition = ""
-        if id:
-            where.append(f"id = {id}")
-        if name:
-            where.append(f"name = '{name}'")
-
-        if len(where) > 0:
-            where_condition = f"{where[0]}"
-            if len(where) > 1:
-                for w in range(1, len(where)):
-                    where_condition = f"{where_condition} AND {where[w]}"
-        else:
-            raise DatabaseError("No Where condition set, please set a parameter,")
-
-        users = self._get_rows("groups", ["id", "name"], where_condition=where_condition)
-
-
-        if len(users) == 0:
-            raise DatabaseError("No group found.")
-        if len(users) > 1:
-            raise DatabaseError("More than one group found, tighten constraints or use `get_groups` function.")
-
-        return database_to_user(users[0])
 
     def get_project(self, id: int | None = None, name: str | None = None) -> Project:
         """
@@ -449,9 +493,9 @@ class Database():
         where = []
         where_condition = ""
         if id:
-            where.append(f"id = {id}")
+            where.append(f"project_id = {id}")
         if name:
-            where.append(f"name = '{name}'")
+            where.append(f"project_name = '{name}'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -461,17 +505,16 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("projects", ["id", "name"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
 
-
-        if len(users) == 0:
+        if len(projects) == 0:
             raise DatabaseError("No project found.")
-        if len(users) > 1:
+        if len(projects) > 1:
             raise DatabaseError("More than one project found, tighten constraints or use `get_projects` function.")
 
-        return database_to_user(users[0])
+        return database_to_project(projects[0], self)
 
-    def get_user(self, id: int | None = None, name: str | None = None) -> User:
+    def get_user(self, id: int | None = None, username: str | None = None) -> User:
         """
         Returns a user from the database
 
@@ -484,8 +527,8 @@ class Database():
         where_condition = ""
         if id:
             where.append(f"id = {id}")
-        if name:
-            where.append(f"name = '{name}'")
+        if username:
+            where.append(f"username = '{username}'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -495,8 +538,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        users = self._get_rows("Users", ["id", "name"], where_condition=where_condition)
-
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email", "password"], where_condition=where_condition)
 
         if len(users) == 0:
             raise DatabaseError("No user found.")
@@ -504,6 +546,31 @@ class Database():
             raise DatabaseError("More than one user found, tighten constraints or use `get_users` function.")
 
         return database_to_user(users[0])
+
+    def get_user_projects(self, user_id: int | None = None, project_id : int | None = None, role: str | None = None) -> list[dict]:
+        where = []
+        where_condition = ""
+
+        if user_id:
+            where.append(f"user_id = '{user_id}'")
+        if project_id:
+            where.append(f"project_id = '{project_id}'")
+        if role:
+            where.append(f"role = '{role}'")
+
+        if len(where) > 0:
+            where_condition = f"{where[0]}"
+            if len(where) > 1:
+                for w in range(1, len(where)):
+                    where_condition = f"{where_condition} AND {where[w]}"
+
+        out =  self._get_rows("user_projects", ["user_projects_id", "user_id", "project_id", "role"], where_condition=where_condition)
+
+        ret = []
+        for row in out:
+            ret.append(database_user_project_to_dict(row))
+
+        return ret
 
     def get_table(self, table_name: str | None = None, project_id: int | None = None):
         """
@@ -578,7 +645,7 @@ class Database():
 
         query = f"CREATE TABLE {table_name} ({cols})"
 
-        self._connection.execute(text(query))
+        self.connection.execute(text(query))
         print("Table success!")
 
         #Creates dataset row to connect project to the table
@@ -608,9 +675,7 @@ class Database():
         try:
             # if the table exists it will fail with a ValueError
             df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
-            # self._connection.execute(text(
-            #        "ALTER TABLE {table_name} OWNER TO {project_id}"
-            #        ))
+            # self.connection.execute(text(""))
         except Exception as e:
             print(f"Error: {e}")
 
@@ -633,7 +698,7 @@ class Database():
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
         # Fetch column types from the existing table
-        res = self._connection.execute(text(f"DESCRIBE {table_name}"))
+        res = self.connection.execute(text(f"DESCRIBE {table_name}"))
         schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
 
         # Make sure all columns exist
@@ -667,29 +732,105 @@ class Database():
 
         return return_msg
 
+    def create_user_projects(self, user_id: int, project_id: int, role: USER_ROLES ):
+        columns = ["user_id", "project_id", "role"]
+        output = [user_id, project_id, role.name]
 
-    def create_project(self, name: str):
+        return self._insert_row("user_projects", columns, output)
+
+    def create_project(self,
+                       name: str,
+                       owner_id: int,
+                       description: str = "",
+                       public: bool = False,
+                       archived: bool = False,
+                       ) -> Project:
         """
-        Creates a new project in the database.'
-
-        TODO: Return created project.
+        Creates a new project in the database.
         """
-        self._insert_rows("projects",
-                          ["project_name"],
-                          [[f"{name}"]])
+        columns = ["project_name", "description", "public", "archived"]
+        output = [name, description, public, archived]
 
-    def create_user(self, name: str):
+        project = self._insert_row("projects", columns, output)
+
+        # Create user_projects row
+
+        user_project = self.create_user_projects(owner_id, project["id"], USER_ROLES.admin)
+
+        return Project(id=project["id"], name=project["project_name"], description=project["description"], public=project["public"], archived=project["archived"], owner_id=user_project["user_id"])
+
+    def create_user(self,
+                    username: str,
+                    role: USER_ROLES,
+                    email: str,
+                    password: str,
+                    firstname: str | None = None,
+                    lastname: str | None = None
+                    ):
         """
         Creates a new user in the database.
-
-        TODO: Return created user
         """
-        self._insert_rows("users", ["name"], [[f"{name}"]])
+        print(password)
+        columns = ["role", "username", "email", "password", "firstname", "lastname"]
+        output = [role.name, username, email, Authenticator().hash_password(password), firstname, lastname]
 
-    def create_group(self, name: str):
-        """
-        Creates a new group in the database.
+        user = self._insert_row("users", columns, output)
 
-        TODO: Return created group
-        """
-        self._insert_rows("groups", ["name"], [[f"{name}"]])
+        return user_dict_to_user(user)
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class Authenticator():
+
+    _instance: "Authenticator" = None
+    _initialized: bool = False
+
+    def __new__(cls, *args, **kwargs) -> "Authenticator": # Singleton implementation, returns existing instance if it exists
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        # Connect to db -> connection
+        if self._initialized:
+            return
+        self._initialized = True
+
+        load_dotenv(dotenv_path=".env") # Loads .env file into environment
+
+        self.SECRET_KEY: str = os.getenv("SECRET_KEY")
+        self.ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+        self.ACCESS_TOKEN_EXPIRE_MINUTES: int=os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
+
+    def authenticate_user(self, username: str, password: str) -> User:
+        try:
+            user: User = Database().get_user(username=username)
+        except DatabaseError as e:
+            raise e
+
+        if pwd_context.verify(password, user.hashed_password):
+            return user
+
+    def create_access_token(self, data: dict, expires_delta: timedelta | None = None):
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.now(timezone.utc) + expires_delta
+        else:
+            expire = datetime.now(timezone.utc) + timedelta(minutes=int(self.ACCESS_TOKEN_EXPIRE_MINUTES))
+        to_encode.update({"exp": expire})
+        return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+
+    def verify_token(self, token: str = Depends(oauth2_scheme)):
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            username: str = payload.get("sub")
+            if username is None:
+                raise HTTPException(status_code=403, detail="Token is invalid or expired")
+            return payload
+        except JWTError:
+            raise HTTPException(status_code=403, detail="Token is invalid or expired")
+
+    def hash_password(self, password: str) -> str:
+        return pwd_context.hash(password)

@@ -1,7 +1,7 @@
 from datetime import date
 
-from fastapi import APIRouter, Request
-from pisense.backend.models.weather_models import WeatherResponse, ForecastType
+from fastapi import APIRouter
+from pisense.backend.models.weather_models import WeatherResponse
 from pisense.backend.services.weather_service import (
     get_forecast_weather_daily,
     get_forecast_weather_hourly,
