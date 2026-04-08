@@ -2,6 +2,9 @@ from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 
+import os
+from dotenv import load_dotenv
+
 from jose import JWTError, jwt
 import  pandas as pd
 import re
@@ -143,11 +146,20 @@ class Database():
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, db_password: str = "", host: str = "", username: str = "admin", port: int = 3306, database: str = "PiSense"):
+    def __init__(self):
         # Connect to db -> connection
         if self._initialized:
             return
         self._initialized = True
+
+        load_dotenv(dotenv_path=".env")
+
+        db_password = os.getenv("MARIADB_PASSWORD")
+        host = os.getenv("MARIADB_HOST")
+        username = os.getenv("MARIADB_USER", "admin")
+        port = os.getenv("MARIADB_PORT", 3306)
+        database = os.getenv("MARIADB_DATABASE", "PiSense")
+
         try:
 
             engine = create_engine(
@@ -768,10 +780,10 @@ class Database():
         return user_dict_to_user(user)
 
 
-class Authenticator():
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+class Authenticator():
 
     _instance: "Authenticator" = None
     _initialized: bool = False
@@ -787,13 +799,11 @@ class Authenticator():
             return
         self._initialized = True
 
-        if not secret_key: # if its not set
-            raise Exception("Secret Key is not set for Authenticator Class, must be set for first run")
+        load_dotenv(dotenv_path=".env") # Loads .env file into environment
 
-        self.SECRET_KEY = secret_key
-        self.ALGORITHM = algorithm
-        self.ACCESS_TOKEN_EXPIRE_MINUTES = access_token_expire_minutes
-
+        self.SECRET_KEY: str =os.getenv("SECRET_KEY")
+        self.ALGORITHM : str =os.getenv("ALGORITHM", "HS256")
+        self.ACCESS_TOKEN_EXPIRE_MINUTES: int=os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
 
     def authenticate_user(self, username: str, password: str) -> User:
         try:
@@ -801,7 +811,7 @@ class Authenticator():
         except DatabaseError as e:
             raise e
         
-        if self.pwd_context.verify(password, user.hashed_password):
+        if pwd_context.verify(password, user.hashed_password):
             return user
         
     def create_access_token(self, data: dict, expires_delta: timedelta | None = None):
@@ -815,7 +825,7 @@ class Authenticator():
 
     def verify_token(self, token: str = Depends(oauth2_scheme)):
         try:
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=self.ALGORITHM)
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             username: str = payload.get("sub")
             if username is None:
                 raise HTTPException(status_code=403, detail="Token is invalid or expired")
@@ -824,4 +834,4 @@ class Authenticator():
             raise HTTPException(status_code=403, detail="Token is invalid or expired")
 
     def hash_password(self, password: str) -> str:
-        return self.pwd_context.hash(password)
+        return pwd_context.hash(password)

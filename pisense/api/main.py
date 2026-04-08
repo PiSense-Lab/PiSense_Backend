@@ -14,19 +14,9 @@ from pisense.backend.routes.user import router as user_router
 # to start server: source .venv/bin/activate && fastapi dev pisense/api/main.py
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    ENV_FILE_PATH = ".env" # root of the repository
+    Database()# Sets up database connection singleton
 
-    # Startup code
-    load_dotenv(dotenv_path=ENV_FILE_PATH) # Loads .env file into environment
-
-    # Access environment variables using os.getenv
-    db_password = os.getenv("MARIADB_PASSWORD")
-    username = os.getenv("MARIADB_USER")
-    host = os.getenv("MARIADB_HOST")
-
-    Database(db_password=db_password, host=host, username=username)# Sets up database connection singleton
-
-    Authenticator(secret_key=os.getenv("SECRET_KEY"),algorithm=os.getenv("ALGORITHM"),access_token_expire_minutes=os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+    Authenticator() # Sets up Authenticator
 
     yield # Run the api
 
