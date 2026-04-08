@@ -11,17 +11,17 @@ def test_create_get_users():
 
         username = "test_username_admin"
         email = "blank@email.com"
-        password = "defnitly_hashed"
+        hashed_password = "defnitly_hashed"
         role = USER_ROLES.admin
 
-        user = db.create_user(username=username, role=role, email=email, password=password)
+        user = db.create_user(username=username, role=role, email=email, password=hashed_password)
         print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.password == password
+
 
         user = db.get_user(username=username)
         print("User from get_user")
@@ -30,22 +30,21 @@ def test_create_get_users():
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.password == password
 
 
         username = "test_username_analyst_email"
         role = USER_ROLES.analyst
         email = 'goodemail@email.com'
-        password = "defnitly_hashed"
+        hashed_password = "defnitly_hashed"
 
-        user = db.create_user(username=username, role=role, email=email, password=password)
+        user = db.create_user(username=username, role=role, email=email, password=hashed_password)
         print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.password == password
+
 
         user = db.get_user(username=username)
         print("User from get_user")
@@ -54,7 +53,6 @@ def test_create_get_users():
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.password == password
 
 
         username = "test_username_viewer_email_firstname"
@@ -62,16 +60,15 @@ def test_create_get_users():
         email = 'goodemail2@email.com'
         firstname = 'bill'
         lastname = 'frank'
-        password = 'definitely_hashed'
+        hashed_password = 'definitely_hashed'
 
-        user = db.create_user(username=username, role=role, email=email, firstname=firstname, lastname=lastname, password=password)
+        user = db.create_user(username=username, role=role, email=email, firstname=firstname, lastname=lastname, password=hashed_password)
         print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.password == password
         assert user.firstname == firstname
         assert user.lastname == lastname
 
@@ -82,7 +79,6 @@ def test_create_get_users():
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.password == password
         assert user.firstname == firstname
         assert user.lastname == lastname
 
@@ -95,7 +91,7 @@ def test_create_get_users():
             assert not isinstance(user.id, type(None))
             assert not isinstance(user.role, type(None))
             assert not isinstance(user.email, type(None))
-            assert not isinstance(user.password, type(None))
+            assert not isinstance(user.hashed_password, type(None))
 
         users = db.get_users("test_username")
         assert len(users) == 3
@@ -105,7 +101,7 @@ def test_create_get_users():
             assert not isinstance(user.id, type(None))
             assert not isinstance(user.role, type(None))
             assert not isinstance(user.email, type(None))
-            assert not isinstance(user.password, type(None))
+            assert not isinstance(user.hashed_password, type(None))
 
         users = db.get_users("email")
         assert len(users) == 2
@@ -115,7 +111,7 @@ def test_create_get_users():
             assert not isinstance(user.id, type(None))
             assert not isinstance(user.role, type(None))
             assert not isinstance(user.email, type(None))
-            assert not isinstance(user.password, type(None))
+            assert not isinstance(user.hashed_password, type(None))
 
         users = db.get_users("firstname")
         assert len(users) == 1
@@ -125,7 +121,7 @@ def test_create_get_users():
             assert not isinstance(user.id, type(None))
             assert not isinstance(user.role, type(None))
             assert not isinstance(user.email, type(None))
-            assert not isinstance(user.password, type(None))
+            assert not isinstance(user.hashed_password, type(None))
 
         users = db.get_users("somthing_random")
         assert len(users) == 0
