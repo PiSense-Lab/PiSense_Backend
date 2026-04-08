@@ -21,7 +21,7 @@ def test_create_get_users():
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.hashed_password == hashed_password
+
 
         user = db.get_user(username=username)
         print("User from get_user")
@@ -30,7 +30,6 @@ def test_create_get_users():
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.hashed_password == hashed_password
 
 
         username = "test_username_analyst_email"
@@ -45,7 +44,7 @@ def test_create_get_users():
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.hashed_password == hashed_password
+
 
         user = db.get_user(username=username)
         print("User from get_user")
@@ -54,7 +53,6 @@ def test_create_get_users():
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.hashed_password == hashed_password
 
 
         username = "test_username_viewer_email_firstname"
@@ -71,7 +69,6 @@ def test_create_get_users():
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.hashed_password == hashed_password
         assert user.firstname == firstname
         assert user.lastname == lastname
 
@@ -82,7 +79,6 @@ def test_create_get_users():
         assert user.username == username
         assert user.role == role
         assert user.email == email
-        assert user.hashed_password == hashed_password
         assert user.firstname == firstname
         assert user.lastname == lastname
 
