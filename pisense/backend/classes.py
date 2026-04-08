@@ -1,3 +1,11 @@
+from datetime import datetime, timedelta, timezone
+from fastapi.security import OAuth2PasswordBearer
+from passlib.context import CryptContext
+
+import os
+from dotenv import load_dotenv
+
+from jose import JWTError, jwt
 import  pandas as pd
 import re
 from typing import List, Literal, Tuple
@@ -7,12 +15,12 @@ from sqlalchemy import Boolean, Column, Integer, MetaData, String, Text, create_
 from sqlalchemy import Enum as Enum_sql
 import logging
 import sys
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
 def database_to_user(user: tuple) -> "User":
     #["id", "username", "firstname", "lastname", "role", "email"]
-    return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), role=str(user[4]), email=str(user[5]), password=str(user[6]))
+    return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), role=str(user[4]), email=str(user[5]), hashed_password=str(user[6]))
 
 def database_to_project(project: tuple, database: "Database") -> "Project":
     users = database.get_user_projects(project_id=project[0])
@@ -36,7 +44,7 @@ def database_user_project_to_dict( user_project: tuple ) -> dict:
     }
 
 def user_dict_to_user( u: dict ) -> "User":
-    return User(id=u["id"], role=u["role"], username=u["username"], email=u["email"], firstname=u["firstname"], lastname=u["lastname"], password=u['password'])
+    return User(id=u["id"], role=u["role"], username=u["username"], email=u["email"], firstname=u["firstname"], lastname=u["lastname"], hashed_password=u['password'])
 
 class ValidationError(Exception):
     pass
@@ -51,17 +59,18 @@ class USER_ROLES(Enum):
 
 class User():
 
-    def __init__(self, id: int, role: str, username: str, email: str, firstname: str, lastname: str, password: str):
+    def __init__(self, id: int, role: str, username: str, email: str, firstname: str, lastname: str, hashed_password: str):
         self.id = id
         self.role = USER_ROLES[role]
         self.username = username
         self.email = email
         self.firstname = firstname
         self.lastname = lastname
-        self.password = password
+        self.hashed_password = hashed_password
 
     def __str__(self):
         return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
+
 
     # def set_password():
     #     ...
@@ -136,11 +145,20 @@ class Database():
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, db_password: str = "", host: str = "", username: str = "admin", port: int = 3306, database: str = "PiSense"):
+    def __init__(self):
         # Connect to db -> connection
         if self._initialized:
             return
         self._initialized = True
+
+        load_dotenv(dotenv_path=".env")
+
+        db_password = os.getenv("MARIADB_PASSWORD")
+        host = os.getenv("MARIADB_HOST")
+        username = os.getenv("MARIADB_USER", "admin")
+        port = os.getenv("MARIADB_PORT", 3306)
+        database = os.getenv("MARIADB_DATABASE", "PiSense")
+
         try:
 
             engine = create_engine(
@@ -752,9 +770,67 @@ class Database():
         """
         Creates a new user in the database.
         """
+        print(password)
         columns = ["role", "username", "email", "password", "firstname", "lastname"]
-        output = [role.name, username, email, password, firstname, lastname]
+        output = [role.name, username, email, Authenticator().hash_password(password), firstname, lastname]
 
         user = self._insert_row("users", columns, output)
 
         return user_dict_to_user(user)
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class Authenticator():
+
+    _instance: "Authenticator" = None
+    _initialized: bool = False
+
+    def __new__(cls, *args, **kwargs) -> "Authenticator": # Singleton implementation, returns existing instance if it exists
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        # Connect to db -> connection
+        if self._initialized:
+            return
+        self._initialized = True
+
+        load_dotenv(dotenv_path=".env") # Loads .env file into environment
+
+        self.SECRET_KEY: str = os.getenv("SECRET_KEY")
+        self.ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+        self.ACCESS_TOKEN_EXPIRE_MINUTES: int=os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
+
+    def authenticate_user(self, username: str, password: str) -> User:
+        try:
+            user: User = Database().get_user(username=username)
+        except DatabaseError as e:
+            raise e
+
+        if pwd_context.verify(password, user.hashed_password):
+            return user
+
+    def create_access_token(self, data: dict, expires_delta: timedelta | None = None):
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.now(timezone.utc) + expires_delta
+        else:
+            expire = datetime.now(timezone.utc) + timedelta(minutes=int(self.ACCESS_TOKEN_EXPIRE_MINUTES))
+        to_encode.update({"exp": expire})
+        return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+
+    def verify_token(self, token: str = Depends(oauth2_scheme)):
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            username: str = payload.get("sub")
+            if username is None:
+                raise HTTPException(status_code=403, detail="Token is invalid or expired")
+            return payload
+        except JWTError:
+            raise HTTPException(status_code=403, detail="Token is invalid or expired")
+
+    def hash_password(self, password: str) -> str:
+        return pwd_context.hash(password)
