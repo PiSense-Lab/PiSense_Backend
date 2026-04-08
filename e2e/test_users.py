@@ -14,7 +14,7 @@ def test_create_get_users():
         hashed_password = "defnitly_hashed"
         role = USER_ROLES.admin
 
-        user = db.create_user(username=username, role=role, email=email, hashed_password=hashed_password)
+        user = db.create_user(username=username, role=role, email=email, assword=hashed_password)
         print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
@@ -38,7 +38,7 @@ def test_create_get_users():
         email = 'goodemail@email.com'
         hashed_password = "defnitly_hashed"
 
-        user = db.create_user(username=username, role=role, email=email, hashed_password=hashed_password)
+        user = db.create_user(username=username, role=role, email=email, password=hashed_password)
         print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
@@ -64,7 +64,7 @@ def test_create_get_users():
         lastname = 'frank'
         hashed_password = 'definitely_hashed'
 
-        user = db.create_user(username=username, role=role, email=email, firstname=firstname, lastname=lastname, hashed_password=hashed_password)
+        user = db.create_user(username=username, role=role, email=email, firstname=firstname, lastname=lastname, password=hashed_password)
         print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
