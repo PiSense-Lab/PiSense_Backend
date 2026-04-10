@@ -40,6 +40,7 @@ ignore = ["E501"]
 
 [tool.ruff]
 include = ["test/*", "pisense/*", "e2e/*"]
+extend-include = ["*.md"]
 
 [tool.setuptools.packages.find]
 include = ["pisense*"]
