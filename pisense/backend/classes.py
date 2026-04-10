@@ -807,8 +807,8 @@ class Database():
 
             self._connection.execute(text(query))
             print("Table success!")
-        self.connection.execute(text(query))
-        print("Table success!")
+            self.connection.execute(text(query))
+            print("Table success!")
 
             #Creates dataset row to connect project to the table
             self.register_dataset(project_id, table_name)
@@ -840,12 +840,12 @@ class Database():
                 # self._connection.execute(text(""))
             except Exception as e:
                 print(f"Error: {e}")
-        try:
-            # if the table exists it will fail with a ValueError
-            df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
-            # self.connection.execute(text(""))
-        except Exception as e:
-            print(f"Error: {e}")
+            try:
+                # if the table exists it will fail with a ValueError
+                df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
+                # self.connection.execute(text(""))
+            except Exception as e:
+                print(f"Error: {e}")
 
             return "Table created!"
 
@@ -868,9 +868,9 @@ class Database():
             # Fetch column types from the existing table
             res = self._connection.execute(text(f"DESCRIBE {table_name}"))
             schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
-        # Fetch column types from the existing table
-        res = self.connection.execute(text(f"DESCRIBE {table_name}"))
-        schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
+            # Fetch column types from the existing table
+            res = self.connection.execute(text(f"DESCRIBE {table_name}"))
+            schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
 
             # Make sure all columns exist
             for col in row_columns:
