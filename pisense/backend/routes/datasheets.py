@@ -37,7 +37,7 @@ async def read_tables(
 
     return {"root": res.to_dict(orient="records")}
 
-@router.get("/{table_name}") # , response_model=DataTable)
+@router.get("/{table_name}")
 async def read_single_table(
         table_name: str,
         project_id: int | None = None
