@@ -12,6 +12,8 @@
         <link rel="prev" href="../usage/">
       
       
+        <link rel="next" href="../setup/">
+      
       
         
       
@@ -334,91 +336,24 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="/weather">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#forecast-weather" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/forecast-weather
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="~/forecast-weather">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#hourly" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/hourly
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#daily" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/daily
-      
-    </span>
-  </a>
-  
 </li>
         
       </ul>
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#historical-weather" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.weather" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ~/historical-weather
+        weather
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="~/historical-weather">
+    <nav class="md-nav" aria-label="weather">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#hourly_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/hourly
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#daily_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/daily
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#datatables" class="md-nav__link">
@@ -429,34 +364,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="/datatables">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tablename" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/{tablename}
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
       </ul>
@@ -465,58 +372,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#backend.routes.datasheets.read_single_table" class="md-nav__link">
+  <a href="#backend.routes.datasheets" class="md-nav__link">
     <span class="md-ellipsis">
       
-        read_single_table
+        datasheets
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="read_single_table">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#edit_point" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/edit_point
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#backend.routes.datasheets.edit_point" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        edit_point
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="edit_point">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#add_point" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/add_point
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -529,22 +391,38 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="add_point">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#remove_point" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.edit_point" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ~/remove_point
+        edit_point
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.read_single_table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_single_table
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.read_tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_tables
+      
+    </span>
+  </a>
   
 </li>
       
@@ -557,22 +435,27 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="remove_point">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#upload_manual" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.upload_csv" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ~/upload_manual
+        upload_csv
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.upload_excel_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        upload_excel_file
+      
+    </span>
+  </a>
   
 </li>
       
@@ -586,62 +469,6 @@
   </a>
   
     <nav class="md-nav" aria-label="upload_manual">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#upload_csv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/upload_csv
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#backend.routes.datasheets.upload_csv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        upload_csv
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="upload_csv">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#upload_excel_file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/upload_excel_file
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#backend.routes.datasheets.upload_excel_file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        upload_excel_file
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="upload_excel_file">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -660,10 +487,48 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#backend.routes.user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        user
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helpers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -713,91 +578,24 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="/weather">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#forecast-weather" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/forecast-weather
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="~/forecast-weather">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#hourly" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/hourly
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#daily" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/daily
-      
-    </span>
-  </a>
-  
 </li>
         
       </ul>
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#historical-weather" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.weather" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ~/historical-weather
+        weather
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="~/historical-weather">
+    <nav class="md-nav" aria-label="weather">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#hourly_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/hourly
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#daily_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/daily
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#datatables" class="md-nav__link">
@@ -808,34 +606,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="/datatables">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tablename" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/{tablename}
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
       </ul>
@@ -844,58 +614,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#backend.routes.datasheets.read_single_table" class="md-nav__link">
+  <a href="#backend.routes.datasheets" class="md-nav__link">
     <span class="md-ellipsis">
       
-        read_single_table
+        datasheets
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="read_single_table">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#edit_point" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/edit_point
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#backend.routes.datasheets.edit_point" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        edit_point
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="edit_point">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#add_point" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/add_point
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -908,22 +633,38 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="add_point">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#remove_point" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.edit_point" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ~/remove_point
+        edit_point
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.read_single_table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_single_table
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.read_tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_tables
+      
+    </span>
+  </a>
   
 </li>
       
@@ -936,22 +677,27 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="remove_point">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#upload_manual" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.upload_csv" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ~/upload_manual
+        upload_csv
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.datasheets.upload_excel_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        upload_excel_file
+      
+    </span>
+  </a>
   
 </li>
       
@@ -968,62 +714,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#upload_csv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/upload_csv
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#backend.routes.datasheets.upload_csv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        upload_csv
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="upload_csv">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#upload_excel_file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ~/upload_excel_file
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#backend.routes.datasheets.upload_excel_file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        upload_excel_file
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="upload_excel_file">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#user" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1036,6 +726,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend.routes.user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        user
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1059,51 +760,88 @@
   <h1>API Reference</h1>
 
 <h2 id="api-documentation">API Documentation</h2>
-<p><a href="#/weather">/weather</a>
-<a href="#/datatables">/datatables</a>
-<a href="#/user">/user</a></p>
 <h3 id="weather">/weather</h3>
-<h4 id="forecast-weather">~/forecast-weather</h4>
-<h5 id="hourly">~/hourly</h5>
-<h5 id="daily">~/daily</h5>
-<h4 id="historical-weather">~/historical-weather</h4>
-<h5 id="hourly_1">~/hourly</h5>
-<h5 id="daily_1">~/daily</h5>
-<h3 id="datatables">/datatables</h3>
-<h4 id="_1">~/</h4>
-<p>Gets and returns all tables within a project.</p>
-<p>params:
-  <code>project_id</code>: int</p>
-<p>returns: TODO</p>
-<p>responses:
-  codes:
-    200 - Successful Response, getting tables succeeded and returned value.
-    422 - Validation Error, tables returned did not fit the return validation type. Returns JSON with ...
-      <code>{"detail": [
-        {
-          "loc": [
-            "string",
-            0
-          ],
-          "msg": "string",
-          "type": "string",
-          "input": "string",
-          "ctx": {}type"
-        }
-      ]}</code></p>
-<h4 id="tablename">~/{tablename}</h4>
-<p>Gets the inputted table and returns the entire table 
-</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="backend.routes.weather"></a>
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="datatables">/datatables</h3>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="backend.routes.datasheets"></a>
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
 
 
 <div class="doc doc-object doc-function">
 
 
+<h2 id="backend.routes.datasheets.add_point" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_point</span><span class="p">(</span><span class="n">row_data</span><span class="p">,</span> <span class="n">row_columns</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span></code>
 
-<a id="backend.routes.datasheets.read_single_table"></a>
-    <div class="doc doc-contents first">
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
 
-        <p>Reads a single table from the database.</p>
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Adds a point to a given table in the database.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1119,14 +857,15 @@
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>table_name</code>
+                <code>row_data</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.List">List</span>[<span title="typing.List">List</span>[<span title="int">int</span> | <span title="float">float</span> | <span title="datetime.time">time</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>name of table in database to be read</p>
+                <p>a List of all rows to be added<br />
+- Each List contains a List of either ints, floats, or times</p>
               </div>
             </td>
             <td>
@@ -1135,41 +874,35 @@
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>project_id</code>
+                <code>row_columns</code>
             </td>
             <td>
-                  <code><span title="int">int</span> | None</code>
+                  <code><span title="typing.List">List</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Project ID of the project the table is attatched to</p>
+                <p>a List of all the columns in a table ordered from left to right<br />
+- must be in the same order as in the table in the database</p>
               </div>
             </td>
             <td>
-                  <code>None</code>
+                <em>required</em>
             </td>
           </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
           <tr class="doc-section-item">
             <td>
+                <code>table_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>{data: table with same name as table_name}<br />
-- records styled dicts - see pandas.dataframe.to_dict</p>
+                <p>name of table of row to be added</p>
               </div>
+            </td>
+            <td>
+                <em>required</em>
             </td>
           </tr>
       </tbody>
@@ -1179,72 +912,71 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pisense/backend/routes/datasheets.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/</span><span class="si">{table_name}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># , response_model=DataTable)</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_single_table</span><span class="p">(</span>
-        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;/add_point&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">add_point</span><span class="p">(</span>
+        <span class="n">row_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">time</span><span class="p">]],</span>
+        <span class="n">row_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Reads a single table from the database.</span>
+<span class="sd">    Adds a point to a given table in the database.</span>
 
-<span class="sd">    params:</span>
-<span class="sd">        table_name: name of table in database to be read</span>
-<span class="sd">        project_id: Project ID of the project the table is attatched to</span>
-
-<span class="sd">    Returns: </span>
-<span class="sd">        {data: table with same name as table_name}  </span>
-<span class="sd">            - records styled dicts - see pandas.dataframe.to_dict</span>
+<span class="sd">    params: </span>
+<span class="sd">        row_data: </span>
+<span class="sd">            a List of all rows to be added  </span>
+<span class="sd">            - Each List contains a List of either ints, floats, or times</span>
+<span class="sd">        row_columns: </span>
+<span class="sd">            a List of all the columns in a table ordered from left to right  </span>
+<span class="sd">            - must be in the same order as in the table in the database</span>
+<span class="sd">        table_name: name of table of row to be added</span>
 
 <span class="sd">    Raises:</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">project_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">project_id</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">)}</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">_insert_rows</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">row_columns</span><span class="p">,</span> <span class="n">row_data</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
 
-</div><h4 id="edit_point">~/edit_point</h4>
-
+</div>
 
 <div class="doc doc-object doc-function">
 
 
+<h2 id="backend.routes.datasheets.edit_point" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">edit_point</span><span class="p">(</span><span class="n">row_num</span><span class="p">,</span> <span class="n">row_data</span><span class="p">,</span> <span class="n">row_columns</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span></code>
 
-<a id="backend.routes.datasheets.edit_point"></a>
-    <div class="doc doc-contents first">
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
 
         <p>Edits a point in a given table in the database.</p>
 
@@ -1381,17 +1113,24 @@
             </details>
     </div>
 
-</div><h4 id="add_point">~/add_point</h4>
-
+</div>
 
 <div class="doc doc-object doc-function">
 
 
+<h2 id="backend.routes.datasheets.read_single_table" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">read_single_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
-<a id="backend.routes.datasheets.add_point"></a>
-    <div class="doc doc-contents first">
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
 
-        <p>Adds a point to a given table in the database.</p>
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Reads a single table from the database.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1407,40 +1146,6 @@
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>row_data</code>
-            </td>
-            <td>
-                  <code><span title="typing.List">List</span>[<span title="typing.List">List</span>[<span title="int">int</span> | <span title="float">float</span> | <span title="datetime.time">time</span>]]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>a List of all rows to be added<br />
-- Each List contains a List of either ints, floats, or times</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>row_columns</code>
-            </td>
-            <td>
-                  <code><span title="typing.List">List</span>[<span title="str">str</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>a List of all the columns in a table ordered from left to right<br />
-- must be in the same order as in the table in the database</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
                 <code>table_name</code>
             </td>
             <td>
@@ -1448,11 +1153,51 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>name of table of row to be added</p>
+                <p>name of table in database to be read</p>
               </div>
             </td>
             <td>
                 <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>project_id</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Project ID of the project the table is attatched to</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>data - table with same name as table_name<br />
+- records styled dicts - see pandas.dataframe.to_dict</p>
+              </div>
             </td>
           </tr>
       </tbody>
@@ -1462,64 +1207,208 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>pisense/backend/routes/datasheets.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;/add_point&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">add_point</span><span class="p">(</span>
-        <span class="n">row_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">time</span><span class="p">]],</span>
-        <span class="n">row_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/</span><span class="si">{table_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_single_table</span><span class="p">(</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Adds a point to a given table in the database.</span>
+<span class="sd">    Reads a single table from the database.</span>
 
-<span class="sd">    params: </span>
-<span class="sd">        row_data: </span>
-<span class="sd">            a List of all rows to be added  </span>
-<span class="sd">            - Each List contains a List of either ints, floats, or times</span>
-<span class="sd">        row_columns: </span>
-<span class="sd">            a List of all the columns in a table ordered from left to right  </span>
-<span class="sd">            - must be in the same order as in the table in the database</span>
-<span class="sd">        table_name: name of table of row to be added</span>
+<span class="sd">    params:</span>
+<span class="sd">        table_name: name of table in database to be read</span>
+<span class="sd">        project_id: Project ID of the project the table is attatched to</span>
+
+<span class="sd">    Returns: </span>
+<span class="sd">        (dict): data - table with same name as table_name  </span>
+<span class="sd">            - records styled dicts - see pandas.dataframe.to_dict</span>
 
 <span class="sd">    Raises:</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">_insert_rows</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">row_columns</span><span class="p">,</span> <span class="n">row_data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">project_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">project_id</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">)}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
 
-</div><h4 id="remove_point">~/remove_point</h4>
-
+</div>
 
 <div class="doc doc-object doc-function">
 
 
+<h2 id="backend.routes.datasheets.read_tables" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">read_tables</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span></code>
 
-<a id="backend.routes.datasheets.remove_point"></a>
-    <div class="doc doc-contents first">
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Gets all tables associated with a project from the database.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>project_id</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>ID of project to grab all table names from</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>root - all table names associated with project_id<br />
+- records styled dicts - see pandas.dataframe.to_dict</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+        <p>Raises:</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>pisense/backend/routes/datasheets.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_tables</span><span class="p">(</span>
+        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gets all tables associated with a project from the database.</span>
+
+<span class="sd">    params:</span>
+<span class="sd">        project_id: ID of project to grab all table names from</span>
+
+<span class="sd">    Returns: </span>
+<span class="sd">        (dict): root - all table names associated with project_id  </span>
+<span class="sd">            - records styled dicts - see pandas.dataframe.to_dict</span>
+
+<span class="sd">    Raises:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">db</span> <span class="o">=</span>  <span class="n">Database</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">project_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_table</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">project_id</span><span class="o">=</span><span class="n">project_id</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;root&quot;</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">)}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="backend.routes.datasheets.remove_point" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">remove_point</span><span class="p">(</span><span class="n">row_num</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
 
         <p>Removes a point from a given table in the database.</p>
 
@@ -1611,15 +1500,445 @@
             </details>
     </div>
 
-</div><h4 id="upload_manual">~/upload_manual</h4>
-
+</div>
 
 <div class="doc doc-object doc-function">
 
 
+<h2 id="backend.routes.datasheets.upload_csv" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">upload_csv</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">File</span><span class="p">(</span><span class="o">...</span><span class="p">))</span></code>
 
-<a id="backend.routes.datasheets.upload_manual"></a>
-    <div class="doc doc-contents first">
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Uploads a csv as a table to the database.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>table_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the table to be created[^1][^2]</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>project_id</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Project ID of project to add the table to.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file</code>
+            </td>
+            <td>
+                  <code><span title="fastapi.UploadFile">UploadFile</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>the file to be read and uploaded to the database. </p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="fastapi.File">File</span>(...)</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+        <div class="footnote">
+<hr />
+<ol>
+<li id="backend.routes.datasheets.upload_csv--fn:1">
+<p>Cannot have same name as other table&#160;<a class="footnote-backref" href="#backend.routes.datasheets.upload_csv--fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="backend.routes.datasheets.upload_csv--fn:2">
+<p>Optional, if left blank tablename will take the csv filename&#160;<a class="footnote-backref" href="#backend.routes.datasheets.upload_csv--fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>table_name - name of file of created table</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>rows_count - number of rows</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+        <p>Raises:</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>pisense/backend/routes/datasheets.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/upload_csv/&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">upload_csv</span><span class="p">(</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="n">UploadFile</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uploads a csv as a table to the database.</span>
+
+<span class="sd">    params:</span>
+<span class="sd">        table_name: Name of the table to be created[^1][^2]</span>
+<span class="sd">        project_id: Project ID of project to add the table to.</span>
+<span class="sd">        file: the file to be read and uploaded to the database. </span>
+
+<span class="sd">    [^1]: Cannot have same name as other table</span>
+<span class="sd">    [^2]: Optional, if left blank tablename will take the csv filename</span>
+
+<span class="sd">    Returns: </span>
+<span class="sd">        (str): table_name - name of file of created table</span>
+<span class="sd">        (str): rows_count - number of rows</span>
+
+<span class="sd">    Raises:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="k">await</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
+    <span class="k">if</span> <span class="n">table_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">table_name</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">df_create_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>  <span class="c1"># come back to for project_id</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rows_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="backend.routes.datasheets.upload_excel_file" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">upload_excel_file</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">File</span><span class="p">(</span><span class="o">...</span><span class="p">))</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Receives an Excel file and processes it using pandas.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>project_id</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Project ID of project to add table to.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file</code>
+            </td>
+            <td>
+                  <code><span title="fastapi.UploadFile">UploadFile</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>the file to be read and uploaded to the database</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="fastapi.File">File</span>(...)</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>filename - .xlsx file prefix,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>rows - num of rows,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>columns - num of cols,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>data_sample - dataframe head - see pandas.dataframe.head</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+        <p>Raises:</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>pisense/backend/routes/datasheets.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/upload_excel/&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">upload_excel_file</span><span class="p">(</span>
+        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="n">UploadFile</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Receives an Excel file and processes it using pandas.</span>
+
+<span class="sd">    params: </span>
+<span class="sd">        project_id: Project ID of project to add table to.</span>
+<span class="sd">        file: the file to be read and uploaded to the database</span>
+
+<span class="sd">    Returns: </span>
+<span class="sd">        (str): filename - .xlsx file prefix,</span>
+<span class="sd">        (int): rows - num of rows,</span>
+<span class="sd">        (int): columns - num of cols,</span>
+<span class="sd">        (dict): data_sample - dataframe head - see pandas.dataframe.head</span>
+
+<span class="sd">    Raises:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">content_type</span> <span class="o">!=</span> <span class="s2">&quot;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Invalid file type. Please upload an Excel file (.xlsx).&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Read the file content into memory</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="c1"># Use BytesIO to create a file-like object for pandas</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># df is not a dataframe it is a dict of dataframes</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">content</span><span class="p">),</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;openpyxl&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_422_UNPROCESSABLE_ENTITY</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Error processing Excel file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">df_create_table</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.xlsx&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">df</span><span class="p">)</span>
+
+    <span class="c1"># Process the DataFrame (e.g., convert to JSON or perform analysis)</span>
+    <span class="c1"># Returning a dictionary, which FastAPI serializes to JSON</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+        <span class="s2">&quot;rows&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">),</span>
+        <span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span>
+        <span class="c1"># You can return the data in JSON format for the client</span>
+        <span class="s2">&quot;data_sample&quot;</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">)</span>
+    <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="backend.routes.datasheets.upload_manual" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">upload_manual</span><span class="p">(</span><span class="n">json_in</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
 
         <p>Uploads a series of manually entered data in a json string dict format to the Database</p>
 
@@ -1682,10 +2001,21 @@
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>{table_name: "", json: ""}</p>
+                <p>table_name - name of table created</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>json - inputted json string</p>
               </div>
             </td>
           </tr>
@@ -1717,7 +2047,10 @@
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
-<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/upload_manual&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/upload_manual&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">upload_manual</span><span class="p">(</span>
         <span class="n">json_in</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span>
@@ -1730,7 +2063,10 @@
 <span class="sd">        table_name: name of table to be uploaded</span>
 
 <span class="sd">    Returns: </span>
-<span class="sd">        {table_name: &quot;&quot;, json: &quot;&quot;}</span>
+<span class="sd">        (str): </span>
+<span class="sd">            table_name - name of table created</span>
+<span class="sd">        (str): </span>
+<span class="sd">            json - inputted json string</span>
 
 <span class="sd">    Raises:</span>
 
@@ -1743,408 +2079,51 @@
             </details>
     </div>
 
-</div><h4 id="upload_csv">~/upload_csv</h4>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<a id="backend.routes.datasheets.upload_csv"></a>
-    <div class="doc doc-contents first">
-
-        <p>Uploads a csv as a table to the database.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>table_name</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Name of the table to be created [^1][^2]</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>project_id</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Project ID of project to add the table to.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>file</code>
-            </td>
-            <td>
-                  <code><span title="fastapi.UploadFile">UploadFile</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>the file to be read and uploaded to the database. </p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="fastapi.File">File</span>(...)</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-        <div class="footnote">
-<hr />
-<ol>
-<li id="backend.routes.datasheets.upload_csv--fn:1">
-<p>Cannot have same name as other table&#160;<a class="footnote-backref" href="#backend.routes.datasheets.upload_csv--fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-<li id="backend.routes.datasheets.upload_csv--fn:2">
-<p>Optional, if left blank tablename will take the csv filename&#160;<a class="footnote-backref" href="#backend.routes.datasheets.upload_csv--fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
-</li>
-</ol>
 </div>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>filename</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>name of file of created table</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-<td><code>rows_count</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>number of rows</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-        <p>Raises:</p>
 
+  </div>
 
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>pisense/backend/routes/datasheets.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/upload_csv/&quot;</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">upload_csv</span><span class="p">(</span>
-        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">file</span><span class="p">:</span> <span class="n">UploadFile</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Uploads a csv as a table to the database.</span>
-
-<span class="sd">    params:</span>
-<span class="sd">        table_name: Name of the table to be created [^1] [^2]</span>
-<span class="sd">        project_id: Project ID of project to add the table to.</span>
-<span class="sd">        file: the file to be read and uploaded to the database. </span>
-<span class="sd">    [^1]: Cannot have same name as other table</span>
-<span class="sd">    [^2]: Optional, if left blank tablename will take the csv filename</span>
-
-<span class="sd">    Returns: </span>
-<span class="sd">        filename: name of file of created table</span>
-<span class="sd">        rows_count: number of rows</span>
-
-<span class="sd">    Raises:</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="k">await</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
-    <span class="k">if</span> <span class="n">table_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">table_name</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">df_create_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>  <span class="c1"># come back to for project_id</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rows_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)}</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div><h4 id="upload_excel_file">~/upload_excel_file</h4>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<a id="backend.routes.datasheets.upload_excel_file"></a>
-    <div class="doc doc-contents first">
-
-        <p>Receives an Excel file and processes it using pandas.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>project_id</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Project ID of project to add table to.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>file</code>
-            </td>
-            <td>
-                  <code><span title="fastapi.UploadFile">UploadFile</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>the file to be read and uploaded to the database</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="fastapi.File">File</span>(...)</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>filename</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>"",</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-<td><code>rows</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>num of rows,</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-<td><code>columns</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>num of cols,</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-<td><code>data_sample</code></td>            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>dataframe head - see pandas.dataframe.head</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-        <p>Raises:</p>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>pisense/backend/routes/datasheets.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/upload_excel/&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">upload_excel_file</span><span class="p">(</span>
-        <span class="n">project_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">file</span><span class="p">:</span> <span class="n">UploadFile</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Receives an Excel file and processes it using pandas.</span>
-
-<span class="sd">    params: </span>
-<span class="sd">        project_id: Project ID of project to add table to.</span>
-<span class="sd">        file: the file to be read and uploaded to the database</span>
-
-<span class="sd">    Returns: </span>
-<span class="sd">        filename: &quot;&quot;,</span>
-<span class="sd">        rows: num of rows,</span>
-<span class="sd">        columns: num of cols,</span>
-<span class="sd">        data_sample: dataframe head - see pandas.dataframe.head</span>
-
-<span class="sd">    Raises:</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">content_type</span> <span class="o">!=</span> <span class="s2">&quot;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
-            <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_400_BAD_REQUEST</span><span class="p">,</span>
-            <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Invalid file type. Please upload an Excel file (.xlsx).&quot;</span>
-        <span class="p">)</span>
-
-    <span class="c1"># Read the file content into memory</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-
-    <span class="c1"># Use BytesIO to create a file-like object for pandas</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="c1"># df is not a dataframe it is a dict of dataframes</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">content</span><span class="p">),</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;openpyxl&#39;</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
-            <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_422_UNPROCESSABLE_ENTITY</span><span class="p">,</span>
-            <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Error processing Excel file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
-
-    <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">df_create_table</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.xlsx&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">df</span><span class="p">)</span>
-
-    <span class="c1"># Process the DataFrame (e.g., convert to JSON or perform analysis)</span>
-    <span class="c1"># Returning a dictionary, which FastAPI serializes to JSON</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">file</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
-        <span class="s2">&quot;rows&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">),</span>
-        <span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span>
-        <span class="c1"># You can return the data in JSON format for the client</span>
-        <span class="s2">&quot;data_sample&quot;</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">)</span>
-    <span class="p">}</span>
-</code></pre></div></td></tr></table></div>
-            </details>
     </div>
 
 </div><h3 id="user">/user</h3>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="backend.routes.user"></a>
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 
 
