@@ -3,6 +3,7 @@ from io import BytesIO
 import pandas as pd
 import json
 from datetime import time
+from typing import Any, List
 from typing import List
 from pisense.backend.classes import Database
 from pisense.backend.models.table_models import DataTable
@@ -10,32 +11,74 @@ from pisense.backend.models.table_models import DataTable
 
 router = APIRouter(prefix="/datatables")
 
+
 # make it return the row numbers and the tablenames
 #   of all the tables in a project
-@router.get("")
-async def read_tables(
-        project_id: int | None
-):
-    db =  Database()
-    if project_id is None:
-        res = db.get_table()
-    else:
-        res = db.get_table(project_id=project_id)
-
-    return {"root": res.to_dict(orient="records")}
-
-@router.get("/{table_name}", response_model=DataTable)
-async def read_single_table(
-        table_name: str,
-        project_id: int | None = None
-):
+@router.get("/")
+async def read_tables(project_id: int | None = None):
     db = Database()
 
     if project_id is None:
-        res = db.get_table(table_name)
+        res = db.get_table(project_id=None)  # or define a clearer "get_all"
     else:
-        res = db.get_table(table_name, project_id)
+        res = db.get_table(project_id=project_id)
 
+    return res
+
+@router.get("/{table_name}", response_model=DataTable)
+async def read_single_table(
+    table_name: str,
+    project_id: int | None = None
+):
+    db = Database()
+
+    res = db.get_table(table_name=table_name, project_id=project_id)
+
+    return {"data": res}
+
+@router.post("/get_rows", response_model=DataTable)
+async def get_rows(
+    table: str,
+    columns: List[str] | None = None,
+    where_condition: str = ""
+):
+    db = Database()
+    res = db._get_rows(table, columns, where_condition)
+
+    return {"data": res}
+
+@router.get("/get_users", response_model=DataTable)
+async def get_users(
+    username: str | None = None,
+):
+    db = Database()
+    res = db.get_users(username=username)
+    return {"data": res.to_dict(orient="records")}
+
+@router.get("/get_projects", response_model=DataTable)
+async def get_projects(
+    name: str | None = None,
+    owner: str | None = None,
+):
+    db = Database()
+    res = db.get_projects(name=name, owner=owner)
+    return {"data": res.to_dict(orient="records")}
+
+@router.get("/get_project", response_model=DataTable)
+async def get_project(
+    project_id: int,
+    name: str | None = None,
+):
+    db = Database()
+    res = db.get_project(project_id, name=name)
+    return {"data": res.to_dict(orient="records")}
+
+@router.get("/get_user_projects", response_model=DataTable)
+async def get_user_projects(
+    id: int | None = None,
+):
+    db = Database()
+    res = db.get_user_projects(id)
     return {"data": res.to_dict(orient="records")}
 
 @router.patch("/edit_point", status_code=200)
@@ -50,7 +93,7 @@ async def edit_point(
 
 @router.patch("/add_point", status_code=200)
 async def add_point(
-        row_data: List[List[int | float | time]],
+        row_data: List[List[Any]],
         row_columns: List[str],
         table_name: str
 ):
@@ -66,7 +109,7 @@ async def remove_point(
     db.modify_row(table_name, row_num,mode="delete")
 
 @router.patch("/add_column", status_code=200)
-async def remove_point(
+async def add_column(
         column_name: List[str],
         column_type: List[str],
         table_name: str
@@ -80,7 +123,27 @@ async def delete_column(
         column_name: List[str],
 ):
     db = Database()
-    db._add_column(table_name, column_name)
+    db._delete_column(table_name, column_name)
+
+@router.patch("/rename_column", status_code=200)
+async def rename_column(
+        table_name: str,
+        old_column_name: str,
+        new_column_name: str
+):
+    db = Database()
+    db.rename_column(table_name,old_column_name,new_column_name)
+
+@router.post("/create_table", status_code=200)
+async def create_table(
+        table_name: str,
+        column_name: List[str],
+        column_type: List[str],
+        project_id: int | None = None
+):
+    db = Database()
+    db.create_table(table_name, column_name, column_type,project_id)
+    return {"table_name": table_name}
 
 @router.post("/upload_manual", status_code=200)
 async def upload_manual(
@@ -145,3 +208,5 @@ async def upload_excel_file(
         # You can return the data in JSON format for the client
         "data_sample": df.head().to_dict(orient="records")
     }
+
+    
