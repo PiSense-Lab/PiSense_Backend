@@ -27,4 +27,13 @@ def test_create_get_users():
         print(out)
         print(type(out))
 
+        token = out["access_token"]
+
+        assert not isinstance(token, type(None))
+        assert out["token_type"] == "bearer"
+
+        verify_out = auth.verify_token(token)
+        print(verify_out)
+        print(type(verify_out))
+
         assert 0 == 1
