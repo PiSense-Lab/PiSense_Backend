@@ -55,6 +55,9 @@ jobs:
         MARIADB_PORT: 3306
         MARIADB_HOST: mariadb
         PISENSE_BACKEND_PORT: 8000
+        PISENSE_AUTH_SECRET_KEY: super_secret_key
+        PISENSE_AUTH_ALGORITHM: HS256
+        PISENSE_AUTH_ACCESS_TOKEN_EXPIRE_MINUTES: 30
 
     - name: Setup compose env file
       uses: cuchi/jinja2-action@v1.3.0
@@ -70,6 +73,9 @@ jobs:
         MARIADB_PORT: 3306
         MARIADB_HOST: mariadb
         PISENSE_BACKEND_PORT: 8000
+        PISENSE_AUTH_SECRET_KEY: super_secret_key
+        PISENSE_AUTH_ALGORITHM: HS256
+        PISENSE_AUTH_ACCESS_TOKEN_EXPIRE_MINUTES: 30
 
     - name: Build Docker image
       run: docker buildx build -f docker/pisense-dockerfile . -t pisense:latest
