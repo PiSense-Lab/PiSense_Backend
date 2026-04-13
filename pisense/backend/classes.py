@@ -224,15 +224,16 @@ class Database():
 
 
         sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
-
-        res = self.connection.execute(text(sql_str))
-
-        out = res.fetchall()
+        try:
+            res = self.connection.execute(text(sql_str))
+            out = res.fetchall()
+        except Exception as e:
+            raise DatabaseError(f"Sql failed: '{sql_str}'") from e
 
         if isinstance(out, List):
             return out
         else:
-            raise Exception("SQL did not return a list")
+            raise DatabaseError("SQL did not return a list")
 
     def _insert_rows(self, table_name: str, column_name: List[str], rows: List[List[str]]):
         """
@@ -538,7 +539,9 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
+
         users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email", "password"], where_condition=where_condition)
+
 
         if len(users) == 0:
             raise DatabaseError("No user found.")

@@ -6,7 +6,7 @@ from datetime import timedelta
 import pytest
 
 @pytest.mark.order(1) # global scope
-def test_create_get_users():
+def test_user_login():
     with TestClient(app): # Will run with lifecycle function
         db = Database()
         auth = Authenticator()
@@ -28,7 +28,10 @@ def test_create_get_users():
         assert isinstance(out, User)
 
         access_token = auth.create_access_token({"sub": user.username}, expires_delta=timedelta(minutes=int(Authenticator().ACCESS_TOKEN_EXPIRE_MINUTES)))
-        assert not isinstance(access_token, type(None))
+        print("Access Token")
+        print(access_token)
+        print(type(access_token))
+        assert isinstance(access_token, dict)
 
         token = access_token["access_token"]
         token_type = access_token["token_type"]
