@@ -23,7 +23,8 @@ def test_create_get_users():
         assert user.role == role
         assert user.email == email
 
-        out = auth.authenticate_user("test_username", user.hashed_password)
+        out = auth.authenticate_user("test_username", password)
+        assert not isinstance(out, type(None))
         print(out)
         print(type(out))
 
