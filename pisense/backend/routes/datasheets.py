@@ -91,6 +91,20 @@ async def edit_point(
         row_columns: List[str],
         table_name: str
 ):
+    """
+    Edits a point in a given table in the database.
+
+    params: 
+        row_num: number of row to be edited
+        row_data: List of ints or floats of values to be edited in row
+        row_columns: 
+            List of column names ordered from left to right  
+            - must be in the same order as in the table in the database
+        table_name: name of table of row to be edited
+
+    Raises:
+
+    """
     db = Database()
     db.modify_row(table_name, row_num, row_data=row_data, row_columns=row_columns, mode="edit")
 
@@ -100,6 +114,21 @@ async def add_point(
         row_columns: List[str],
         table_name: str
 ):
+    """
+    Adds a point to a given table in the database.
+
+    params: 
+        row_data: 
+            a List of all rows to be added  
+            - Each List contains a List of either ints, floats, or times
+        row_columns: 
+            a List of all the columns in a table ordered from left to right  
+            - must be in the same order as in the table in the database
+        table_name: name of table of row to be added
+
+    Raises:
+
+    """
     db = Database()
     db._insert_rows(table_name, row_columns, row_data)
 
@@ -108,6 +137,16 @@ async def remove_point(
         row_num: int,
         table_name: str
 ):
+    """
+    Removes a point from a given table in the database.
+
+    params: 
+        row_num: row number of row to be deleted
+        table_name: name of table of row to be deleted
+
+    Raises:
+
+    """
     db = Database()
     db.modify_row(table_name, row_num,mode="delete")
 
@@ -180,6 +219,22 @@ async def upload_manual(
         json_in: str,
         table_name: str
 ):
+    """
+    Uploads a series of manually entered data in a json string dict format to the Database
+
+    params:
+        json_in: json string with all data to be uploaded
+        table_name: name of table to be uploaded
+
+    Returns: 
+        (str): 
+            table_name - name of table created
+        (str): 
+            json - inputted json string
+
+    Raises:
+
+    """
     db = Database()
     df = pd.DataFrame(json.loads(json_in))
     db.df_create_table(table_name, df)  # come back to for project_id
@@ -191,6 +246,24 @@ async def upload_csv(
         project_id: int | None,
         file: UploadFile = File(...),
 ):
+    """
+    Uploads a csv as a table to the database.
+
+    params:
+        table_name: Name of the table to be created[^1][^2]
+        project_id: Project ID of project to add the table to.
+        file: the file to be read and uploaded to the database. 
+
+    [^1]: Cannot have same name as other table
+    [^2]: Optional, if left blank tablename will take the csv filename
+
+    Returns: 
+        (str): table_name - name of file of created table
+        (str): rows_count - number of rows
+
+    Raises:
+
+    """
     db = Database()
     df = pd.read_csv(BytesIO(await file.read()))
     if table_name is None:
@@ -206,6 +279,19 @@ async def upload_excel_file(
 ):
     """
     Receives an Excel file and processes it using pandas.
+
+    params: 
+        project_id: Project ID of project to add table to.
+        file: the file to be read and uploaded to the database
+
+    Returns: 
+        (str): filename - .xlsx file prefix,
+        (int): rows - num of rows,
+        (int): columns - num of cols,
+        (dict): data_sample - dataframe head - see pandas.dataframe.head
+
+    Raises:
+
     """
     if file.content_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
         raise HTTPException(

@@ -242,15 +242,23 @@ class Database():
         where = f" WHERE {where_condition}" if where_condition else ""
 
         sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
+        try:
+            result = self.connection.execute(text(sql_str))
 
-        result = self.connection.execute(text(sql_str))
 
+            rows = result.fetchall()
+            keys = result.keys()  # column names
 
-        rows = result.fetchall()
-        keys = result.keys()  # column names
+        
+        except Exception as e:
+            raise DatabaseError(f"Sql failed: '{sql_str}'") from e
 
-        # Convert tuples → list of dicts
-        return [dict(zip(keys, row)) for row in rows]
+        if isinstance(rows, List):
+            # Convert tuples → list of dicts
+            return [dict(zip(keys, row)) for row in rows]
+        else:
+            raise DatabaseError("SQL did not return a list")
+
     def _insert_rows(self, table_name: str, column_name: List[str], rows: List[List[str]]):
         """
         Inserts rows into given table.
@@ -653,7 +661,9 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
+
         users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email", "password"], where_condition=where_condition)
+
 
         if len(users) == 0:
             raise DatabaseError("No user found.")
@@ -981,9 +991,10 @@ class Authenticator():
 
         load_dotenv(dotenv_path=".env") # Loads .env file into environment
 
-        self.SECRET_KEY: str = os.getenv("SECRET_KEY")
-        self.ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
-        self.ACCESS_TOKEN_EXPIRE_MINUTES: int=os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
+        self.SECRET_KEY: str = os.getenv("PISENSE_AUTH_SECRET_KEY")
+        self.ALGORITHM: str = os.getenv("PISENSE_AUTH_ALGORITHM", "HS256")
+        self.ACCESS_TOKEN_EXPIRE_MINUTES: int=os.getenv("PISENSE_AUTH_ACCESS_TOKEN_EXPIRE_MINUTES", 30)
+        self.PISENSE_AUTH_ACCESS_TOKEN_REMEMBER_ME_DAYS: int=os.getenv("PISENSE_AUTH_ACCESS_TOKEN_REMEMBER_ME_DAYS", 30)
 
     def authenticate_user(self, username: str, password: str) -> User:
         try:
@@ -993,6 +1004,7 @@ class Authenticator():
 
         if pwd_context.verify(password, user.hashed_password):
             return user
+
 
     def create_access_token(self, data: dict, expires_delta: timedelta | None = None):
         to_encode = data.copy()
