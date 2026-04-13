@@ -14,6 +14,15 @@ router = APIRouter(prefix="/datatables")
 #   of all the tables in a project
 @router.get("/")
 async def read_tables(project_id: int | None = None):
+    """
+    Return table metadata for all tables or for a specific project.
+
+    params:
+        project_id: Optional project ID to filter tables by project.
+
+    returns:
+        List of table metadata records.
+    """
     db = Database()
 
     if project_id is None:
@@ -30,6 +39,17 @@ async def get_rows(
     columns: List[str] | None = None,
     where_condition: str = ""
 ):
+    """
+    Retrieve rows from a single table.
+
+    params:
+        table: Name of the table to query.
+        columns: Optional list of column names to return.
+        where_condition: Optional SQL WHERE filter expression.
+
+    returns:
+        A DataTable response containing the requested rows.
+    """
     db = Database()
     res = db._get_rows(table, columns, where_condition)
 
@@ -37,11 +57,30 @@ async def get_rows(
 
 @router.get("/get_users")
 async def get_users(username: str | None = None):
+    """
+    Retrieve user records.
+
+    params:
+        username: Optional username to filter results.
+
+    returns:
+        List of user objects or matching user records.
+    """
     db = Database()
     return db.get_users(username=username)
 
 @router.get("/get_project")
 async def get_project(project_id: int, name: str | None = None):
+    """
+    Retrieve a single project record.
+
+    params:
+        project_id: ID of the project to retrieve.
+        name: Optional project name to filter by.
+
+    returns:
+        A project dictionary with id, name, description, public, archived, and owner_id.
+    """
     db = Database()
     res = db.get_project(project_id, name=name)
     return {
@@ -55,6 +94,15 @@ async def get_project(project_id: int, name: str | None = None):
 
 @router.get("/get_user_projects")
 async def get_user_projects(user_id: int | None = None):
+    """
+    Retrieve projects associated with a user.
+
+    params:
+        user_id: Optional user ID to filter projects.
+
+    returns:
+        A dictionary containing project records for the user.
+    """
     db = Database()
     res = db.get_projects_for_user(user_id)
     return {"data": res}
@@ -67,6 +115,19 @@ async def create_project(
     public: bool = False,
     archived: bool = False,
 ):
+    """
+    Create a new project.
+
+    params:
+        name: Name of the new project.
+        owner_id: User ID that owns the project.
+        description: Optional description of the project.
+        public: Whether the project is public.
+        archived: Whether the project is archived.
+
+    returns:
+        The created project record.
+    """
     db = Database()
     project = db.create_project(
         name=name,
@@ -156,6 +217,14 @@ async def add_column(
         column_type: List[str],
         table_name: str
 ):
+    """
+    Add one or more columns to an existing table.
+
+    params:
+        column_name: List of column names to add.
+        column_type: Corresponding list of column data types.
+        table_name: Name of the target table.
+    """
     db = Database()
     db._add_column(table_name, column_name, column_type)
 
@@ -164,6 +233,13 @@ async def delete_column(
         table_name: str,
         column_name: List[str],
 ):
+    """
+    Delete one or more columns from a table.
+
+    params:
+        table_name: Name of the target table.
+        column_name: List of column names to remove.
+    """
     db = Database()
     db._delete_column(table_name, column_name)
 
@@ -173,6 +249,14 @@ async def rename_column(
         old_column_name: str,
         new_column_name: str
 ):
+    """
+    Rename a column in a table.
+
+    params:
+        table_name: Name of the target table.
+        old_column_name: Current column name.
+        new_column_name: Desired new column name.
+    """
     db = Database()
     db.rename_column(table_name,old_column_name,new_column_name)
 
@@ -185,6 +269,20 @@ async def create_user(
     firstname: str | None = None,
     lastname: str | None = None,
 ):
+    """
+    Create a new user.
+
+    params:
+        username: Username for the new user.
+        email: Email address.
+        password: Password in plaintext.
+        role: User role enum.
+        firstname: Optional first name.
+        lastname: Optional last name.
+
+    returns:
+        The created user record.
+    """
     db = Database()
     user = db.create_user(
         username=username,
@@ -210,6 +308,18 @@ async def create_table(
         column_type: List[str],
         project_id: int | None = None
 ):
+    """
+    Create a new database table for a project.
+
+    params:
+        table_name: Name of the table to create.
+        column_name: List of column names.
+        column_type: List of corresponding column types.
+        project_id: Optional project ID to associate with the table.
+
+    returns:
+        A dictionary containing the created table name.
+    """
     db = Database()
     db.create_table(table_name, column_name, column_type,project_id)
     return {"table_name": table_name}
@@ -247,22 +357,15 @@ async def upload_csv(
         file: UploadFile = File(...),
 ):
     """
-    Uploads a csv as a table to the database.
+    Upload a CSV file as a new table.
 
     params:
-        table_name: Name of the table to be created[^1][^2]
-        project_id: Project ID of project to add the table to.
-        file: the file to be read and uploaded to the database. 
+        table_name: Optional target table name. If omitted, the CSV filename is used.
+        project_id: Optional project ID to associate the table with.
+        file: Uploaded CSV file.
 
-    [^1]: Cannot have same name as other table
-    [^2]: Optional, if left blank tablename will take the csv filename
-
-    Returns: 
-        (str): table_name - name of file of created table
-        (str): rows_count - number of rows
-
-    Raises:
-
+    returns:
+        The uploaded filename and number of rows imported.
     """
     db = Database()
     df = pd.read_csv(BytesIO(await file.read()))
@@ -330,6 +433,16 @@ async def read_single_table(
     table_name: str,
     project_id: int | None = None
 ):
+    """
+    Retrieve a single table by name.
+
+    params:
+        table_name: Name of the table to retrieve.
+        project_id: Optional project ID to filter by project association.
+
+    returns:
+        A DataTable response containing the table data.
+    """
     db = Database()
 
     res = db.get_table(table_name=table_name, project_id=project_id)
