@@ -27,7 +27,7 @@ def test_user_login():
         out = auth.authenticate_user("test_username", password)
         assert isinstance(out, User)
 
-        token = auth.create_access_token({"sub": user.username}, expires_delta=timedelta(minutes=int(Authenticator().ACCESS_TOKEN_EXPIRE_MINUTES)))
+        token = auth.create_access_token({"sub": user.username})
         assert isinstance(token, str)
 
         verify_out = auth.verify_token(token)
@@ -36,5 +36,20 @@ def test_user_login():
 
         assert isinstance(verify_out, dict)
         assert verify_out["sub"] == username
+        assert isinstance(verify_out["exp"], int)
+        short_expire = verify_out["exp"]
 
-        assert 0 == 1
+        long_token = auth.create_access_token({"sub": user.username}, expires_delta=timedelta(days=int(Authenticator().PISENSE_AUTH_ACCESS_TOKEN_REMEMBER_ME_DAYS)))
+
+        assert isinstance(long_token, str)
+
+        verify_out_long = auth.verify_token(long_token)
+        print(verify_out_long)
+        print(type(verify_out_long))
+
+        assert isinstance(verify_out_long, dict)
+        assert verify_out_long["sub"] == username
+        assert isinstance(verify_out_long["exp"], int)
+        long_expire = verify_out_long["exp"]
+
+        assert long_expire > short_expire
