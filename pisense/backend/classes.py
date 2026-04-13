@@ -328,15 +328,8 @@ class Database():
         except Exception as e:
             raise DatabaseError(f"Error adding to database: {e}") from None # Hides very long and useless traceback
 
-        pk_names = {
-            "users": "id",
-            "projects": "project_id",
-            "user_projects": "user_projects_id",
-        }
-        pk = pk_names.get(table_name, "id")
-
-        keys = [pk] + key  # don't mutate the original
-        return dict(zip(keys, tuple(out)))
+        key.insert(0,"id")
+        return dict(zip(key, out))
 
     def _add_column(self, table_name: str, column_name: List[str], column_type: List[str]):
         """
