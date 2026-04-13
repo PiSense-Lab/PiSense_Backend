@@ -561,7 +561,7 @@ class Database():
         where = []
         where_condition = ""
         if username:
-            where.append(f"username LIKE '{username}'")
+            where.append(f"username LIKE '%{username}%'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
