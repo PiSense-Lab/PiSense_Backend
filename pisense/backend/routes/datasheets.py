@@ -2,10 +2,8 @@ from fastapi import APIRouter, File, UploadFile, status, HTTPException
 from io import BytesIO
 import pandas as pd
 import json
-from datetime import time
 from typing import Any, List
-from typing import List
-from pisense.backend.classes import Database
+from pisense.backend.classes import USER_ROLES, Database
 from pisense.backend.models.table_models import DataTable
 
 
@@ -25,16 +23,6 @@ async def read_tables(project_id: int | None = None):
 
     return res
 
-@router.get("/{table_name}", response_model=DataTable)
-async def read_single_table(
-    table_name: str,
-    project_id: int | None = None
-):
-    db = Database()
-
-    res = db.get_table(table_name=table_name, project_id=project_id)
-
-    return {"data": res}
 
 @router.post("/get_rows", response_model=DataTable)
 async def get_rows(
@@ -47,44 +35,59 @@ async def get_rows(
 
     return {"data": res}
 
-@router.get("/get_users", response_model=DataTable)
-async def get_users(
-    username: str | None = None,
-):
+@router.get("/get_users")
+async def get_users(username: str | None = None):
     db = Database()
-    res = db.get_users(username=username)
-    return {"data": res.to_dict(orient="records")}
+    return db.get_users(username=username)
 
-@router.get("/get_projects", response_model=DataTable)
-async def get_projects(
-    name: str | None = None,
-    owner: str | None = None,
-):
-    db = Database()
-    res = db.get_projects(name=name, owner=owner)
-    return {"data": res.to_dict(orient="records")}
-
-@router.get("/get_project", response_model=DataTable)
-async def get_project(
-    project_id: int,
-    name: str | None = None,
-):
+@router.get("/get_project")
+async def get_project(project_id: int, name: str | None = None):
     db = Database()
     res = db.get_project(project_id, name=name)
-    return {"data": res.to_dict(orient="records")}
+    return {
+        "id": res.id,
+        "name": res.name,
+        "description": res.description,
+        "public": res.public,
+        "archived": res.archived,
+        "owner_id": res.owner_id,
+    }
 
-@router.get("/get_user_projects", response_model=DataTable)
-async def get_user_projects(
-    id: int | None = None,
+@router.get("/get_user_projects")
+async def get_user_projects(user_id: int | None = None):
+    db = Database()
+    res = db.get_projects_for_user(user_id)
+    return {"data": res}
+
+@router.post("/create_project", status_code=201)
+async def create_project(
+    name: str,
+    owner_id: int,
+    description: str = "",
+    public: bool = False,
+    archived: bool = False,
 ):
     db = Database()
-    res = db.get_user_projects(id)
-    return {"data": res.to_dict(orient="records")}
+    project = db.create_project(
+        name=name,
+        owner_id=owner_id,
+        description=description,
+        public=public,
+        archived=archived,
+    )
+    return {
+        "id": project.id,
+        "name": project.name,
+        "description": project.description,
+        "public": project.public,
+        "archived": project.archived,
+        "owner_id": project.owner_id,
+    }
 
 @router.patch("/edit_point", status_code=200)
 async def edit_point(
         row_num: int,
-        row_data: List[int | float],
+        row_data: List[Any],
         row_columns: List[str],
         table_name: str
 ):
@@ -133,6 +136,33 @@ async def rename_column(
 ):
     db = Database()
     db.rename_column(table_name,old_column_name,new_column_name)
+
+@router.post("/create_user", status_code=201)
+async def create_user(
+    username: str,
+    email: str,
+    password: str,
+    role: USER_ROLES = USER_ROLES.viewer,
+    firstname: str | None = None,
+    lastname: str | None = None,
+):
+    db = Database()
+    user = db.create_user(
+        username=username,
+        role=role,
+        email=email,
+        password=password,
+        firstname=firstname,
+        lastname=lastname,
+    )
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "role": user.role.name,
+        "firstname": user.firstname,
+        "lastname": user.lastname,
+    }
 
 @router.post("/create_table", status_code=200)
 async def create_table(
@@ -209,4 +239,13 @@ async def upload_excel_file(
         "data_sample": df.head().to_dict(orient="records")
     }
 
-    
+@router.get("/{table_name}", response_model=DataTable)
+async def read_single_table(
+    table_name: str,
+    project_id: int | None = None
+):
+    db = Database()
+
+    res = db.get_table(table_name=table_name, project_id=project_id)
+
+    return {"data": res}

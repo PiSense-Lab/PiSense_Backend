@@ -18,12 +18,19 @@ import sys
 from fastapi import Depends, HTTPException
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
-def database_to_user(user: tuple) -> "User":
-    #["id", "username", "firstname", "lastname", "role", "email"]
-    return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), role=str(user[4]), email=str(user[5]), hashed_password=str(user[6]))
+def database_to_user(user: dict) -> "User":
+    return User(
+        id=int(user["id"]),
+        username=str(user["username"]),
+        firstname=str(user["firstname"]),
+        lastname=str(user["lastname"]),
+        role=str(user["role"]),
+        email=str(user["email"]),
+        hashed_password=str(user["password"])
+    )
 
-def database_to_project(project: tuple, database: "Database") -> "Project":
-    users = database.get_user_projects(project_id=project[0])
+def database_to_project(project: dict, database: "Database") -> "Project":
+    users = database.get_user_projects(project_id=project["project_id"])
     owner_id = None
     for u in users:
         if u["role"] == USER_ROLES.admin.name:
@@ -31,9 +38,16 @@ def database_to_project(project: tuple, database: "Database") -> "Project":
             break
 
     if not owner_id:
-        raise DatabaseError(f"Could not find valid owner for project {project[0]} | {project[1]}")
+        raise DatabaseError(f"Could not find valid owner for project {project['project_id']} | {project['project_name']}")
 
-    return Project(id=int(project[0]), name=str(project[1]), description=str(project[2]), public=bool(project[3]), archived=bool(project[4]), owner_id=owner_id)
+    return Project(
+        id=int(project["project_id"]),
+        name=str(project["project_name"]),
+        description=str(project["description"]),
+        public=bool(project["public"]),
+        archived=bool(project["archived"]),
+        owner_id=owner_id
+    )
 
 def database_user_project_to_dict( user_project: tuple ) -> dict:
     return {
@@ -52,7 +66,7 @@ class ValidationError(Exception):
 def valid_identifier(name):
     return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name))
 
-class USER_ROLES(Enum):
+class USER_ROLES(str, Enum):
     admin = 1
     analyst = 2
     viewer = 3
@@ -229,8 +243,8 @@ class Database():
 
         sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
 
-        result = self._connection.execute(text(sql_str))
-        res = self.connection.execute(text(sql_str))
+        result = self.connection.execute(text(sql_str))
+
 
         rows = result.fetchall()
         keys = result.keys()  # column names
@@ -276,7 +290,7 @@ class Database():
 
 
             d_rows = dict(zip(column_name, row))
-            self.connection.execute(query, d_rows).fetchall()    #safe parameter binding
+            self.connection.execute(query, d_rows)    #safe parameter binding
 
         self.connection.commit()
         return f"{len(rows)} rows inserted!"
@@ -306,9 +320,15 @@ class Database():
         except Exception as e:
             raise DatabaseError(f"Error adding to database: {e}") from None # Hides very long and useless traceback
 
-        key.insert(0, "id") # Adds id column to the front of the final output
+        pk_names = {
+            "users": "id",
+            "projects": "project_id",
+            "user_projects": "user_projects_id",
+        }
+        pk = pk_names.get(table_name, "id")
 
-        return dict(zip(key, tuple(out)))
+        keys = [pk] + key  # don't mutate the original
+        return dict(zip(keys, tuple(out)))
 
     def _add_column(self, table_name: str, column_name: List[str], column_type: List[str]):
         """
@@ -417,81 +437,74 @@ class Database():
         self.connection.commit()
 
         return {"message": "Rows updated successfully"}
-        def rename_column(self, table_name: str, old_column_name: str, new_column_name: str):
-            if not valid_identifier(table_name):
-                raise HTTPException(status_code=400, detail="Invalid table name")
-            if not valid_identifier(old_column_name):
-                raise HTTPException(status_code=400, detail="Invalid old column name")
-            if not valid_identifier(new_column_name):
-                raise HTTPException(status_code=400, detail="Invalid new column name")
+    def rename_column(self, table_name: str, old_column_name: str, new_column_name: str):
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+        if not valid_identifier(old_column_name):
+            raise HTTPException(status_code=400, detail="Invalid old column name")
+        if not valid_identifier(new_column_name):
+            raise HTTPException(status_code=400, detail="Invalid new column name")
 
-            res = self._connection.execute(text(f"DESCRIBE `{table_name}`"))
-            schema_rows = res.fetchall()
-            schema = {
-                col[0]: {
-                    "type": col[1],
-                    "null": col[2],
-                    "default": col[4],
-                    "extra": col[5] or "",
-                }
-                for col in schema_rows
+        res = self.connection.execute(text(f"DESCRIBE `{table_name}`"))
+        schema_rows = res.fetchall()
+        schema = {
+            col[0]: {
+                "type": col[1],
+                "null": col[2],
+                "default": col[4],
+                "extra": col[5] or "",
             }
+            for col in schema_rows
+        }
 
-            if old_column_name not in schema:
-                raise HTTPException(status_code=400, detail=f"Column {old_column_name} does not exist in table {table_name}")
-            if new_column_name in schema:
-                raise HTTPException(status_code=400, detail=f"Column {new_column_name} already exists in table {table_name}")
+        if old_column_name not in schema:
+            raise HTTPException(status_code=400, detail=f"Column {old_column_name} does not exist in table {table_name}")
+        if new_column_name in schema:
+            raise HTTPException(status_code=400, detail=f"Column {new_column_name} already exists in table {table_name}")
+        col_info = schema[old_column_name]
+        null_clause = "NOT NULL" if col_info["null"] == "NO" else "NULL"
+        default_clause = ""
+        if col_info["default"] is not None:
+            default_value = col_info["default"]
+            default_clause = f"DEFAULT '{default_value}'" if isinstance(default_value, str) else f"DEFAULT {default_value}"
+        query = text(
+            f"ALTER TABLE `{table_name}` "
+            f"CHANGE `{old_column_name}` `{new_column_name}` "
+            f"{col_info['type']} {null_clause} {default_clause} {col_info['extra']}".strip()
+        )
 
-            col_info = schema[old_column_name]
-            null_clause = "NOT NULL" if col_info["null"] == "NO" else "NULL"
-            default_clause = ""
-            if col_info["default"] is not None:
-                default_value = col_info["default"]
-                default_clause = f"DEFAULT '{default_value}'" if isinstance(default_value, str) else f"DEFAULT {default_value}"
+        self.connection.execute(query)
+        self.connection.commit()
+        return f"Column '{old_column_name}' renamed to '{new_column_name}' in table '{table_name}'"
 
-            query = text(
-                f"ALTER TABLE `{table_name}` "
-                f"CHANGE `{old_column_name}` `{new_column_name}` "
-                f"{col_info['type']} {null_clause} {default_clause} {col_info['extra']}".strip()
-            )
+    def _delete_column(self, table_name: str, column_name: List[str]):
+        """
+        Deletes column(s) from existing table
+        """
+        # Validate table name
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+        # Validate column names
+        for col in column_name:
+            if not valid_identifier(col.strip()):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
-            self.connection.execute(query)
-            self.connection.commit()
+        # Fetch existing columns
+        res = self.connection.execute(text(f"DESCRIBE `{table_name}`"))
+        existing_columns = {col[0] for col in res.fetchall()}
 
-            return f"Column '{old_column_name}' renamed to '{new_column_name}' in table '{table_name}'"
-        
-        def _delete_column(self, table_name: str, column_name: List[str]):
-            """
-            Deletes column(s) from existing table
-            """
-            # Validate table name
-            if not valid_identifier(table_name):
-                raise HTTPException(status_code=400, detail="Invalid table name")
+        # Check if columns exist
+        for col in column_name:
+            if col not in existing_columns:
+                raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
 
-            # Validate column names
-            for col in column_name:
-                if not valid_identifier(col.strip()):
-                    raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+        # Build drop queries
+        drop_clauses = [f"DROP COLUMN `{col.strip()}`" for col in column_name]
+        query = f"ALTER TABLE `{table_name}` {', '.join(drop_clauses)}"
 
-            # Fetch existing columns
-            res = self.connection.execute(text(f"DESCRIBE `{table_name}`"))
-            existing_columns = {col[0] for col in res.fetchall()}
-
-            # Check if columns exist
-            for col in column_name:
-                if col not in existing_columns:
-                    raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
-
-            # Build drop queries
-            drop_clauses = [f"DROP COLUMN `{col.strip()}`" for col in column_name]
-            query = f"ALTER TABLE `{table_name}` {', '.join(drop_clauses)}"
-
-            self.connection.execute(text(query))
-            self.connection.commit()
-
-            return f"Column(s) {', '.join(column_name)} deleted from table {table_name}"
-
-        from sqlalchemy import text
+        self.connection.execute(text(query))
+        self.connection.commit()
+        return f"Column(s) {', '.join(column_name)} deleted from table {table_name}"
 
     def register_dataset(self, project_id: int, table_name: str):
         """
@@ -503,7 +516,7 @@ class Database():
             raise ValueError("Invalid table name")
 
         # Check if project exists
-        res = self._connection.execute(
+        res = self.connection.execute(
             text("SELECT project_id FROM projects WHERE project_id = :pid"),
             {"pid": project_id}
         )
@@ -512,10 +525,10 @@ class Database():
             raise ValueError(f"Project with ID {project_id} does not exist")
 
         # Check if already registered
-        res = self._connection.execute(
+        res = self.connection.execute(
             text("""
-                SELECT dataset_id 
-                FROM dataset 
+                SELECT dataset_id
+                FROM dataset
                 WHERE table_name = :tname AND project_id = :pid
             """),
             {"tname": table_name, "pid": project_id}
@@ -525,7 +538,7 @@ class Database():
             raise ValueError(f"Table '{table_name}' is already linked to project {project_id}")
 
         # Insert into dataset
-        self._connection.execute(
+        self.connection.execute(
             text("""
                 INSERT INTO dataset (project_id, table_name)
                 VALUES (:pid, :tname)
@@ -536,7 +549,7 @@ class Database():
         self.connection.commit()
 
         return {"message": f"Table '{table_name}' linked to project {project_id} successfully"}
-    
+
     def get_users(self, username: str | None = None) -> list[User]:
         """
         Returns a list of users.
@@ -547,7 +560,7 @@ class Database():
         where = []
         where_condition = ""
         if username:
-            where.append(f"username LIKE '%{username}%'")
+            where.append(f"username LIKE '{username}'")
 
         if len(where) > 0:
             where_condition = f"{where[0]}"
@@ -666,15 +679,12 @@ class Database():
                 for w in range(1, len(where)):
                     where_condition = f"{where_condition} AND {where[w]}"
 
-        out =  self._get_rows("user_projects", ["user_projects_id", "user_id", "project_id", "role"], where_condition=where_condition)
+        return self._get_rows("user_projects", ["user_projects_id", "user_id", "project_id", "role"], where_condition=where_condition)
 
-        ret = []
-        for row in out:
-            ret.append(database_user_project_to_dict(row))
+    def get_projects_for_user(self, user_id: int) -> list[Project]:
+        user_projects = self.get_user_projects(user_id=user_id)
+        return [self.get_project(id=up["project_id"]) for up in user_projects]
 
-        return ret
-
-    from sqlalchemy import text
 
     def get_table(self, table_name: str | None = None, project_id: int | None = None):
 
@@ -709,7 +719,7 @@ class Database():
             )
 
             if df.empty:
-                raise DatabaseError("No data found")
+                return []
 
             return df.to_dict(orient="records")
 
@@ -726,7 +736,7 @@ class Database():
             )
 
             if df.empty:
-                raise DatabaseError("No data found")
+                return []
 
             return df.to_dict(orient="records")
 
@@ -805,7 +815,7 @@ class Database():
 
             query = f"CREATE TABLE {table_name} ({cols})"
 
-            self._connection.execute(text(query))
+            self.connection.execute(text(query))
             print("Table success!")
             self.connection.execute(text(query))
             print("Table success!")
@@ -837,7 +847,7 @@ class Database():
             try:
                 # if the table exists it will fail with a ValueError
                 df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
-                # self._connection.execute(text(""))
+                # self.connection.execute(text(""))
             except Exception as e:
                 print(f"Error: {e}")
             try:
@@ -866,7 +876,7 @@ class Database():
                     raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
             # Fetch column types from the existing table
-            res = self._connection.execute(text(f"DESCRIBE {table_name}"))
+            res = self.connection.execute(text(f"DESCRIBE {table_name}"))
             schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
             # Fetch column types from the existing table
             res = self.connection.execute(text(f"DESCRIBE {table_name}"))
@@ -880,20 +890,20 @@ class Database():
 
             if mode == "edit":
                 if row_data is not None and row_columns is not None:
-                    query = f"UPDATE {table_name} SET " # WHERE index={row_num}"
+                    set_clause = ", ".join(f"{col} = :{col}" for col in row_columns)
+                    query = text(f"UPDATE {table_name} SET {set_clause} WHERE `id` = :row_id")
 
-                    # for col, data in zip(row_columns, row_data):
-                    e_query = ", ".join(f"{col} = {data}" for col, data in zip(row_columns, row_data))
-                    query += e_query
-                    query += f" WHERE `index`={row_num}"
+                    params = dict(zip(row_columns, row_data))
+                    params["row_id"] = row_num
 
-                    return_msg = f"Row in {table_name} updated to {row_data}"
-
+                    self.connection.execute(query, params)
+                    self.connection.commit()
+                    return f"Row in {table_name} updated to {row_data}"
                 else:
                     raise HTTPException(status_code=400, detail="No row or column data")
 
             if mode == "delete":
-                query = f"DELETE FROM {table_name} WHERE index={row_num}"
+                query = f"DELETE FROM {table_name} WHERE `id`={row_num}"
 
                 return_msg = f"Row in {table_name} at {row_num} deleted"
 
