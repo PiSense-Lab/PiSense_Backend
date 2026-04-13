@@ -806,6 +806,7 @@ class Authenticator():
         self.SECRET_KEY: str = os.getenv("PISENSE_AUTH_SECRET_KEY")
         self.ALGORITHM: str = os.getenv("PISENSE_AUTH_ALGORITHM", "HS256")
         self.ACCESS_TOKEN_EXPIRE_MINUTES: int=os.getenv("PISENSE_AUTH_ACCESS_TOKEN_EXPIRE_MINUTES", 30)
+        self.PISENSE_AUTH_ACCESS_TOKEN_REMEMBER_ME_DAYS: int=os.getenv("PISENSE_AUTH_ACCESS_TOKEN_REMEMBER_ME_DAYS", 30)
 
     def authenticate_user(self, username: str, password: str) -> User:
         try:
