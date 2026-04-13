@@ -816,7 +816,7 @@ class Authenticator():
 
         if pwd_context.verify(password, user.hashed_password):
             return user
-        
+
 
     def create_access_token(self, data: dict, expires_delta: timedelta | None = None):
         to_encode = data.copy()

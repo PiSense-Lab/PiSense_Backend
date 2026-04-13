@@ -5,7 +5,6 @@ import json
 from datetime import time
 from typing import List
 from pisense.backend.classes import Database
-from pisense.backend.models.table_models import DataTable
 
 
 router = APIRouter(prefix="/datatables")

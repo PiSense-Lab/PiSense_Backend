@@ -26,7 +26,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), ext
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     expire: timedelta | None = None
     if extended:
         expire = timedelta(days=int(Authenticator().PISENSE_AUTH_ACCESS_TOKEN_REMEMBER_ME_DAYS))
