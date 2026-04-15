@@ -5,7 +5,6 @@ import json
 from datetime import time
 from typing import List
 from pisense.backend.classes import Database
-from pisense.backend.models.table_models import DataTable
 
 
 router = APIRouter(prefix="/datatables")
@@ -23,7 +22,11 @@ async def read_tables(
         project_id: ID of project to grab all table names from
 
     Returns: 
+<<<<<<< HEAD
         {root: all table names associated with project_id}  
+=======
+        (dict): root - all table names associated with project_id  
+>>>>>>> ca80142dd0bbfcb10ccbc4908dc9d2ebf3c5f106
             - records styled dicts - see pandas.dataframe.to_dict
 
     Raises:
@@ -37,7 +40,11 @@ async def read_tables(
 
     return {"root": res.to_dict(orient="records")}
 
+<<<<<<< HEAD
 @router.get("/{table_name}") # , response_model=DataTable)
+=======
+@router.get("/{table_name}")
+>>>>>>> ca80142dd0bbfcb10ccbc4908dc9d2ebf3c5f106
 async def read_single_table(
         table_name: str,
         project_id: int | None = None
@@ -50,7 +57,11 @@ async def read_single_table(
         project_id: Project ID of the project the table is attatched to
 
     Returns: 
+<<<<<<< HEAD
         {data: table with same name as table_name}  
+=======
+        (dict): data - table with same name as table_name  
+>>>>>>> ca80142dd0bbfcb10ccbc4908dc9d2ebf3c5f106
             - records styled dicts - see pandas.dataframe.to_dict
 
     Raises:
@@ -145,7 +156,14 @@ async def upload_manual(
         table_name: name of table to be uploaded
 
     Returns: 
+<<<<<<< HEAD
         {table_name: "", json: ""}
+=======
+        (str): 
+            table_name - name of table created
+        (str): 
+            json - inputted json string
+>>>>>>> ca80142dd0bbfcb10ccbc4908dc9d2ebf3c5f106
 
     Raises:
 
@@ -165,15 +183,27 @@ async def upload_csv(
     Uploads a csv as a table to the database.
 
     params:
+<<<<<<< HEAD
         table_name: Name of the table to be created [^1] [^2]
         project_id: Project ID of project to add the table to.
         file: the file to be read and uploaded to the database. 
+=======
+        table_name: Name of the table to be created[^1][^2]
+        project_id: Project ID of project to add the table to.
+        file: the file to be read and uploaded to the database. 
+
+>>>>>>> ca80142dd0bbfcb10ccbc4908dc9d2ebf3c5f106
     [^1]: Cannot have same name as other table
     [^2]: Optional, if left blank tablename will take the csv filename
 
     Returns: 
+<<<<<<< HEAD
         filename: name of file of created table
         rows_count: number of rows
+=======
+        (str): table_name - name of file of created table
+        (str): rows_count - number of rows
+>>>>>>> ca80142dd0bbfcb10ccbc4908dc9d2ebf3c5f106
 
     Raises:
 
@@ -199,10 +229,17 @@ async def upload_excel_file(
         file: the file to be read and uploaded to the database
 
     Returns: 
+<<<<<<< HEAD
         filename: "",
         rows: num of rows,
         columns: num of cols,
         data_sample: dataframe head - see pandas.dataframe.head
+=======
+        (str): filename - .xlsx file prefix,
+        (int): rows - num of rows,
+        (int): columns - num of cols,
+        (dict): data_sample - dataframe head - see pandas.dataframe.head
+>>>>>>> ca80142dd0bbfcb10ccbc4908dc9d2ebf3c5f106
 
     Raises:
 

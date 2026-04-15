@@ -15,7 +15,7 @@ async def verify_user_token(payload=Depends(Authenticator().verify_token)):
     return {"message": "Token is valid", "payload": payload}
 
 @router.post("/token")
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), extended: bool | None = None, ):
     try:
         user = Authenticator().authenticate_user(form_data.username, form_data.password)
     except DatabaseError:
@@ -27,5 +27,9 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token= Authenticator().create_access_token(data={"sub": user.username}, expires_delta=timedelta(minutes=int(Authenticator().ACCESS_TOKEN_EXPIRE_MINUTES)))
+    expire: timedelta | None = None
+    if extended:
+        expire = timedelta(days=int(Authenticator().PISENSE_AUTH_ACCESS_TOKEN_REMEMBER_ME_DAYS))
+
+    access_token= Authenticator().create_access_token(data={"sub": user.username}, expires_delta=expire)
     return {"access_token": access_token, "token_type": "bearer"}

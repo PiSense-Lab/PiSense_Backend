@@ -1,5 +1,6 @@
 ## API Documentation
 
+<<<<<<< HEAD
 [/weather](#/weather)
 [/datatables](#/datatables)
 [/user](#/user)
@@ -71,4 +72,14 @@ Gets the inputted table and returns the entire table
 
 ### /user
 
+=======
+### /weather
+:::backend.routes.weather
+
+### /datatables
+:::backend.routes.datasheets
+
+### /user
+:::backend.routes.user
+>>>>>>> ca80142dd0bbfcb10ccbc4908dc9d2ebf3c5f106
 

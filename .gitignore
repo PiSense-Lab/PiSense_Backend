@@ -14,4 +14,4 @@ build/*
 .testvenv/*
 pisense_backend.egg.info/*
 test.py
-**/site/*
+/site/*

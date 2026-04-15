@@ -36,10 +36,11 @@ tests = [
 
 [tool.ruff.lint]
 select = ["E", "F", "W"]
-ignore = ["E501"]
+ignore = ["E501", "W291"]
 
 [tool.ruff]
 include = ["test/*", "pisense/*", "e2e/*"]
+extend-exclude = ["*.md"]
 
 [tool.setuptools.packages.find]
 include = ["pisense*"]
