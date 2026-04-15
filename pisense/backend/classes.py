@@ -74,7 +74,6 @@ class USER_ROLES(str, Enum):
 class User():
 
     def __init__(self, id: int, username: str, email: str, firstname: str, lastname: str, hashed_password: str):
-    def __init__(self, id: int, username: str, email: str, firstname: str, lastname: str, hashed_password: str):
         self.id = id
         self.username = username
         self.email = email
@@ -83,7 +82,6 @@ class User():
         self.hashed_password = hashed_password
 
     def __str__(self):
-        return f"({self.id}, {self.username}, {self.email}, {self.firstname}, {self.lastname})"
         return f"({self.id}, {self.username}, {self.email}, {self.firstname}, {self.lastname})"
 
 
