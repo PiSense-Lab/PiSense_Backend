@@ -10,12 +10,12 @@ def test_create_get_projects():
         db = Database()
 
         # Assume these work as intended, create_user() is tested elsewhere
-        user1 = db.create_user("user_1_project", role=USER_ROLES.admin, email="user1@email.com", password="jkl")
-        user2 = db.create_user("user_2_project", role=USER_ROLES.admin, email="user2@email.com", password="sds")
-        user3 = db.create_user("user_3_project", role=USER_ROLES.admin, email="user3@email.com", password="wef")
+        user1 = db.create_user("user_1_project", email="user1@email.com", password="jkl")
+        user2 = db.create_user("user_2_project", email="user2@email.com", password="sds")
+        user3 = db.create_user("user_3_project", email="user3@email.com", password="wef")
 
-        user1_2 = db.create_user("user_1_2_project", role=USER_ROLES.analyst, email="user1_2@email.com", password="jkl")
-        user1_3 = db.create_user("user_1_3_project", role=USER_ROLES.viewer, email="user1_3@email.com", password="jkl")
+        user1_2 = db.create_user("user_1_2_project", email="user1_2@email.com", password="jkl")
+        user1_3 = db.create_user("user_1_3_project", email="user1_3@email.com", password="jkl")
 
         project_name = "test_project_base"
         description = ""
