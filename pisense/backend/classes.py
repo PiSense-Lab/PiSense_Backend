@@ -58,7 +58,6 @@ def database_user_project_to_dict( user_project: tuple ) -> dict:
 
 def user_dict_to_user( u: dict ) -> "User":
     return User(id=u["id"], username=u["username"], email=u["email"], firstname=u["firstname"], lastname=u["lastname"], hashed_password=u['password'])
-    return User(id=u["id"], username=u["username"], email=u["email"], firstname=u["firstname"], lastname=u["lastname"], hashed_password=u['password'])
 
 class ValidationError(Exception):
     pass
@@ -655,7 +654,6 @@ class Database():
 
 
         users = self._get_rows("users", ["id", "username", "firstname", "lastname", "email", "password"], where_condition=where_condition)
-        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "email", "password"], where_condition=where_condition)
 
 
         if len(users) == 0:
@@ -991,7 +989,6 @@ class Authenticator():
     def authenticate_user(self, username: str, password: str) -> User:
         try:
             user: User = Database().get_user(username=username)
-            print( user )
         except DatabaseError as e:
             raise e
 
