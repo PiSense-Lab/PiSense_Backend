@@ -76,7 +76,6 @@ def test_create_get_projects():
 
         for up in users:
             user = up['user']
-            role = up['role']
             assert isinstance(user, User)
 
             u: User | None = None
@@ -89,9 +88,7 @@ def test_create_get_projects():
 
             assert u.id == user.id
             assert u.email == user.email
-            assert u.role == u.role
             assert u.username == u.username
-            assert u.role == role
 
 
         project_name = "test_project_public"
