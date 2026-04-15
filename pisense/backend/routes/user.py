@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from pisense.backend.classes import USER_ROLES, Database
+
 from fastapi import APIRouter, HTTPException
 from pisense.backend.classes import Authenticator, Database
 
@@ -51,3 +53,72 @@ async def get_all_users():
     """
     db = Database()
     return db.get_users()
+
+async def get_users(username: str | None = None):
+    """
+    Retrieve user records.
+
+    params:
+        username: Optional username to filter results.
+
+    returns:
+        List of user objects or matching user records.
+    """
+    db = Database()
+    return db.get_users(username=username)
+
+
+@router.get("/get_user_projects")
+async def get_user_projects(user_id: int | None = None):
+    """
+    Retrieve projects associated with a user.
+
+    params:
+        user_id: Optional user ID to filter projects.
+
+    returns:
+        A dictionary containing project records for the user.
+    """
+    db = Database()
+    res = db.get_projects_for_user(user_id)
+    return {"data": res}
+
+
+@router.post("/create_user", status_code=201)
+async def create_user(
+    username: str,
+    email: str,
+    password: str,
+    firstname: str | None = None,
+    lastname: str | None = None,
+):
+    """
+    Create a new user.
+
+    params:
+        username: Username for the new user.
+        email: Email address.
+        password: Password in plaintext.
+        role: User role enum.
+        firstname: Optional first name.
+        lastname: Optional last name.
+
+    returns:
+        The created user record.
+    """
+    db = Database()
+    user = db.create_user(
+        username=username,
+        email=email,
+        password=password,
+        firstname=firstname,
+        lastname=lastname,
+    )
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "firstname": user.firstname,
+        "lastname": user.lastname,
+    }
+

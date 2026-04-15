@@ -2,9 +2,9 @@ from fastapi import APIRouter, File, UploadFile, status, HTTPException
 from io import BytesIO
 import pandas as pd
 import json
-from datetime import time
-from typing import List
-from pisense.backend.classes import Database
+from typing import Any, List
+from pisense.backend.classes import USER_ROLES, Database
+from pisense.backend.models.table_models import DataTable
 
 
 router = APIRouter(prefix="/datatables")
@@ -16,7 +16,7 @@ async def get_tables(
         project_id: int
 ):
     """
-    Gets all tables associated with a project from the database.
+    Return table metadata for all tables or for a specific project.
 
     params:
         project_id: ID of project to grab all table names from
@@ -47,6 +47,7 @@ async def read_single_table(
 
     Returns: 
         (dict): data - table with same name as table_name  
+            - records styled dicts - see pandas.dataframe.to_dict
 
     Raises:
 
@@ -54,16 +55,41 @@ async def read_single_table(
     db = Database()
 
     if project_id is None:
-        res = db.get_table(table_name)
+        res = db.get_table(project_id=None)  # or define a clearer "get_all"
     else:
-        res = db.get_table(table_name, project_id)
+        res = db.get_table(project_id=project_id)
 
-    return {"data": res.to_dict(orient="records")}
+    return res
+
+
+@router.post("/get_rows", response_model=DataTable)
+async def get_rows(
+    table: str,
+    columns: List[str] | None = None,
+    where_condition: str = ""
+):
+    """
+    Retrieve rows from a single table.
+
+    params:
+        table: Name of the table to query.
+        columns: Optional list of column names to return.
+        where_condition: Optional SQL WHERE filter expression.
+
+    returns:
+        A DataTable response containing the requested rows.
+    """
+    db = Database()
+    res = db._get_rows(table, columns, where_condition)
+
+    return {"data": res}
+
+
 
 @router.patch("/edit_point", status_code=200)
 async def edit_point(
         row_num: int,
-        row_data: List[int | float],
+        row_data: List[Any],
         row_columns: List[str],
         table_name: str
 ):
@@ -86,7 +112,7 @@ async def edit_point(
 
 @router.patch("/add_point", status_code=200)
 async def add_point(
-        row_data: List[List[int | float | time]],
+        row_data: List[List[Any]],
         row_columns: List[str],
         table_name: str
 ):
@@ -126,6 +152,115 @@ async def remove_point(
     db = Database()
     db.modify_row(table_name, row_num,mode="delete")
 
+@router.patch("/add_column", status_code=200)
+async def add_column(
+        column_name: List[str],
+        column_type: List[str],
+        table_name: str
+):
+    """
+    Add one or more columns to an existing table.
+
+    params:
+        column_name: List of column names to add.
+        column_type: Corresponding list of column data types.
+        table_name: Name of the target table.
+    """
+    db = Database()
+    db._add_column(table_name, column_name, column_type)
+
+@router.patch("/delete_column", status_code=200)
+async def delete_column(
+        table_name: str,
+        column_name: List[str],
+):
+    """
+    Delete one or more columns from a table.
+
+    params:
+        table_name: Name of the target table.
+        column_name: List of column names to remove.
+    """
+    db = Database()
+    db._delete_column(table_name, column_name)
+
+@router.patch("/rename_column", status_code=200)
+async def rename_column(
+        table_name: str,
+        old_column_name: str,
+        new_column_name: str
+):
+    """
+    Rename a column in a table.
+
+    params:
+        table_name: Name of the target table.
+        old_column_name: Current column name.
+        new_column_name: Desired new column name.
+    """
+    db = Database()
+    db.rename_column(table_name,old_column_name,new_column_name)
+
+@router.post("/create_user", status_code=201)
+async def create_user(
+    username: str,
+    email: str,
+    password: str,
+    firstname: str | None = None,
+    lastname: str | None = None,
+):
+    """
+    Create a new user.
+
+    params:
+        username: Username for the new user.
+        email: Email address.
+        password: Password in plaintext.
+        role: User role enum.
+        firstname: Optional first name.
+        lastname: Optional last name.
+
+    returns:
+        The created user record.
+    """
+    db = Database()
+    user = db.create_user(
+        username=username,
+        email=email,
+        password=password,
+        firstname=firstname,
+        lastname=lastname,
+    )
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "firstname": user.firstname,
+        "lastname": user.lastname,
+    }
+
+@router.post("/create_table", status_code=200)
+async def create_table(
+        table_name: str,
+        column_name: List[str],
+        column_type: List[str],
+        project_id: int | None = None
+):
+    """
+    Create a new database table for a project.
+
+    params:
+        table_name: Name of the table to create.
+        column_name: List of column names.
+        column_type: List of corresponding column types.
+        project_id: Optional project ID to associate with the table.
+
+    returns:
+        A dictionary containing the created table name.
+    """
+    db = Database()
+    db.create_table(table_name, column_name, column_type,project_id)
+    return {"table_name": table_name}
 
 @router.post("/upload_manual", status_code=200)
 async def upload_manual(
@@ -161,7 +296,7 @@ async def upload_csv(
         file: UploadFile = File(...),
 ):
     """
-    Uploads a csv as a table to the database.
+    Upload a CSV file as a new table.
 
     params:
         table_name: Name of the table to be created[^1][^2]
@@ -238,3 +373,4 @@ async def upload_excel_file(
         # You can return the data in JSON format for the client
         "data_sample": df.head().to_dict(orient="records")
     }
+
