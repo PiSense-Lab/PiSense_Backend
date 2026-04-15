@@ -14,14 +14,12 @@ def test_user_login():
         username = "test_username"
         email = "blank@email.com"
         password = "defnitly_hashed"
-        role = USER_ROLES.admin
 
-        user = db.create_user(username=username, role=role, email=email, password=password)
+        user = db.create_user(username=username, email=email, password=password)
         print("User object from `create_user`")
         print(user)
         assert isinstance(user, User)
         assert user.username == username
-        assert user.role == role
         assert user.email == email
 
         out = auth.authenticate_user("test_username", password)
