@@ -13,7 +13,7 @@ router = APIRouter(prefix="/datatables")
 #   of all the tables in a project
 @router.get("")
 async def get_tables(
-        project_id: int | None
+        project_id: int
 ):
     """
     Gets all tables associated with a project from the database.
@@ -29,12 +29,9 @@ async def get_tables(
 
     """
     db =  Database()
-    if project_id is None:
-        res = db.get_table()
-    else:
-        res = db.get_table(project_id=project_id)
+    res = db.get_all_tablenames()
 
-    return {"root": res.to_dict(orient="records")}
+    return res
 
 @router.get("/{table_name}")
 async def read_single_table(
@@ -133,7 +130,8 @@ async def remove_point(
 @router.post("/upload_manual", status_code=200)
 async def upload_manual(
         json_in: str,
-        table_name: str
+        project_id: int,
+        table_name: str,
 ):
     """
     Uploads a series of manually entered data in a json string dict format to the Database
@@ -153,13 +151,13 @@ async def upload_manual(
     """
     db = Database()
     df = pd.DataFrame(json.loads(json_in))
-    db.df_create_table(table_name, df)  # come back to for project_id
+    db.df_create_table(project_id, table_name, df)  # come back to for project_id
     return {"table_name": table_name, "json": json_in}
 
 @router.post("/upload_csv/")
 async def upload_csv(
+        project_id: int,
         table_name: str | None,
-        project_id: int | None,
         file: UploadFile = File(...),
 ):
     """
@@ -184,13 +182,13 @@ async def upload_csv(
     df = pd.read_csv(BytesIO(await file.read()))
     if table_name is None:
         table_name = file.filename
-    db.df_create_table(table_name, df)  # come back to for project_id
+    db.df_create_table(project_id, table_name, df)  # come back to for project_id
     return {"filename": file.filename, "rows_count": len(df)}
 
 # originally generated with AI
 @router.post("/upload_excel/", status_code=200)
 async def upload_excel_file(
-        project_id: int | None,
+        project_id: int,
         file: UploadFile = File(...)
 ):
     """
@@ -229,7 +227,7 @@ async def upload_excel_file(
         )
 
     db = Database()
-    db.df_create_table(file.filename.replace(".xlsx", ""), df)
+    db.df_create_table(project_id, file.filename.replace(".xlsx", ""), df)
 
     # Process the DataFrame (e.g., convert to JSON or perform analysis)
     # Returning a dictionary, which FastAPI serializes to JSON

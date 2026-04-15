@@ -40,13 +40,13 @@ async def get_all_users():
     Gets all users in the database.
 
     Returns:
-        (int) id: 
-        (int) role: users role (ask for nums?)
-        (str) username: users shown name
-        (str) email: 
-        (str) firstname: 
-        (str) lastname: 
-        (str) hashed_password:
+        (int): id 
+        (int): role users role (ask for nums?)
+        (str): username users shown name
+        (str): email 
+        (str): firstname 
+        (str): lastname 
+        (str): hashed_password
         
     """
     db = Database()

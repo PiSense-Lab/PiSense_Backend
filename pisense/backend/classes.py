@@ -607,6 +607,20 @@ class Database():
 
         return raw_df
 
+    def get_all_tablenames(self, project_id):
+        """
+        gets all tables from the database
+        """
+        if not valid_identifier(project_id):
+            raise HTTPException(status_code=400, detail="Invalid project id")
+
+        query =f"SELECT table_name FROM projects WHERE project_id={project_id}"
+
+        res = self.connection.execute(text(query))
+
+        return res 
+
+
     def create_table(self, table_name: str, column_name: List[str], column_type: List[str], project_id: int):
         """
         Creates a table in the database
@@ -660,6 +674,7 @@ class Database():
 
     def df_create_table(
             self,
+            project_id: int,
             table_name: str | None = None,
             df: pd.DataFrame | None = None,
     ):
@@ -681,7 +696,7 @@ class Database():
             # self.connection.execute(text(""))
         except Exception as e:
             print(f"Error: {e}")
-
+        self.register_dataset(project_id, table_name)
         return "Table created!"
 
     def modify_row(
