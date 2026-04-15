@@ -5,7 +5,6 @@ import json
 from datetime import time
 from typing import List
 from pisense.backend.classes import Database
-from pisense.backend.models.table_models import DataTable
 
 
 router = APIRouter(prefix="/datatables")
@@ -51,7 +50,6 @@ async def read_single_table(
 
     Returns: 
         (dict): data - table with same name as table_name  
-            - records styled dicts - see pandas.dataframe.to_dict
 
     Raises:
 
