@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, HTTPException
-from pisense.backend.classes import Authenticator
+from pisense.backend.classes import Authenticator, Database
 
 from fastapi import Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -29,3 +29,21 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
 
     access_token= Authenticator().create_access_token(data={"sub": user.username}, expires_delta=timedelta(minutes=int(Authenticator().ACCESS_TOKEN_EXPIRE_MINUTES)))
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("")
+async def get_all_users():
+    """
+    Gets all users in the database.
+
+    Returns:
+        (int) id: 
+        (int) role: users role (ask for nums?)
+        (str) username: users shown name
+        (str) email: 
+        (str) firstname: 
+        (str) lastname: 
+        (str) hashed_password:
+        
+    """
+    db = Database()
+    return db.get_users()

@@ -13,7 +13,7 @@ router = APIRouter(prefix="/datatables")
 # make it return the row numbers and the tablenames
 #   of all the tables in a project
 @router.get("")
-async def read_tables(
+async def get_tables(
         project_id: int | None
 ):
     """
