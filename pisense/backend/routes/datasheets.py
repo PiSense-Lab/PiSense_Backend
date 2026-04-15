@@ -265,7 +265,6 @@ async def create_user(
     username: str,
     email: str,
     password: str,
-    role: USER_ROLES = USER_ROLES.viewer,
     firstname: str | None = None,
     lastname: str | None = None,
 ):
@@ -286,7 +285,6 @@ async def create_user(
     db = Database()
     user = db.create_user(
         username=username,
-        role=role,
         email=email,
         password=password,
         firstname=firstname,
@@ -296,7 +294,6 @@ async def create_user(
         "id": user.id,
         "username": user.username,
         "email": user.email,
-        "role": user.role.name,
         "firstname": user.firstname,
         "lastname": user.lastname,
     }
