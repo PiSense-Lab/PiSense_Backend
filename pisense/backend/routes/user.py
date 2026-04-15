@@ -18,7 +18,8 @@ async def verify_user_token(payload=Depends(Authenticator().verify_token)):
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), extended: bool | None = None, ):
     try:
         user = Authenticator().authenticate_user(form_data.username, form_data.password)
-    except DatabaseError:
+    except DatabaseError as e:
+        print(f"DB Error, Skipping - {e}")
         user = None
     if not user:
         raise HTTPException(

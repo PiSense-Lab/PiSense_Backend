@@ -19,8 +19,8 @@ from fastapi import Depends, HTTPException
 from pisense.backend.exceptions import DatabaseError
 from pisense.database.validate import validate_value
 def database_to_user(user: tuple) -> "User":
-    #["id", "username", "firstname", "lastname", "role", "email"]
-    return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), role=str(user[4]), email=str(user[5]), hashed_password=str(user[6]))
+    #["id", "username", "firstname", "lastname", "email"]
+    return User(id=int(user[0]), username=str(user[1]), firstname=str(user[2]), lastname=str(user[3]), email=str(user[4]), hashed_password=str(user[5]))
 
 def database_to_project(project: tuple, database: "Database") -> "Project":
     users = database.get_user_projects(project_id=project[0])
@@ -44,7 +44,7 @@ def database_user_project_to_dict( user_project: tuple ) -> dict:
     }
 
 def user_dict_to_user( u: dict ) -> "User":
-    return User(id=u["id"], role=u["role"], username=u["username"], email=u["email"], firstname=u["firstname"], lastname=u["lastname"], hashed_password=u['password'])
+    return User(id=u["id"], username=u["username"], email=u["email"], firstname=u["firstname"], lastname=u["lastname"], hashed_password=u['password'])
 
 class ValidationError(Exception):
     pass
@@ -59,9 +59,8 @@ class USER_ROLES(Enum):
 
 class User():
 
-    def __init__(self, id: int, role: str, username: str, email: str, firstname: str, lastname: str, hashed_password: str):
+    def __init__(self, id: int, username: str, email: str, firstname: str, lastname: str, hashed_password: str):
         self.id = id
-        self.role = USER_ROLES[role]
         self.username = username
         self.email = email
         self.firstname = firstname
@@ -69,7 +68,7 @@ class User():
         self.hashed_password = hashed_password
 
     def __str__(self):
-        return f"({self.id}, {self.username}, {self.role}, {self.email}, {self.firstname}, {self.lastname})"
+        return f"({self.id}, {self.username}, {self.email}, {self.firstname}, {self.lastname})"
 
 
     # def set_password():
@@ -174,7 +173,7 @@ class Database():
                             "users",
                             self.metadata,
                             Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),
-                            Column("role", Enum_sql("admin", "analyst", "viewer")),
+                            #Column("role", Enum_sql("admin", "analyst", "viewer")),
                             Column("username", String(50), unique=True, default=None),
                             Column("email", String(100), default=None),
                             Column("password", String(255), unique=True, default=None),
@@ -455,7 +454,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email", "password"], where_condition=where_condition)
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "email", "password"], where_condition=where_condition)
         for u in users:
             ret.append(database_to_user(u))
         return ret
@@ -540,7 +539,7 @@ class Database():
             raise DatabaseError("No Where condition set, please set a parameter,")
 
 
-        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "role", "email", "password"], where_condition=where_condition)
+        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "email", "password"], where_condition=where_condition)
 
 
         if len(users) == 0:
@@ -764,7 +763,6 @@ class Database():
 
     def create_user(self,
                     username: str,
-                    role: USER_ROLES,
                     email: str,
                     password: str,
                     firstname: str | None = None,
@@ -774,8 +772,8 @@ class Database():
         Creates a new user in the database.
         """
         print(password)
-        columns = ["role", "username", "email", "password", "firstname", "lastname"]
-        output = [role.name, username, email, Authenticator().hash_password(password), firstname, lastname]
+        columns = ["username", "email", "password", "firstname", "lastname"]
+        output = [username, email, Authenticator().hash_password(password), firstname, lastname]
 
         user = self._insert_row("users", columns, output)
 
@@ -811,6 +809,7 @@ class Authenticator():
     def authenticate_user(self, username: str, password: str) -> User:
         try:
             user: User = Database().get_user(username=username)
+            print( user )
         except DatabaseError as e:
             raise e
 
