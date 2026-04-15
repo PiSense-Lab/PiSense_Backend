@@ -3,7 +3,7 @@ from io import BytesIO
 import pandas as pd
 import json
 from typing import Any, List
-from pisense.backend.classes import USER_ROLES, Database
+from pisense.backend.classes import Database
 from pisense.backend.models.table_models import DataTable
 
 

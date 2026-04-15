@@ -246,7 +246,7 @@ class Database():
             rows = result.fetchall()
             keys = result.keys()  # column names
 
-        
+
         except Exception as e:
             raise DatabaseError(f"Sql failed: '{sql_str}'") from e
 
@@ -871,7 +871,6 @@ class Database():
         self.register_dataset(project_id, table_name)
         return "Table created!"
 
-            return "Table created!"
 
     def modify_row(
                 self,

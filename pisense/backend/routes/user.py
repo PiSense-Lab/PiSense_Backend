@@ -1,9 +1,9 @@
 from datetime import timedelta
 
-from pisense.backend.classes import USER_ROLES, Database
+from pisense.backend.classes import Database
 
 from fastapi import APIRouter, HTTPException
-from pisense.backend.classes import Authenticator, Database
+from pisense.backend.classes import Authenticator
 
 from fastapi import Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -49,7 +49,7 @@ async def get_all_users():
         (str): firstname 
         (str): lastname 
         (str): hashed_password
-        
+
     """
     db = Database()
     return db.get_users()
