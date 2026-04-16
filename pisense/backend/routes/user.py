@@ -62,7 +62,7 @@ async def get_users(username: str | None = None):
         username: Optional username to filter results.
 
     returns:
-        List of user objects or matching user records.
+        (List): List of user objects or matching user records.
     """
     db = Database()
     return db.get_users(username=username)
@@ -77,7 +77,7 @@ async def get_user_projects(user_id: int | None = None):
         user_id: Optional user ID to filter projects.
 
     returns:
-        A dictionary containing project records for the user.
+        (dict): data - A dictionary containing project records for the user.
     """
     db = Database()
     res = db.get_projects_for_user(user_id)
@@ -99,12 +99,15 @@ async def create_user(
         username: Username for the new user.
         email: Email address.
         password: Password in plaintext.
-        role: User role enum.
         firstname: Optional first name.
         lastname: Optional last name.
 
     returns:
-        The created user record.
+        (int): id
+        (str): username
+        (str): email
+        (str): firstname
+        (str): lastname
     """
     db = Database()
     user = db.create_user(

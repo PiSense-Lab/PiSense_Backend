@@ -23,7 +23,6 @@ async def get_tables(
 
     Returns: 
         (dict): root - all table names associated with project_id  
-            - records styled dicts - see pandas.dataframe.to_dict
 
     Raises:
 
@@ -77,7 +76,7 @@ async def get_rows(
         where_condition: Optional SQL WHERE filter expression.
 
     returns:
-        A DataTable response containing the requested rows.
+        (DataTable): data - A DataTable response containing the requested rows.
     """
     db = Database()
     res = db._get_rows(table, columns, where_condition)
@@ -201,44 +200,6 @@ async def rename_column(
     db = Database()
     db.rename_column(table_name,old_column_name,new_column_name)
 
-@router.post("/create_user", status_code=201)
-async def create_user(
-    username: str,
-    email: str,
-    password: str,
-    firstname: str | None = None,
-    lastname: str | None = None,
-):
-    """
-    Create a new user.
-
-    params:
-        username: Username for the new user.
-        email: Email address.
-        password: Password in plaintext.
-        role: User role enum.
-        firstname: Optional first name.
-        lastname: Optional last name.
-
-    returns:
-        The created user record.
-    """
-    db = Database()
-    user = db.create_user(
-        username=username,
-        email=email,
-        password=password,
-        firstname=firstname,
-        lastname=lastname,
-    )
-    return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "firstname": user.firstname,
-        "lastname": user.lastname,
-    }
-
 @router.post("/create_table", status_code=200)
 async def create_table(
         table_name: str,
@@ -256,7 +217,7 @@ async def create_table(
         project_id: Optional project ID to associate with the table.
 
     returns:
-        A dictionary containing the created table name.
+        (dict): table_name - A dictionary containing the created table name.
     """
     db = Database()
     db.create_table(table_name, column_name, column_type,project_id)
