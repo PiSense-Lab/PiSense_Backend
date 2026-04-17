@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from fastapi import APIRouter, status
+=======
+from fastapi import APIRouter
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 from pisense.backend.classes import Database
 
 

@@ -1,8 +1,13 @@
 from datetime import timedelta
 
+<<<<<<< HEAD
 from pisense.backend.classes import USER_ROLES, Database
+=======
+from pisense.backend.classes import Database
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 from pisense.backend.classes import Authenticator
 
 from fastapi import Depends, status
@@ -34,10 +39,31 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), ext
     if extended:
         expire = timedelta(days=int(Authenticator().PISENSE_AUTH_ACCESS_TOKEN_REMEMBER_ME_DAYS))
 
-    access_token= Authenticator().create_access_token(data={"sub": user.username}, expires_delta=expire)
+    access_token= Authenticator().create_access_token(data={"sub": user.username, "id": user.id}, expires_delta=expire)
     return {"access_token": access_token, "token_type": "bearer"}
 
+<<<<<<< HEAD
 @router.get("/get_users")
+=======
+@router.get("")
+async def get_all_users():
+    """
+    Gets all users in the database.
+
+    Returns:
+        (int): id 
+        (int): role users role (ask for nums?)
+        (str): username users shown name
+        (str): email 
+        (str): firstname 
+        (str): lastname 
+        (str): hashed_password
+
+    """
+    db = Database()
+    return db.get_users()
+
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 async def get_users(username: str | None = None):
     """
     Retrieve user records.
@@ -46,7 +72,11 @@ async def get_users(username: str | None = None):
         username: Optional username to filter results.
 
     returns:
+<<<<<<< HEAD
         List of user objects or matching user records.
+=======
+        (List): List of user objects or matching user records.
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
     """
     db = Database()
     return db.get_users(username=username)
@@ -61,12 +91,17 @@ async def get_user_projects(user_id: int | None = None):
         user_id: Optional user ID to filter projects.
 
     returns:
+<<<<<<< HEAD
         A dictionary containing project records for the user.
+=======
+        (dict): data - A dictionary containing project records for the user.
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
     """
     db = Database()
     res = db.get_projects_for_user(user_id)
     return {"data": res}
 
+<<<<<<< HEAD
 
 @router.post("/create_user", status_code=201)
 async def create_user(
@@ -75,28 +110,52 @@ async def create_user(
     password: str,
     firstname: str | None = None,
     lastname: str | None = None,
+=======
+class Create_User_Input(BaseModel):
+    username: str
+    email: str
+    password: str
+    firstname: str | None = None
+    lastname: str | None = None
+
+@router.post("/create_user", status_code=201)
+async def create_user(
+    user_values: Create_User_Input
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 ):
     """
     Create a new user.
 
     params:
+<<<<<<< HEAD
         username: Username for the new user.
         email: Email address.
         password: Password in plaintext.
         role: User role enum.
         firstname: Optional first name.
         lastname: Optional last name.
+=======
+        user_values: Request Body for Creating a user
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 
     returns:
         The created user record.
     """
     db = Database()
     user = db.create_user(
+<<<<<<< HEAD
         username=username,
         email=email,
         password=password,
         firstname=firstname,
         lastname=lastname,
+=======
+        username=user_values.username,
+        email=user_values.email,
+        password=user_values.password,
+        firstname=user_values.firstname,
+        lastname=user_values.lastname,
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
     )
     return {
         "id": user.id,
@@ -105,4 +164,7 @@ async def create_user(
         "firstname": user.firstname,
         "lastname": user.lastname,
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891

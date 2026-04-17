@@ -3,7 +3,7 @@ from io import BytesIO
 import pandas as pd
 import json
 from typing import Any, List
-from pisense.backend.classes import USER_ROLES, Database
+from pisense.backend.classes import Database
 from pisense.backend.models.table_models import DataTable
 
 
@@ -11,8 +11,10 @@ router = APIRouter(prefix="/datatables")
 
 # make it return the row numbers and the tablenames
 #   of all the tables in a project
-@router.get("/")
-async def read_tables(project_id: int | None = None):
+@router.get("")
+async def get_tables(
+        project_id: int
+):
     """
     Return table metadata for all tables or for a specific project.
 
@@ -21,18 +23,27 @@ async def read_tables(project_id: int | None = None):
 
     Returns: 
         (dict): root - all table names associated with project_id  
+<<<<<<< HEAD
             - records styled dicts - see pandas.dataframe.to_dict
+=======
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 
     Raises:
 
     """
     db =  Database()
+<<<<<<< HEAD
     if project_id is None:
         res = db.get_table()
     else:
         res = db.get_table(project_id=project_id)
 
     return {"root": res.to_dict(orient="records")}
+=======
+    res = db.get_all_tablenames(project_id)
+    print(res)
+    return res
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 
 @router.get("/{table_name}")
 async def read_single_table(
@@ -78,18 +89,15 @@ async def get_rows(
         where_condition: Optional SQL WHERE filter expression.
 
     returns:
-        A DataTable response containing the requested rows.
+        (DataTable): data - A DataTable response containing the requested rows.
     """
     db = Database()
     res = db._get_rows(table, columns, where_condition)
 
     return {"data": res}
 
-@router.get("/get_users")
-async def get_users(username: str | None = None):
-    """
-    Retrieve user records.
 
+<<<<<<< HEAD
     params:
         username: Optional username to filter results.
 
@@ -115,6 +123,8 @@ async def get_user_projects(user_id: int | None = None):
     res = db.get_projects_for_user(user_id)
     return {"data": res}
 
+=======
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 
 @router.patch("/edit_point", status_code=200)
 async def edit_point(
@@ -231,44 +241,6 @@ async def rename_column(
     db = Database()
     db.rename_column(table_name,old_column_name,new_column_name)
 
-@router.post("/create_user", status_code=201)
-async def create_user(
-    username: str,
-    email: str,
-    password: str,
-    firstname: str | None = None,
-    lastname: str | None = None,
-):
-    """
-    Create a new user.
-
-    params:
-        username: Username for the new user.
-        email: Email address.
-        password: Password in plaintext.
-        role: User role enum.
-        firstname: Optional first name.
-        lastname: Optional last name.
-
-    returns:
-        The created user record.
-    """
-    db = Database()
-    user = db.create_user(
-        username=username,
-        email=email,
-        password=password,
-        firstname=firstname,
-        lastname=lastname,
-    )
-    return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "firstname": user.firstname,
-        "lastname": user.lastname,
-    }
-
 @router.post("/create_table", status_code=200)
 async def create_table(
         table_name: str,
@@ -286,7 +258,7 @@ async def create_table(
         project_id: Optional project ID to associate with the table.
 
     returns:
-        A dictionary containing the created table name.
+        (dict): table_name - A dictionary containing the created table name.
     """
     db = Database()
     db.create_table(table_name, column_name, column_type,project_id)
@@ -295,7 +267,8 @@ async def create_table(
 @router.post("/upload_manual", status_code=200)
 async def upload_manual(
         json_in: str,
-        table_name: str
+        project_id: int,
+        table_name: str,
 ):
     """
     Uploads a series of manually entered data in a json string dict format to the Database
@@ -313,15 +286,17 @@ async def upload_manual(
     Raises:
 
     """
+    if project_id is None:
+        project_id = 1
     db = Database()
     df = pd.DataFrame(json.loads(json_in))
-    db.df_create_table(table_name, df)  # come back to for project_id
+    db.df_create_table(project_id, table_name, df)  # come back to for project_id
     return {"table_name": table_name, "json": json_in}
 
 @router.post("/upload_csv/")
 async def upload_csv(
+        project_id: int,
         table_name: str | None,
-        project_id: int | None,
         file: UploadFile = File(...),
 ):
     """
@@ -342,11 +317,13 @@ async def upload_csv(
     Raises:
 
     """
+    if project_id is None:
+        project_id = 1
     db = Database()
     df = pd.read_csv(BytesIO(await file.read()))
     if table_name is None:
         table_name = file.filename
-    db.df_create_table(table_name, df)  # come back to for project_id
+    db.df_create_table(project_id, table_name, df)  # come back to for project_id
     return {"filename": file.filename, "rows_count": len(df)}
 
 # originally generated with AI
@@ -371,6 +348,8 @@ async def upload_excel_file(
     Raises:
 
     """
+    if project_id is None:
+        project_id = 1
     if file.content_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -391,7 +370,7 @@ async def upload_excel_file(
         )
 
     db = Database()
-    db.df_create_table(file.filename.replace(".xlsx", ""), df)
+    db.df_create_table(project_id, file.filename.replace(".xlsx", ""), df)
 
     # Process the DataFrame (e.g., convert to JSON or perform analysis)
     # Returning a dictionary, which FastAPI serializes to JSON
