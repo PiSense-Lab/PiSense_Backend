@@ -186,6 +186,7 @@ class Database():
                             "users",
                             self.metadata,
                             Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),
+                            #Column("role", Enum_sql("admin", "analyst", "viewer")),
                             Column("username", String(50), unique=True, default=None),
                             Column("email", String(100), default=None),
                             Column("password", String(255), unique=True, default=None),
