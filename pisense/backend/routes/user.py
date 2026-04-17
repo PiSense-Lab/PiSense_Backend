@@ -1,7 +1,8 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, HTTPException
-from pisense.backend.classes import Authenticator
+from pydantic import BaseModel
+from pisense.backend.classes import Authenticator, Database
 
 from fastapi import Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -32,5 +33,46 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), ext
     if extended:
         expire = timedelta(days=int(Authenticator().PISENSE_AUTH_ACCESS_TOKEN_REMEMBER_ME_DAYS))
 
-    access_token= Authenticator().create_access_token(data={"sub": user.username}, expires_delta=expire)
+    access_token= Authenticator().create_access_token(data={"sub": user.username, "id": user.id}, expires_delta=expire)
     return {"access_token": access_token, "token_type": "bearer"}
+
+class Create_User_Input(BaseModel):
+    username: str
+    email: str
+    password: str
+    firstname: str | None = None
+    lastname: str | None = None
+
+@router.post("/create_user", status_code=201)
+async def create_user(
+    user_values: Create_User_Input
+):
+    """
+    Create a new user.
+
+    params:
+        username: Username for the new user.
+        email: Email address.
+        password: Password in plaintext.
+        role: User role enum.
+        firstname: Optional first name.
+        lastname: Optional last name.
+
+    returns:
+        The created user record.
+    """
+    db = Database()
+    user = db.create_user(
+        username=user_values.username,
+        email=user_values.email,
+        password=user_values.password,
+        firstname=user_values.firstname,
+        lastname=user_values.lastname,
+    )
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "firstname": user.firstname,
+        "lastname": user.lastname,
+    }

@@ -260,43 +260,6 @@ async def rename_column(
     db = Database()
     db.rename_column(table_name,old_column_name,new_column_name)
 
-@router.post("/create_user", status_code=201)
-async def create_user(
-    username: str,
-    email: str,
-    password: str,
-    firstname: str | None = None,
-    lastname: str | None = None,
-):
-    """
-    Create a new user.
-
-    params:
-        username: Username for the new user.
-        email: Email address.
-        password: Password in plaintext.
-        role: User role enum.
-        firstname: Optional first name.
-        lastname: Optional last name.
-
-    returns:
-        The created user record.
-    """
-    db = Database()
-    user = db.create_user(
-        username=username,
-        email=email,
-        password=password,
-        firstname=firstname,
-        lastname=lastname,
-    )
-    return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "firstname": user.firstname,
-        "lastname": user.lastname,
-    }
 
 @router.post("/create_table", status_code=200)
 async def create_table(
