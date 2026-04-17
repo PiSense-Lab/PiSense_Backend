@@ -38,6 +38,53 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), ext
     access_token= Authenticator().create_access_token(data={"sub": user.username, "id": user.id}, expires_delta=expire)
     return {"access_token": access_token, "token_type": "bearer"}
 
+@router.get("")
+async def get_all_users():
+    """
+    Gets all users in the database.
+
+    Returns:
+        (int): id 
+        (int): role users role (ask for nums?)
+        (str): username users shown name
+        (str): email 
+        (str): firstname 
+        (str): lastname 
+        (str): hashed_password
+
+    """
+    db = Database()
+    return db.get_users()
+
+async def get_users(username: str | None = None):
+    """
+    Retrieve user records.
+
+    params:
+        username: Optional username to filter results.
+
+    returns:
+        (List): List of user objects or matching user records.
+    """
+    db = Database()
+    return db.get_users(username=username)
+
+
+@router.get("/get_user_projects")
+async def get_user_projects(user_id: int | None = None):
+    """
+    Retrieve projects associated with a user.
+
+    params:
+        user_id: Optional user ID to filter projects.
+
+    returns:
+        (dict): data - A dictionary containing project records for the user.
+    """
+    db = Database()
+    res = db.get_projects_for_user(user_id)
+    return {"data": res}
+
 class Create_User_Input(BaseModel):
     username: str
     email: str
