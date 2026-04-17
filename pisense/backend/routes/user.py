@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from pisense.backend.classes import Database
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from pisense.backend.classes import Authenticator, Database

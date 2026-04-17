@@ -247,7 +247,7 @@ class Database():
             rows = result.fetchall()
             keys = result.keys()  # column names
 
-        
+
         except Exception as e:
             raise DatabaseError(f"Sql failed: '{sql_str}'") from e
 
@@ -750,6 +750,7 @@ class Database():
                 {"pid": project_id}
             )
 
+
             rows = res.fetchall()
             dataset_df = pd.DataFrame(rows, columns=["table_name"])
 
@@ -775,6 +776,22 @@ class Database():
         # CASE: neither provided
         # -------------------------
         raise HTTPException(status_code=400, detail="Must provide table_name or project_id")
+
+    def get_all_tablenames(self, project_id: int):
+        """
+        gets all tables from the database
+        """
+        if not isinstance(project_id, int):
+            raise HTTPException(status_code=400, detail="Invalid project id")
+
+        query =f"SELECT table_name FROM dataset WHERE project_id={project_id}"
+
+        res = self.connection.execute(text(query))
+        table_names = [row.table_name for row in res]
+
+        return table_names
+
+
     def create_table(self, table_name: str, column_name: List[str], column_type: List[str], project_id: int):
             """
             Creates a table in the database
@@ -829,12 +846,14 @@ class Database():
             return "Table created!"
 
     def df_create_table(
-                self,
-                table_name: str | None = None,
-                df: pd.DataFrame | None = None,
-        ):
-            if df is None or not isinstance(df, pd.DataFrame):
-                raise HTTPException(status_code=400, detail="Not a pandas DataFrame")
+
+            self,
+            project_id: int | None = 1,
+            table_name: str | None = None,
+            df: pd.DataFrame | None = None,
+    ):
+        if df is None or not isinstance(df, pd.DataFrame):
+            raise HTTPException(status_code=400, detail="Not a pandas DataFrame")
 
             if not valid_identifier(table_name):
                 raise HTTPException(status_code=400, detail="Table name is not valid")
@@ -845,20 +864,15 @@ class Database():
     #            if not valid_identifier(col_name):
     #                raise HTTPException(status_code=400, detail=f"Invalid column name: {col_name}")
 
-            try:
-                # if the table exists it will fail with a ValueError
-                df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
-                # self.connection.execute(text(""))
-            except Exception as e:
-                print(f"Error: {e}")
-            try:
-                # if the table exists it will fail with a ValueError
-                df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
-                # self.connection.execute(text(""))
-            except Exception as e:
-                print(f"Error: {e}")
+        try:
+            # if the table exists it will fail with a ValueError
+            df.to_sql(table_name, self.connection, schema="PiSense", if_exists="fail")
+            # self.connection.execute(text(""))
+        except Exception as e:
+            print(f"Error: {e}")
+        self.register_dataset(project_id, table_name)
+        return "Table created!"
 
-            return "Table created!"
 
     def modify_row(
                 self,

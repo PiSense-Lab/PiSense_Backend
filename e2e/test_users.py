@@ -1,7 +1,7 @@
 # import pytest
 from fastapi.testclient import TestClient
 from pisense.api.main import app
-from pisense.backend.classes import USER_ROLES, User, Database
+from pisense.backend.classes import User, Database
 import pytest
 
 @pytest.mark.order(0) # global scope
