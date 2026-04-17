@@ -1,7 +1,7 @@
 # import pytest
 from fastapi.testclient import TestClient
 from pisense.api.main import app
-from pisense.backend.classes import USER_ROLES, User, Database, Authenticator
+from pisense.backend.classes import User, Database, Authenticator
 from datetime import timedelta
 import pytest
 
