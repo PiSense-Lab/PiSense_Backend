@@ -23,14 +23,36 @@ async def get_tables(
 
     Returns: 
         (dict): root - all table names associated with project_id  
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+            - records styled dicts - see pandas.dataframe.to_dict
+=======
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
+>>>>>>> main
 
     Raises:
 
     """
     db =  Database()
+<<<<<<< HEAD
     res = db.get_all_tablenames(project_id)
     print(res)
     return res
+=======
+<<<<<<< HEAD
+    if project_id is None:
+        res = db.get_table()
+    else:
+        res = db.get_table(project_id=project_id)
+
+    return {"root": res.to_dict(orient="records")}
+=======
+    res = db.get_all_tablenames(project_id)
+    print(res)
+    return res
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
+>>>>>>> main
 
 @router.get("/{table_name}")
 async def read_single_table(
@@ -83,7 +105,38 @@ async def get_rows(
 
     return {"data": res}
 
+<<<<<<< HEAD
+=======
 
+<<<<<<< HEAD
+    params:
+        username: Optional username to filter results.
+
+    returns:
+        List of user objects or matching user records.
+    """
+    db = Database()
+    return db.get_users(username=username)
+
+
+@router.get("/get_user_projects")
+async def get_user_projects(user_id: int | None = None):
+    """
+    Retrieve projects associated with a user.
+
+    params:
+        user_id: Optional user ID to filter projects.
+
+    returns:
+        A dictionary containing project records for the user.
+    """
+    db = Database()
+    res = db.get_projects_for_user(user_id)
+    return {"data": res}
+>>>>>>> main
+
+=======
+>>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 
 @router.patch("/edit_point", status_code=200)
 async def edit_point(

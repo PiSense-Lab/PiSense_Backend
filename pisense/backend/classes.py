@@ -969,6 +969,14 @@ class Database():
         columns = ["username", "email", "password", "firstname", "lastname"]
         output = [username, email, Authenticator().hash_password(password), firstname, lastname]
 
+        if firstname:
+            columns.append("firstname")
+            output.append(firstname)
+
+        if lastname:
+            columns.append("lastname")
+            output.append(lastname)
+
         user = self._insert_row("users", columns, output)
 
         return user_dict_to_user(user)
