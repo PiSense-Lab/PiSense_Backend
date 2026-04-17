@@ -972,7 +972,7 @@ class Database():
         if firstname:
             columns.append("firstname")
             output.append(firstname)
-        
+
         if lastname:
             columns.append("lastname")
             output.append(lastname)

@@ -4,7 +4,7 @@ from pisense.backend.classes import Database
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from pisense.backend.classes import Authenticator, Database
+from pisense.backend.classes import Authenticator
 
 from fastapi import Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
