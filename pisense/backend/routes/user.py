@@ -51,12 +51,7 @@ async def create_user(
     Create a new user.
 
     params:
-        username: Username for the new user.
-        email: Email address.
-        password: Password in plaintext.
-        role: User role enum.
-        firstname: Optional first name.
-        lastname: Optional last name.
+        user_values: Request Body for Creating a user
 
     returns:
         The created user record.
