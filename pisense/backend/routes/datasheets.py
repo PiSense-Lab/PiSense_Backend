@@ -28,8 +28,8 @@ async def get_tables(
 
     """
     db =  Database()
-    res = db.get_all_tablenames()
-
+    res = db.get_all_tablenames(project_id)
+    print(res)
     return res
 
 @router.get("/{table_name}")
@@ -245,6 +245,8 @@ async def upload_manual(
     Raises:
 
     """
+    if project_id is None:
+        project_id = 1
     db = Database()
     df = pd.DataFrame(json.loads(json_in))
     db.df_create_table(project_id, table_name, df)  # come back to for project_id
@@ -274,6 +276,8 @@ async def upload_csv(
     Raises:
 
     """
+    if project_id is None:
+        project_id = 1
     db = Database()
     df = pd.read_csv(BytesIO(await file.read()))
     if table_name is None:
@@ -284,7 +288,7 @@ async def upload_csv(
 # originally generated with AI
 @router.post("/upload_excel/", status_code=200)
 async def upload_excel_file(
-        project_id: int,
+        project_id: int | None,
         file: UploadFile = File(...)
 ):
     """
@@ -303,6 +307,8 @@ async def upload_excel_file(
     Raises:
 
     """
+    if project_id is None:
+        project_id = 1
     if file.content_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

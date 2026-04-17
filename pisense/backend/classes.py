@@ -777,18 +777,19 @@ class Database():
         # -------------------------
         raise HTTPException(status_code=400, detail="Must provide table_name or project_id")
 
-    def get_all_tablenames(self, project_id):
+    def get_all_tablenames(self, project_id: int):
         """
         gets all tables from the database
         """
-        if not valid_identifier(project_id):
+        if not isinstance(project_id, int):
             raise HTTPException(status_code=400, detail="Invalid project id")
 
-        query =f"SELECT table_name FROM projects WHERE project_id={project_id}"
+        query =f"SELECT table_name FROM dataset WHERE project_id={project_id}"
 
         res = self.connection.execute(text(query))
+        table_names = [row.table_name for row in res]
 
-        return res 
+        return table_names
 
 
     def create_table(self, table_name: str, column_name: List[str], column_type: List[str], project_id: int):
@@ -847,7 +848,7 @@ class Database():
     def df_create_table(
 
             self,
-            project_id: int,
+            project_id: int | None = 1,
             table_name: str | None = None,
             df: pd.DataFrame | None = None,
     ):
