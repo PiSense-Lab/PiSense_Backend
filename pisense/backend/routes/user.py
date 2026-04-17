@@ -95,21 +95,12 @@ class Create_User_Input(BaseModel):
 @router.post("/create_user", status_code=201)
 async def create_user(
     user_values: Create_User_Input
->>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 ):
     """
     Create a new user.
 
     params:
-<<<<<<< HEAD
-        username: Username for the new user.
-        email: Email address.
-        password: Password in plaintext.
-        firstname: Optional first name.
-        lastname: Optional last name.
-=======
         user_values: Request Body for Creating a user
->>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
 
     returns:
         (int): id
@@ -120,19 +111,11 @@ async def create_user(
     """
     db = Database()
     user = db.create_user(
-<<<<<<< HEAD
-        username=username,
-        email=email,
-        password=password,
-        firstname=firstname,
-        lastname=lastname,
-=======
         username=user_values.username,
         email=user_values.email,
         password=user_values.password,
         firstname=user_values.firstname,
         lastname=user_values.lastname,
->>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
     )
     return {
         "id": user.id,
@@ -141,7 +124,3 @@ async def create_user(
         "firstname": user.firstname,
         "lastname": user.lastname,
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> bf93cde095efaed7601eb314c42aaf6e9fb51891
