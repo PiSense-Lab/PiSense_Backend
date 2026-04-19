@@ -928,7 +928,7 @@ class Database():
 
             return return_msg
 
-    def _projects(self, user_id: int, project_id: int, role: USER_ROLES ):
+    def create_user_projects(self, user_id: int, project_id: int, role: USER_ROLES ):
         columns = ["user_id", "project_id", "role"]
         output = [user_id, project_id, role.name]
 
@@ -951,7 +951,7 @@ class Database():
 
         # Create user_projects row
 
-        user_project = self._projects(owner_id, project["id"], USER_ROLES.admin)
+        user_project = self.create_user_projects(owner_id, project["id"], USER_ROLES.admin)
 
         return Project(id=project["id"], name=project["project_name"], description=project["description"], public=project["public"], archived=project["archived"], owner_id=user_project["user_id"])
 
