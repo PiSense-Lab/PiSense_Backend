@@ -966,8 +966,8 @@ class Database():
         Creates a new user in the database.
         """
         print(password)
-        columns = ["username", "email", "password", "firstname", "lastname"]
-        output = [username, email, Authenticator().hash_password(password), firstname, lastname]
+        columns = ["username", "email", "password"]
+        output = [username, email, Authenticator().hash_password(password)]
 
         if firstname:
             columns.append("firstname")
