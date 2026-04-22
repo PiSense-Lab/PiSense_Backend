@@ -85,20 +85,6 @@ async def get_rows(
     return {"data": res}
 
 
-@router.get("/get_user_projects")
-async def get_user_projects(user_id: int | None = None):
-    """
-    Retrieve projects associated with a user.
-
-    params:
-        user_id: Optional user ID to filter projects.
-
-    returns:
-        A dictionary containing project records for the user.
-    """
-    db = Database()
-    res = db.get_projects_for_user(user_id)
-    return {"data": res}
 
 @router.patch("/edit_point", status_code=200)
 async def edit_point(
