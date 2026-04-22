@@ -23,6 +23,7 @@ async def get_tables(
 
     Returns: 
         (dict): root - all table names associated with project_id  
+            - records styled dicts - see pandas.dataframe.to_dict
 
     Raises:
 

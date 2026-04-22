@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from pisense.backend.routes.weather import router as weather_router
 from pisense.backend.routes.datasheets import router as tables_router
 from pisense.backend.routes.user import router as user_router
+from pisense.backend.routes.projects import router as project_router
 
 
 # to start server: source .venv/bin/activate && fastapi dev pisense/api/main.py
@@ -38,6 +39,7 @@ app.add_middleware(
 app.include_router(weather_router)
 app.include_router(tables_router)
 app.include_router(user_router)
+app.include_router(project_router)
 
 @app.get("/")
 async def root():

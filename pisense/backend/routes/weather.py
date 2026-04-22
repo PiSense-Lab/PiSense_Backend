@@ -32,6 +32,17 @@ async def forecast_weather_hourly(
     longitude: float = 94.69,
     forecast_days: int = 7
 ):
+    """
+    Gets the weather forcast in hourly format.
+
+    params:
+        latitude: 
+        longitude:
+        forecast_days: number of days to forcast
+
+    returns:
+        (List[dict]): hourly
+    """
     return get_forecast_weather_hourly(
         latitude=latitude,
         longitude=longitude,
@@ -47,6 +58,18 @@ async def forecast_weather_daily(
     longitude: float = 94.69,
     forecast_days: int = 7
 ):
+    """
+    Gets the weather forcast in daily format.
+
+    params:
+        latitude: 
+        longitude:
+        forecast_days: number of days to forcast
+
+    returns:
+        (List[dict]): daily
+    """
+
     return get_forecast_weather_daily(
         latitude=latitude,
         longitude=longitude,
@@ -74,6 +97,19 @@ async def historical_weather_hourly(
     start_date: date = date(2025, 1, 1),
     end_date: date = date(2025, 12, 31)
 ):
+    """
+    Gets the weather from a certain timeframe.
+
+    params:
+        latitude: 
+        longitude:
+        start_date: date format of start of period
+        end_date: date format of end of period
+
+    returns:
+        (List[dict]): hourly
+    """
+
     return get_historical_weather_hourly(
         latitude=latitude,
         longitude=longitude,
@@ -91,6 +127,18 @@ async def historical_weather_daily(
     start_date: date = date(2025, 1, 1),
     end_date: date = date(2025, 12, 31)
 ):
+    """
+    Gets the weather from a certain timeframe.
+
+    params:
+        latitude: 
+        longitude:
+        start_date: date format of start of period
+        end_date: date format of end of period
+
+    returns:
+        (List[dict]): hourly
+    """
     return get_historical_weather_daily(
         latitude=latitude,
         longitude=longitude,
