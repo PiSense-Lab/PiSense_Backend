@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
+import mariadb
 from passlib.context import CryptContext
+import traceback
 
 import os
 from dotenv import load_dotenv
@@ -16,7 +18,8 @@ from sqlalchemy import Enum as Enum_sql
 import logging
 import sys
 from fastapi import Depends, HTTPException
-from pisense.backend.exceptions import DatabaseError
+import sqlalchemy
+from pisense.backend.exceptions import DatabaseError, DatabaseReconnectingError, FindingRowError, UnauthorizedUserError
 from pisense.database.validate import validate_value
 def database_to_user(user: dict) -> "User":
     return User(
@@ -152,6 +155,38 @@ class Database():
 
     ALLOWED_TYPES = {"INT", "VARCHAR(50)", "BOOL", "DATE", "TIME", "FLOAT"}
 
+    def _connect_to_db(self, force: bool = False) -> bool:
+        """ Reconnects to db if ping fails, will return true if it did a reconnection, false if ping passed"""
+        run = False
+        if force:
+            run = True
+        else:
+            try:
+                self.connection.execute(text("SELECT 1"))
+            except ( mariadb.InterfaceError, sqlalchemy.exc.InterfaceError ):
+                run = True
+
+        if run:
+            print("Connecting to database")
+            load_dotenv(dotenv_path=".env")
+
+            db_password = os.getenv("MARIADB_PASSWORD")
+            host = os.getenv("MARIADB_HOST")
+            username = os.getenv("MARIADB_USER", "admin")
+            port = os.getenv("MARIADB_PORT", 3306)
+            database = os.getenv("MARIADB_DATABASE", "PiSense")
+
+            try:
+                engine = create_engine(
+                        f"mariadb+mariadbconnector://{username}:{db_password}@{host}:{port}/{database}"
+                        )
+                self.connection = engine.connect()
+            except DatabaseError as e:
+                logging.error(f"Host: {host} Error connecting to MariaDB Platform: {e}")
+                sys.exit(1)
+
+        return run
+
     def __new__(cls, *args, **kwargs) -> "Database": # Singleton implementation, returns existing instance if it exists
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -163,23 +198,7 @@ class Database():
             return
         self._initialized = True
 
-        load_dotenv(dotenv_path=".env")
-
-        db_password = os.getenv("MARIADB_PASSWORD")
-        host = os.getenv("MARIADB_HOST")
-        username = os.getenv("MARIADB_USER", "admin")
-        port = os.getenv("MARIADB_PORT", 3306)
-        database = os.getenv("MARIADB_DATABASE", "PiSense")
-
-        try:
-
-            engine = create_engine(
-                    f"mariadb+mariadbconnector://{username}:{db_password}@{host}:{port}/{database}"
-                    )
-            self.connection = engine.connect()
-        except DatabaseError as e:
-            logging.error(f"Host: {host} Error connecting to MariaDB Platform: {e}")
-            sys.exit(1)
+        self._connect_to_db(force=True)
 
         self.metadata = MetaData()
         self.users_table = Table(
@@ -240,16 +259,17 @@ class Database():
         where = f" WHERE {where_condition}" if where_condition else ""
 
         sql_str = f"SELECT {cols} FROM PiSense.{table}{where}"
+
         try:
             result = self.connection.execute(text(sql_str))
-
 
             rows = result.fetchall()
             keys = result.keys()  # column names
 
-
-        except Exception as e:
-            raise DatabaseError(f"Sql failed: '{sql_str}'") from e
+        except ( mariadb.InterfaceError, sqlalchemy.exc.InterfaceError ) as e:
+            self._connect_to_db()
+            self.connection.rollback()
+            raise DatabaseReconnectingError( "Connection to DB Lost, Reconnecting" ) from e
 
         if isinstance(rows, List):
             # Convert tuples → list of dicts
@@ -652,14 +672,18 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-
-        users = self._get_rows("users", ["id", "username", "firstname", "lastname", "email", "password"], where_condition=where_condition)
+        try:
+            users = self._get_rows("users", ["id", "username", "firstname", "lastname", "email", "password"], where_condition=where_condition)
+        except ( DatabaseReconnectingError, DatabaseError ) as e:
+            raise e
+        except FindingRowError as e:
+            raise e
 
 
         if len(users) == 0:
-            raise DatabaseError("No user found.")
+            raise FindingRowError("No user found.")
         if len(users) > 1:
-            raise DatabaseError("More than one user found, tighten constraints or use `get_users` function.")
+            raise FindingRowError("More than one user found, tighten constraints or use `get_users` function.")
 
         return database_to_user(users[0])
 
@@ -1011,11 +1035,15 @@ class Authenticator():
     def authenticate_user(self, username: str, password: str) -> User:
         try:
             user: User = Database().get_user(username=username)
-        except DatabaseError as e:
+        except FindingRowError as e:
+            raise UnauthorizedUserError("Username was not correct")
+        except DatabaseReconnectingError as e:
             raise e
 
         if pwd_context.verify(password, user.hashed_password):
             return user
+        else:
+            raise UnauthorizedUserError("Password was not correct")
 
 
     def create_access_token(self, data: dict, expires_delta: timedelta | None = None):

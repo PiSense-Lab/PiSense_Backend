@@ -9,7 +9,7 @@ from pisense.backend.classes import Authenticator
 from fastapi import Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from pisense.backend.exceptions import DatabaseError
+from pisense.backend.exceptions import DatabaseError, DatabaseReconnectingError
 
 router = APIRouter(prefix="/users")
 
@@ -22,8 +22,15 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), ext
     try:
         user = Authenticator().authenticate_user(form_data.username, form_data.password)
     except DatabaseError as e:
-        print(f"DB Error, Skipping - {e}")
+        print(f"{e}")
         user = None
+    except DatabaseReconnectingError as e:
+        print(f"{e}")
+        raise HTTPException(
+            status_code=status.HTTP_451_UNAVAILABLE_FOR_LEGAL_REASONS,
+            detail="Database Is Reconnecting, Try Again",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
