@@ -1093,6 +1093,9 @@ class Database():
         """
         Creates a new project in the database.
         """
+
+        last_updated = date.today()
+
         columns = ["project_name", "description", "public", "archived"]
         output = [name, description, public, archived]
 
@@ -1102,7 +1105,7 @@ class Database():
 
         user_project = self.create_user_projects(owner_id, project["id"], USER_ROLES.admin)
 
-        return Project(id=project["id"], name=project["project_name"], description=project["description"], public=project["public"], archived=project["archived"], owner_id=user_project["user_id"])
+        return Project(id=project["id"], name=project["project_name"], description=project["description"], public=project["public"], archived=project["archived"], owner_id=user_project["user_id"], last_updated=last_updated)
 
     def create_user(self,
                     username: str,
