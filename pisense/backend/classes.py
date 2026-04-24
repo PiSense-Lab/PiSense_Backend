@@ -722,6 +722,9 @@ class Database():
             if df.empty:
                 return []
 
+            if return_method == 1:
+                return df.to_dict(orient="records")
+
             return df
 
         # -------------------------
