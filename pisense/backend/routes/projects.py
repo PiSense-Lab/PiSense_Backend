@@ -14,7 +14,12 @@ async def get_project(project_id: int, name: str | None = None):
         name: Optional project name to filter by.
 
     returns:
-        A project dictionary with id, name, description, public, archived, and owner_id.
+        (int): id
+        (str): name - project name
+        (str): description
+        (int): public - 1 for public 0 for not
+        (int): archived - 1 for public 0 for not
+        (int): owner_id
     """
     db = Database()
     res = db.get_project(project_id, name=name)
@@ -47,7 +52,12 @@ async def create_project(
         archived: Whether the project is archived.
 
     returns:
-        The created project record.
+        (int): id
+        (str): name - project name
+        (str): description
+        (int): public - 1 for public 0 for not
+        (int): archived - 1 for public 0 for not
+        (int): owner_id
     """
     db = Database()
     project = db.create_project(

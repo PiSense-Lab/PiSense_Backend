@@ -687,7 +687,7 @@ class Database():
         return [self.get_project(id=up["project_id"]) for up in user_projects]
 
 
-    def get_table(self, table_name: str | None = None, project_id: int | None = None):
+    def get_table(self, table_name: str | None = None, project_id: int | None = None, return_method: int | None = None):
 
         # -------------------------
         # CASE: both provided → validate relationship
@@ -722,7 +722,7 @@ class Database():
             if df.empty:
                 return []
 
-            return df.to_dict(orient="records")
+            return df
 
         # -------------------------
         # CASE: only table_name
