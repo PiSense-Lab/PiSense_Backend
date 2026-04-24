@@ -5,7 +5,7 @@ from io import BytesIO
 import pandas as pd
 import json
 from typing import Any, List
-from pisense.backend.classes import Authenticator, Database
+from pisense.backend.classes import Database
 from pisense.backend.models.table_models import DataTable
 
 
@@ -111,10 +111,10 @@ async def apply_table_changes(
     try:
         db.apply_changes(changes)
         db.update_last_updated(table_name)
-        
+
     except DatabaseError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
 @router.patch("/edit_point", status_code=200)
 async def edit_point(
         row_num: int,

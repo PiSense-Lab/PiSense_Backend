@@ -128,7 +128,7 @@ class USER_ROLES(str, Enum):
     analyst = 2
     viewer = 3
 
-    
+
 
 class User():
 
@@ -213,7 +213,7 @@ class Database():
 
     ALLOWED_TYPES = {"INT", "VARCHAR(50)", "BOOL", "DATE", "TIME", "FLOAT"}
 
-        
+
     def __new__(cls, *args, **kwargs) -> "Database": # Singleton implementation, returns existing instance if it exists
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -316,9 +316,9 @@ class Database():
                 f"Change #{i} ('{change_type}') failed: {error_msg}. "
                 f"All changes rolled back."
             ) from e
-        
-        
-    
+
+
+
     def update_last_updated(self, table_name: str):
         now = date.today()
 
@@ -360,7 +360,7 @@ class Database():
         except Exception as e:
             self.connection.rollback()
             raise DatabaseError(f"Failed to update last_updated: {e}") from e
-    
+
 
     def _get_rows(
         self,
@@ -589,7 +589,7 @@ class Database():
             self.connection.commit()
 
         return {"message": "Rows updated successfully"}
-    
+
     def rename_column(self, table_name: str, old_column_name: str, new_column_name: str, commit: bool = True):
         if not valid_identifier(table_name):
             raise HTTPException(status_code=400, detail="Invalid table name")
@@ -997,7 +997,7 @@ class Database():
 
             self.connection.commit()
 
-   
+
 
             return "Table created!"
 
