@@ -25,6 +25,7 @@ async def get_project(project_id: int, name: str | None = None):
         "public": res.public,
         "archived": res.archived,
         "owner_id": res.owner_id,
+        "last_updated": res.last_updated,
     }
 
 
