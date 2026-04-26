@@ -33,7 +33,7 @@ async def get_tables(
     print(res)
     return res
 
-@router.get("/{table_name}")
+@router.get("/get_table")
 async def read_single_table(
         table_name: str,
         project_id: int | None = None
@@ -57,7 +57,7 @@ async def read_single_table(
     if project_id is None:
         res = db.get_table(project_id=None)  # or define a clearer "get_all"
     else:
-        res = db.get_table(project_id=project_id)
+        res = db.get_table(table_name, project_id=project_id, return_method=1)
 
     return res
 
