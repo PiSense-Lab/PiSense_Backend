@@ -15,7 +15,8 @@ CREATE TABLE projects (
     project_name VARCHAR(100) NOT NULL,
     description TEXT DEFAULT NULL,
     public TINYINT(1) DEFAULT NULL,
-    archived TINYINT(1) DEFAULT NULL
+    archived TINYINT(1) DEFAULT NULL,
+    last_updated DATE DEFAULT now()
 );
 
 CREATE TABLE roles (
