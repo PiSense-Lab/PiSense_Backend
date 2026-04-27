@@ -30,6 +30,7 @@ async def get_project(project_id: int, name: str | None = None):
         "public": res.public,
         "archived": res.archived,
         "owner_id": res.owner_id,
+        "last_updated": res.last_updated
     }
 
 
@@ -65,7 +66,7 @@ async def create_project(
         owner_id=owner_id,
         description=description,
         public=public,
-        archived=archived,
+        archived=archived
     )
     return {
         "id": project.id,
@@ -74,4 +75,5 @@ async def create_project(
         "public": project.public,
         "archived": project.archived,
         "owner_id": project.owner_id,
+        "last_updated": project.last_updated,
     }
