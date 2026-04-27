@@ -5,7 +5,7 @@ from io import BytesIO
 import pandas as pd
 import json
 from typing import Any, List
-from pisense.backend.classes import Database
+from pisense.backend.classes import Authenticator, Database
 from pisense.backend.models.table_models import DataTable
 
 
@@ -24,7 +24,7 @@ async def get_tables(
         project_id: ID of project to grab all table names from
 
     Returns: 
-        (dict): root - all table names associated with project_id  
+        (dict): root - all table names, last_updated, and row count for tables associated with project_id  
             - records styled dicts - see pandas.dataframe.to_dict
 
     Raises:
