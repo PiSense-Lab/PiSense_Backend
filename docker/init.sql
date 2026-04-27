@@ -7,7 +7,8 @@ USE PiSense;
 CREATE TABLE dataset (
     dataset_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     project_id INT DEFAULT NULL,
-    tablename VARCHAR(50) DEFAULT NULL
+    tablename VARCHAR(50) DEFAULT NULL,
+    last_updated DATE DEFAULT now()
 );
 
 CREATE TABLE projects (
