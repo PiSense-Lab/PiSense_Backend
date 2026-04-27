@@ -956,15 +956,23 @@ class Database():
         for row in res:
             table = row.table_name
 
+            # Count rows
             count_res = self.connection.execute(
-                text(f"SELECT COUNT(*) FROM {table}")
+                text(f"SELECT COUNT(*) FROM `{table}`")
             )
             row_count = count_res.scalar()
+
+            # Count columns
+            column_res = self.connection.execute(
+                text(f"DESCRIBE `{table}`")
+            )
+            column_count = len(column_res.fetchall())
 
             results.append({
                 "table_name": table,
                 "last_updated": row.last_updated,
-                "row_count": row_count
+                "row_count": row_count,
+                "column_count": column_count
             })
 
         return results
