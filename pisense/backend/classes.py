@@ -748,7 +748,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived", "last_updated"], where_condition=where_condition)
         for p in projects:
             ret.append(database_to_project(p, self))
         return ret
