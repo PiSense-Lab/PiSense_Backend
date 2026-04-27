@@ -32,7 +32,7 @@ async def get_tables(
     """
     db =  Database()
     res = db.get_all_tablenames(project_id)
-    print(res)
+
     return res
 
 @router.get("/get_table")

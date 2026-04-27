@@ -938,18 +938,43 @@ class Database():
 
     def get_all_tablenames(self, project_id: int):
         """
-        gets all tables from the database
+        Gets all tables from the database in a structured format
         """
         if not isinstance(project_id, int):
             raise HTTPException(status_code=400, detail="Invalid project id")
 
-        query =f"SELECT table_name FROM dataset WHERE project_id={project_id}"
+        query = text("""
+            SELECT table_name, last_updated 
+            FROM dataset 
+            WHERE project_id = :project_id
+        """)
 
-        res = self.connection.execute(text(query))
-        table_names = [row.table_name for row in res]
+        res = self.connection.execute(query, {"project_id": project_id})
 
-        return table_names
+        results = []
 
+        for row in res:
+            table = row.table_name
+
+            count_res = self.connection.execute(
+                text(f"SELECT COUNT(*) FROM {table}")
+            )
+            row_count = count_res.scalar()
+
+            results.append({
+                "table_name": table,
+                "last_updated": row.last_updated,
+                "row_count": row_count
+            })
+
+        return results
+
+    def count_rows(self, table_name: str) -> int:
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        res = self.connection.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
+        return res.scalar()
 
     def create_table(self, table_name: str, column_name: List[str], column_type: List[str], project_id: int):
             """
