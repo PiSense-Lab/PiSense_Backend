@@ -1069,6 +1069,48 @@ class Database():
         return "Table created!"
 
 
+    def delete_table(self, table_name: str, project_id: int) -> str:
+        """
+        Drops a table from the database and removes its entry from the dataset table.
+        Raises an error if the table is protected or doesn't belong to the given project.
+        """
+        PROTECTED_TABLES = {"projects", "users", "dataset", "roles", "user_projects"}
+
+        if table_name.lower() in PROTECTED_TABLES:
+            raise HTTPException(status_code=403, detail=f"Table '{table_name}' is protected and cannot be deleted")
+
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        # Verify the table belongs to this project
+        res = self.connection.execute(
+            text("""
+                SELECT 1 FROM dataset
+                WHERE table_name = :tname AND project_id = :pid
+                LIMIT 1
+            """),
+            {"tname": table_name, "pid": project_id}
+        )
+        if res.fetchone() is None:
+            raise HTTPException(status_code=404, detail="Table not found in this project")
+
+        try:
+            # Remove from dataset registry first
+            self.connection.execute(
+                text("DELETE FROM dataset WHERE table_name = :tname AND project_id = :pid"),
+                {"tname": table_name, "pid": project_id}
+            )
+
+            # Drop the actual table
+            self.connection.execute(text(f"DROP TABLE `{table_name}`"))
+
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            raise DatabaseError(f"Failed to delete table '{table_name}': {e}") from e
+
+        return f"Table '{table_name}' deleted successfully"
+
     def modify_row(
         self,
         table_name: str,
@@ -1142,6 +1184,65 @@ class Database():
         user_project = self.create_user_projects(owner_id, project["id"], USER_ROLES.admin)
 
         return Project(id=project["id"], name=project["project_name"], description=project["description"], public=project["public"], archived=project["archived"], owner_id=user_project["user_id"], last_updated=last_updated)
+
+    def delete_project(self, project_id: int) -> str:
+        """
+        Deletes a project and all associated dataset tables and user_project rows.
+        """
+        PROTECTED_TABLES = {"projects", "users", "dataset", "roles", "user_projects"}
+
+        # Check project exists
+        res = self.connection.execute(
+            text("SELECT 1 FROM projects WHERE project_id = :pid"),
+            {"pid": project_id}
+        ).fetchone()
+
+        if res is None:
+            raise HTTPException(status_code=404, detail=f"Project {project_id} not found")
+
+        # Get all tables linked to this project
+        res = self.connection.execute(
+            text("SELECT table_name FROM dataset WHERE project_id = :pid"),
+            {"pid": project_id}
+        ).fetchall()
+
+        table_names = [row[0] for row in res]
+
+        try:
+            # Drop each dataset table
+            for table_name in table_names:
+                if not valid_identifier(table_name):
+                    raise HTTPException(status_code=400, detail=f"Invalid table name: {table_name}")
+                if table_name.lower() in PROTECTED_TABLES:
+                    raise HTTPException(status_code=403, detail=f"Table '{table_name}' is protected and cannot be deleted")
+
+                self.connection.execute(text(f"DROP TABLE IF EXISTS `{table_name}`"))
+
+            # Remove all dataset rows for this project
+            self.connection.execute(
+                text("DELETE FROM dataset WHERE project_id = :pid"),
+                {"pid": project_id}
+            )
+
+            # Remove all user_projects rows for this project
+            self.connection.execute(
+                text("DELETE FROM user_projects WHERE project_id = :pid"),
+                {"pid": project_id}
+            )
+
+            # Finally delete the project itself
+            self.connection.execute(
+                text("DELETE FROM projects WHERE project_id = :pid"),
+                {"pid": project_id}
+            )
+
+            self.connection.commit()
+
+        except Exception as e:
+            self.connection.rollback()
+            raise DatabaseError(f"Failed to delete project {project_id}: {e}") from e
+
+        return f"Project {project_id} and {len(table_names)} table(s) deleted successfully"
 
     def create_user(self,
                     username: str,

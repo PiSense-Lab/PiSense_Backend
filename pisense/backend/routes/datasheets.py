@@ -255,6 +255,19 @@ async def create_table(
     db.update_last_updated(table_name)
     return {"table_name": table_name}
 
+@router.delete("/delete_table")
+def delete_table(
+    project_id: int,
+    table_name: str,
+):
+    """
+    Deletes a dataset table and removes it from the dataset registry.
+    Protected system tables cannot be deleted.
+    """
+    
+    result = Database().delete_table(table_name=table_name, project_id=project_id)
+    return {"message": result}
+
 @router.post("/upload_manual", status_code=200)
 async def upload_manual(
         json_in: str,
