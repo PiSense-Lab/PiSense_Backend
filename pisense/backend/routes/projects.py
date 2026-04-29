@@ -77,3 +77,15 @@ async def create_project(
         "owner_id": project.owner_id,
         "last_updated": project.last_updated,
     }
+
+@router.delete("/delete_project")
+def delete_project(
+    project_id: int,
+
+):
+    """
+    Deletes a project, all its dataset tables, and all user_project memberships.
+    """
+
+    result = Database().delete_project(project_id=project_id)
+    return {"message": result}
