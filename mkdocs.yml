@@ -1,19 +1,22 @@
-site_name: Project Name
+site_name: PiSense
 repo_name: PiSense_Backend
- 
+
 theme:
-  name: material  # Requires: pip install mkdocs-material
+  name: material # Requires: pip install mkdocs-material
   palette:
     scheme: default
     primary: indigo
 nav:
   - Home: index.md
-  - Usage: usage.md
-  - API Reference: api.md
+  - Datatables: datatables.md
+  - Weather: example_weather_api.md
+  - Output: output.md
+  - Projects: projects.md
+  - Users: user_functions.md
   - Helpers: setup.md
 plugins:
   - search
-  - mkdocstrings:  # Automatically extracts Python docstrings (Requires: pip install mkdocstrings)
+  - mkdocstrings: # Automatically extracts Python docstrings (Requires: pip install mkdocstrings)
       handlers:
         python:
           paths: [pisense]

@@ -110,7 +110,11 @@ async def create_user(
         user_values: Request Body for Creating a user
 
     returns:
-        The created user record.
+        (int): id
+        (str): username
+        (str): email
+        (str): firstname
+        (str): lastname
     """
     db = Database()
     try:

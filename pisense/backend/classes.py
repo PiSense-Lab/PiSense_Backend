@@ -1,11 +1,13 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 import mariadb
 from passlib.context import CryptContext
 
 import os
 from dotenv import load_dotenv
-
+from pydantic import BaseModel
+from typing import Annotated,  Union
+from pydantic import Field
 from jose import JWTError, jwt
 import  pandas as pd
 import re
@@ -20,6 +22,60 @@ from fastapi import Depends, HTTPException
 import sqlalchemy
 from pisense.backend.exceptions import CouldNotConnectToDBError, DatabaseError, DatabaseReconnectingError, FindingRowError, UnauthorizedUserError
 from pisense.database.validate import validate_value
+
+# --- at module level, before the Database class ---
+
+class AddColumnChange(BaseModel):
+    type: Literal["add_column"]
+    table_name: str
+    column_name: List[str]
+    column_type: List[str]
+
+class RenameColumnChange(BaseModel):
+    type: Literal["rename_column"]
+    table_name: str
+    old_column_name: str
+    new_column_name: str
+
+class DeleteColumnChange(BaseModel):
+    type: Literal["delete_column"]
+    table_name: str
+    column_name: List[str]
+
+class EditRowChange(BaseModel):
+    type: Literal["edit_row"]
+    table_name: str
+    row_num: int
+    row_data: List[str]
+    row_columns: List[str]
+
+class DeleteRowChange(BaseModel):
+    type: Literal["delete_row"]
+    table_name: str
+    row_num: int
+
+class InsertRowsChange(BaseModel):
+    type: Literal["insert_rows"]
+    table_name: str
+    column_name: List[str]
+    rows: List[List[str]]
+
+Change = Annotated[
+    Union[
+        AddColumnChange,
+        RenameColumnChange,
+        DeleteColumnChange,
+        EditRowChange,
+        DeleteRowChange,
+        InsertRowsChange,
+    ],
+    Field(discriminator="type")
+]
+
+class ApplyChangesRequest(BaseModel):
+    changes: List[Change]
+
+
 def database_to_user(user: dict) -> "User":
     return User(
         id=int(user["id"]),
@@ -47,6 +103,7 @@ def database_to_project(project: dict, database: "Database") -> "Project":
         description=str(project["description"]),
         public=bool(project["public"]),
         archived=bool(project["archived"]),
+        last_updated=(project["last_updated"]),
         owner_id=owner_id
     )
 
@@ -71,6 +128,8 @@ class USER_ROLES(str, Enum):
     admin = 1
     analyst = 2
     viewer = 3
+
+
 
 class User():
 
@@ -105,12 +164,13 @@ class User():
 
 class Project():
 
-    def __init__(self, id: int, name: str, description: str, public: bool, archived: bool, owner_id: User ):
+    def __init__(self, id: int, name: str, description: str, public: bool, archived: bool, owner_id: User, last_updated: date):
         self.id = id
         self.name = name
         self.description = description
         self.public = public
         self.archived = archived
+        self.last_updated = last_updated
         self.owner_id = owner_id
 
     @property
@@ -119,7 +179,7 @@ class Project():
         # Get owner from self.owner_id
 
     def __str__(self):
-        return f"({self.id}, {self.name}, `{self.description}`, public: {self.public}, archived: {self.archived})"
+        return f"({self.id}, {self.name}, `{self.description}`, public: {self.public}, archived: {self.archived}, last_updated: {self.last_updated})"
 
     @property
     def users(self) -> list[dict]:
@@ -153,6 +213,7 @@ class Database():
     _initialized: bool = False
 
     ALLOWED_TYPES = {"INT", "VARCHAR(50)", "BOOL", "DATE", "TIME", "FLOAT"}
+
 
     def _connect_to_db(self, force: bool = False) -> bool:
         """ Reconnects to db if ping fails, will return true if it did a reconnection, false if ping passed"""
@@ -235,6 +296,92 @@ class Database():
                             )
 
 
+    def apply_changes(self, changes: List[dict]) -> List[dict]:
+        results = []
+
+        DISPATCH = {
+            "add_column":    lambda c: self._add_column(
+                                c["table_name"], c["column_name"], c["column_type"], commit=False),
+            "rename_column": lambda c: self.rename_column(
+                                c["table_name"], c["old_column_name"], c["new_column_name"], commit=False),
+            "delete_column": lambda c: self._delete_column(
+                                c["table_name"], c["column_name"], commit=False),
+            "edit_row":      lambda c: self.modify_row(
+                                c["table_name"], c["row_num"], c["row_data"],
+                                c["row_columns"], mode="edit", commit=False),
+            "delete_row":    lambda c: self.modify_row(
+                                c["table_name"], c["row_num"], None,
+                                None, mode="delete", commit=False),
+            "insert_rows":   lambda c: self._insert_rows(
+                                c["table_name"], c["column_name"], c["rows"], commit=False),
+        }
+
+        try:
+            for i, change in enumerate(changes):
+                change_type = change.get("type")
+                if change_type not in DISPATCH:
+                    raise ValueError(f"Unknown change type: '{change_type}'")
+
+                result = DISPATCH[change_type](change)
+                results.append({"index": i, "type": change_type, "result": result})
+
+            self.connection.commit()
+            return results
+
+        except (HTTPException, DatabaseError, ValueError) as e:
+            self.connection.rollback()
+            error_msg = e.detail if isinstance(e, HTTPException) else str(e)
+            results.append({"index": i, "type": change_type, "error": error_msg})
+            raise DatabaseError(
+                f"Change #{i} ('{change_type}') failed: {error_msg}. "
+                f"All changes rolled back."
+            ) from e
+
+
+
+    def update_last_updated(self, table_name: str):
+        now = date.today()
+
+        try:
+            # Update dataset table
+            self.connection.execute(
+                text("""
+                    UPDATE dataset
+                    SET last_updated = :now
+                    WHERE table_name = :table_name
+                """),
+                {"now": now, "table_name": table_name}
+            )
+
+            # Get project_id
+            result = self.connection.execute(
+                text("""
+                    SELECT project_id FROM dataset
+                    WHERE table_name = :table_name
+                """),
+                {"table_name": table_name}
+            ).fetchone()
+
+            # Update projects table if project exists
+            if result and result[0] is not None:
+                project_id = result[0]
+
+                self.connection.execute(
+                    text("""
+                        UPDATE projects
+                        SET last_updated = :now
+                        WHERE project_id = :project_id
+                    """),
+                    {"now": now, "project_id": project_id}
+                )
+
+            self.connection.commit()
+
+        except Exception as e:
+            self.connection.rollback()
+            raise DatabaseError(f"Failed to update last_updated: {e}") from e
+
+
     def _get_rows(
         self,
         table: str,
@@ -279,7 +426,7 @@ class Database():
         else:
             raise DatabaseError("SQL did not return a list")
 
-    def _insert_rows(self, table_name: str, column_name: List[str], rows: List[List[str]]):
+    def _insert_rows(self, table_name: str, column_name: List[str], rows: List[List[str]], commit: bool = True) -> str:
         """
         Inserts rows into given table.
         """
@@ -320,10 +467,11 @@ class Database():
             d_rows = dict(zip(column_name, row))
             self.connection.execute(query, d_rows)    #safe parameter binding
 
-        self.connection.commit()
+        if commit:
+            self.connection.commit()
         return f"{len(rows)} rows inserted!"
 
-    def _insert_row(self, table_name: str, key: List[str], value: List[str]) -> Tuple:
+    def _insert_row(self, table_name: str, key: List[str], value: List[str], commit: bool = True) -> Tuple:
         table: Table | None = None
         if table_name == "users":
             table = self.users_table
@@ -344,14 +492,16 @@ class Database():
         try:
             stmt = insert(table).returning(table)
             out = self.connection.execute(stmt, [row]).fetchone()
-            self.connection.commit()
+
+            if commit:
+                self.connection.commit()
         except Exception as e:
             raise DatabaseError(f"Error adding to database: {e}") from None # Hides very long and useless traceback
 
         key.insert(0,"id")
         return dict(zip(key, out))
 
-    def _add_column(self, table_name: str, column_name: List[str], column_type: List[str]):
+    def _add_column(self, table_name: str, column_name: List[str], column_type: List[str], commit: bool = True):
         """
         Adds column(s) to an existing table using SQLAlchemy.
         """
@@ -392,16 +542,17 @@ class Database():
 
         # Execute using SQLAlchemy
         self.connection.execute(text(query))
-        self.connection.commit()
+        if commit:
+            self.connection.commit()
 
         return "Column Added!"
-    from sqlalchemy import text
 
     def _alter_data(
         self,
         table_name: str,
         column_name: List[str],
-        row: List[List[str]]
+        row: List[List[str]],
+        commit: bool = True
     ):
         """
         Edits data in existing rows using SQLAlchemy.
@@ -455,10 +606,12 @@ class Database():
 
             self.connection.execute(query, params)
 
-        self.connection.commit()
+        if commit:
+            self.connection.commit()
 
         return {"message": "Rows updated successfully"}
-    def rename_column(self, table_name: str, old_column_name: str, new_column_name: str):
+
+    def rename_column(self, table_name: str, old_column_name: str, new_column_name: str, commit: bool = True):
         if not valid_identifier(table_name):
             raise HTTPException(status_code=400, detail="Invalid table name")
         if not valid_identifier(old_column_name):
@@ -495,10 +648,11 @@ class Database():
         )
 
         self.connection.execute(query)
-        self.connection.commit()
+        if commit:
+            self.connection.commit()
         return f"Column '{old_column_name}' renamed to '{new_column_name}' in table '{table_name}'"
 
-    def _delete_column(self, table_name: str, column_name: List[str]):
+    def _delete_column(self, table_name: str, column_name: List[str], commit: bool = True):
         """
         Deletes column(s) from existing table
         """
@@ -524,7 +678,8 @@ class Database():
         query = f"ALTER TABLE `{table_name}` {', '.join(drop_clauses)}"
 
         self.connection.execute(text(query))
-        self.connection.commit()
+        if commit:
+            self.connection.commit()
         return f"Column(s) {', '.join(column_name)} deleted from table {table_name}"
 
     def register_dataset(self, project_id: int, table_name: str):
@@ -614,7 +769,7 @@ class Database():
                     where_condition = f"{where_condition} AND {where[w]}"
 
         ret = []
-        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived", "last_updated"], where_condition=where_condition)
         for p in projects:
             ret.append(database_to_project(p, self))
         return ret
@@ -641,7 +796,7 @@ class Database():
         else:
             raise DatabaseError("No Where condition set, please set a parameter,")
 
-        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived"], where_condition=where_condition)
+        projects = self._get_rows("projects", ["project_id", "project_name", "description", "public", "archived", "last_updated"], where_condition=where_condition)
 
         if len(projects) == 0:
             raise DatabaseError("No project found.")
@@ -713,7 +868,7 @@ class Database():
         return [self.get_project(id=up["project_id"]) for up in user_projects]
 
 
-    def get_table(self, table_name: str | None = None, project_id: int | None = None):
+    def get_table(self, table_name: str | None = None, project_id: int | None = None, return_method: int | None = None):
 
         # -------------------------
         # CASE: both provided → validate relationship
@@ -748,7 +903,10 @@ class Database():
             if df.empty:
                 return []
 
-            return df.to_dict(orient="records")
+            if return_method == 1:
+                return df.to_dict(orient="records")
+
+            return df
 
         # -------------------------
         # CASE: only table_name
@@ -805,18 +963,51 @@ class Database():
 
     def get_all_tablenames(self, project_id: int):
         """
-        gets all tables from the database
+        Gets all tables from the database in a structured format
         """
         if not isinstance(project_id, int):
             raise HTTPException(status_code=400, detail="Invalid project id")
 
-        query =f"SELECT table_name FROM dataset WHERE project_id={project_id}"
+        query = text("""
+            SELECT table_name, last_updated 
+            FROM dataset 
+            WHERE project_id = :project_id
+        """)
 
-        res = self.connection.execute(text(query))
-        table_names = [row.table_name for row in res]
+        res = self.connection.execute(query, {"project_id": project_id})
 
-        return table_names
+        results = []
 
+        for row in res:
+            table = row.table_name
+
+            # Count rows
+            count_res = self.connection.execute(
+                text(f"SELECT COUNT(*) FROM `{table}`")
+            )
+            row_count = count_res.scalar()
+
+            # Count columns
+            column_res = self.connection.execute(
+                text(f"DESCRIBE `{table}`")
+            )
+            column_count = len(column_res.fetchall())
+
+            results.append({
+                "table_name": table,
+                "last_updated": row.last_updated,
+                "row_count": row_count,
+                "column_count": column_count
+            })
+
+        return results
+
+    def count_rows(self, table_name: str) -> int:
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
+
+        res = self.connection.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
+        return res.scalar()
 
     def create_table(self, table_name: str, column_name: List[str], column_type: List[str], project_id: int):
             """
@@ -859,15 +1050,15 @@ class Database():
 
             query = f"CREATE TABLE {table_name} ({cols})"
 
-            self.connection.execute(text(query))
-            print("Table success!")
-            self.connection.execute(text(query))
-            print("Table success!")
 
             #Creates dataset row to connect project to the table
+            self.connection.execute(text(query))
+
             self.register_dataset(project_id, table_name)
 
             self.connection.commit()
+
+
 
             return "Table created!"
 
@@ -896,63 +1087,98 @@ class Database():
             # self.connection.execute(text(""))
         except Exception as e:
             print(f"Error: {e}")
+
         self.register_dataset(project_id, table_name)
+
+        self.connection.commit()
         return "Table created!"
 
 
-    def modify_row(
-                self,
-                table_name: str,
-                row_num: int,
-                row_data: List[str] | None,
-                row_columns: List[str] | None,
-                mode: Literal["edit", "delete"]
-        ):
-            if not valid_identifier(table_name):
-                raise HTTPException(status_code=400, detail="Table name is not valid")
+    def delete_table(self, table_name: str, project_id: int) -> str:
+        """
+        Drops a table from the database and removes its entry from the dataset table.
+        Raises an error if the table is protected or doesn't belong to the given project.
+        """
+        PROTECTED_TABLES = {"projects", "users", "dataset", "roles", "user_projects"}
 
-            # Validate column names
-            for col in row_columns:
-                if not valid_identifier(col.strip()):
-                    raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+        if table_name.lower() in PROTECTED_TABLES:
+            raise HTTPException(status_code=403, detail=f"Table '{table_name}' is protected and cannot be deleted")
 
-            # Fetch column types from the existing table
-            res = self.connection.execute(text(f"DESCRIBE {table_name}"))
-            schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
-            # Fetch column types from the existing table
-            res = self.connection.execute(text(f"DESCRIBE {table_name}"))
-            schema = {col[0]: col[1].upper() for col in res.fetchall()}  # {column_name: column_type}
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Invalid table name")
 
-            # Make sure all columns exist
-            for col in row_columns:
-                if col not in schema:
-                    raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
+        # Verify the table belongs to this project
+        res = self.connection.execute(
+            text("""
+                SELECT 1 FROM dataset
+                WHERE table_name = :tname AND project_id = :pid
+                LIMIT 1
+            """),
+            {"tname": table_name, "pid": project_id}
+        )
+        if res.fetchone() is None:
+            raise HTTPException(status_code=404, detail="Table not found in this project")
 
+        try:
+            # Remove from dataset registry first
+            self.connection.execute(
+                text("DELETE FROM dataset WHERE table_name = :tname AND project_id = :pid"),
+                {"tname": table_name, "pid": project_id}
+            )
 
-            if mode == "edit":
-                if row_data is not None and row_columns is not None:
-                    set_clause = ", ".join(f"{col} = :{col}" for col in row_columns)
-                    query = text(f"UPDATE {table_name} SET {set_clause} WHERE `id` = :row_id")
+            # Drop the actual table
+            self.connection.execute(text(f"DROP TABLE `{table_name}`"))
 
-                    params = dict(zip(row_columns, row_data))
-                    params["row_id"] = row_num
-
-                    self.connection.execute(query, params)
-                    self.connection.commit()
-                    return f"Row in {table_name} updated to {row_data}"
-                else:
-                    raise HTTPException(status_code=400, detail="No row or column data")
-
-            if mode == "delete":
-                query = f"DELETE FROM {table_name} WHERE `id`={row_num}"
-
-                return_msg = f"Row in {table_name} at {row_num} deleted"
-
-
-            self.connection.execute(text(query))
             self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            raise DatabaseError(f"Failed to delete table '{table_name}': {e}") from e
 
-            return return_msg
+        return f"Table '{table_name}' deleted successfully"
+
+    def modify_row(
+        self,
+        table_name: str,
+        row_num: int,
+        row_data: List[str] | None,
+        row_columns: List[str] | None,
+        mode: Literal["edit", "delete"],
+        commit: bool = True
+    ):
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Table name is not valid")
+
+        if mode == "delete":
+            query = f"DELETE FROM {table_name} WHERE `id` = {row_num}"
+            self.connection.execute(text(query))
+            if commit:
+                self.connection.commit()
+            return f"Row in {table_name} at {row_num} deleted"
+
+        # Everything below only runs for edit
+        if row_data is None or row_columns is None:
+            raise HTTPException(status_code=400, detail="No row or column data")
+
+        for col in row_columns:
+            if not valid_identifier(col.strip()):
+                raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
+
+        res = self.connection.execute(text(f"DESCRIBE {table_name}"))
+        schema = {col[0]: col[1].upper() for col in res.fetchall()}
+
+        for col in row_columns:
+            if col not in schema:
+                raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
+
+        set_clause = ", ".join(f"{col} = :{col}" for col in row_columns)
+        query = text(f"UPDATE {table_name} SET {set_clause} WHERE `id` = :row_id")
+        params = dict(zip(row_columns, row_data))
+        params["row_id"] = row_num
+
+        self.connection.execute(query, params)
+        if commit:
+            self.connection.commit()
+        return f"Row in {table_name} updated to {row_data}"
 
     def create_user_projects(self, user_id: int, project_id: int, role: USER_ROLES ):
         columns = ["user_id", "project_id", "role"]
@@ -970,6 +1196,9 @@ class Database():
         """
         Creates a new project in the database.
         """
+
+        last_updated = date.today()
+
         columns = ["project_name", "description", "public", "archived"]
         output = [name, description, public, archived]
 
@@ -979,7 +1208,66 @@ class Database():
 
         user_project = self.create_user_projects(owner_id, project["id"], USER_ROLES.admin)
 
-        return Project(id=project["id"], name=project["project_name"], description=project["description"], public=project["public"], archived=project["archived"], owner_id=user_project["user_id"])
+        return Project(id=project["id"], name=project["project_name"], description=project["description"], public=project["public"], archived=project["archived"], owner_id=user_project["user_id"], last_updated=last_updated)
+
+    def delete_project(self, project_id: int) -> str:
+        """
+        Deletes a project and all associated dataset tables and user_project rows.
+        """
+        PROTECTED_TABLES = {"projects", "users", "dataset", "roles", "user_projects"}
+
+        # Check project exists
+        res = self.connection.execute(
+            text("SELECT 1 FROM projects WHERE project_id = :pid"),
+            {"pid": project_id}
+        ).fetchone()
+
+        if res is None:
+            raise HTTPException(status_code=404, detail=f"Project {project_id} not found")
+
+        # Get all tables linked to this project
+        res = self.connection.execute(
+            text("SELECT table_name FROM dataset WHERE project_id = :pid"),
+            {"pid": project_id}
+        ).fetchall()
+
+        table_names = [row[0] for row in res]
+
+        try:
+            # Drop each dataset table
+            for table_name in table_names:
+                if not valid_identifier(table_name):
+                    raise HTTPException(status_code=400, detail=f"Invalid table name: {table_name}")
+                if table_name.lower() in PROTECTED_TABLES:
+                    raise HTTPException(status_code=403, detail=f"Table '{table_name}' is protected and cannot be deleted")
+
+                self.connection.execute(text(f"DROP TABLE IF EXISTS `{table_name}`"))
+
+            # Remove all dataset rows for this project
+            self.connection.execute(
+                text("DELETE FROM dataset WHERE project_id = :pid"),
+                {"pid": project_id}
+            )
+
+            # Remove all user_projects rows for this project
+            self.connection.execute(
+                text("DELETE FROM user_projects WHERE project_id = :pid"),
+                {"pid": project_id}
+            )
+
+            # Finally delete the project itself
+            self.connection.execute(
+                text("DELETE FROM projects WHERE project_id = :pid"),
+                {"pid": project_id}
+            )
+
+            self.connection.commit()
+
+        except Exception as e:
+            self.connection.rollback()
+            raise DatabaseError(f"Failed to delete project {project_id}: {e}") from e
+
+        return f"Project {project_id} and {len(table_names)} table(s) deleted successfully"
 
     def create_user(self,
                     username: str,

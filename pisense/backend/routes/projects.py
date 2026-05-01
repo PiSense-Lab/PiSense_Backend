@@ -14,7 +14,12 @@ async def get_project(project_id: int, name: str | None = None):
         name: Optional project name to filter by.
 
     returns:
-        A project dictionary with id, name, description, public, archived, and owner_id.
+        (int): id
+        (str): name - project name
+        (str): description
+        (int): public - 1 for public 0 for not
+        (int): archived - 1 for public 0 for not
+        (int): owner_id
     """
     db = Database()
     res = db.get_project(project_id, name=name)
@@ -25,6 +30,7 @@ async def get_project(project_id: int, name: str | None = None):
         "public": res.public,
         "archived": res.archived,
         "owner_id": res.owner_id,
+        "last_updated": res.last_updated
     }
 
 
@@ -47,7 +53,12 @@ async def create_project(
         archived: Whether the project is archived.
 
     returns:
-        The created project record.
+        (int): id
+        (str): name - project name
+        (str): description
+        (int): public - 1 for public 0 for not
+        (int): archived - 1 for public 0 for not
+        (int): owner_id
     """
     db = Database()
     project = db.create_project(
@@ -55,7 +66,7 @@ async def create_project(
         owner_id=owner_id,
         description=description,
         public=public,
-        archived=archived,
+        archived=archived
     )
     return {
         "id": project.id,
@@ -64,4 +75,17 @@ async def create_project(
         "public": project.public,
         "archived": project.archived,
         "owner_id": project.owner_id,
+        "last_updated": project.last_updated,
     }
+
+@router.delete("/delete_project")
+def delete_project(
+    project_id: int,
+
+):
+    """
+    Deletes a project, all its dataset tables, and all user_project memberships.
+    """
+
+    result = Database().delete_project(project_id=project_id)
+    return {"message": result}
