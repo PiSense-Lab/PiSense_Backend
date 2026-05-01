@@ -1,8 +1,6 @@
 
 from pisense.backend.classes import Database
-
 from fastapi import APIRouter
-
 
 
 router = APIRouter(prefix="/utility")
