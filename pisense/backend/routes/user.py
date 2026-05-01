@@ -15,10 +15,22 @@ router = APIRouter(prefix="/users")
 
 @router.get("/verify-token")
 async def verify_user_token(payload=Depends(Authenticator().verify_token)):
+    """ Verifies User Token from header. 
+    
+    returns:
+        (str): message
+        (str): payload
+    """
     return {"message": "Token is valid", "payload": payload}
 
 @router.post("/token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), extended: bool | None = None, ):
+    """ Returns access token if supplied valid credentials from header. 
+    
+    returns:
+        (str): access_token
+        (str): token_type
+    """
     try:
         user = Authenticator().authenticate_user(form_data.username, form_data.password)
     except DatabaseError as e:
@@ -50,7 +62,7 @@ async def get_all_users():
     """
     Gets all users in the database.
 
-    Returns:
+    returns:
         (int): id 
         (int): role users role (ask for nums?)
         (str): username users shown name
@@ -80,7 +92,7 @@ async def get_users(username: str | None = None):
 @router.get("/get_user_projects")
 async def get_user_projects(user_id: int | None = None):
     """
-    Retrieve projects associated with a user.
+    Retrieves projects associated with a user.
 
     params:
         user_id: Optional user ID to filter projects.
