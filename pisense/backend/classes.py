@@ -456,22 +456,21 @@ class Database():
             if col not in schema:
                 raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
 
+        
         cols = ", ".join(quote_identifier(col.strip()) for col in column_name)
-        placeholders = ", ".join(f":{col}" for col in column_name)
+        placeholders = ", ".join([":val" + str(i) for i in range(len(column_name))])
         query = text(f"INSERT INTO `{table_name}` ({cols}) VALUES ({placeholders})")
 
-        # Insert rows
         for row in rows:
             if len(row) != len(column_name):
                 raise HTTPException(status_code=400, detail="Row length does not match column length")
 
-            # Validate each value against its column type
             for val, col in zip(row, column_name):
                 validate_value(val, schema[col])
 
-
-            d_rows = dict(zip(column_name, row))
-            self.connection.execute(query, d_rows)    #safe parameter binding
+            # Use positional keys: val0, val1, val2 ...
+            params = {f"val{i}": v for i, v in enumerate(row)}
+            self.connection.execute(query, params)
 
         if commit:
             self.connection.commit()
