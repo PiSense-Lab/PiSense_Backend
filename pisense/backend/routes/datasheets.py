@@ -33,7 +33,7 @@ async def get_tables(
     db =  Database()
     res = db.get_all_tablenames(project_id)
 
-    return res
+    return dict(res)
 
 @router.get("/get_table")
 async def read_single_table(
@@ -55,11 +55,12 @@ async def read_single_table(
 
     """
     db = Database()
-
     if project_id is None:
         res = db.get_table(project_id=None)  # or define a clearer "get_all"
     else:
         res = db.get_table(table_name, project_id=project_id, return_method=1)
+
+    res = json.dumps(res)
 
     return res
 
