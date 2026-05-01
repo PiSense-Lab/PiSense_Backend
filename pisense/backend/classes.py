@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 import mariadb
 from passlib.context import CryptContext
-import traceback
 
 import os
 from dotenv import load_dotenv
@@ -1004,7 +1003,10 @@ class Database():
 #            columns.append("lastname")
 #            output.append(lastname)
 
-        user = self._insert_row("users", columns, output)
+        try:
+            user = self._insert_row("users", columns, output)
+        except DatabaseError as e:
+            raise e
 
         return user_dict_to_user(user)
 
@@ -1038,7 +1040,7 @@ class Authenticator():
     def authenticate_user(self, username: str, password: str) -> User:
         try:
             user: User = Database().get_user(username=username)
-        except FindingRowError as e:
+        except FindingRowError:
             raise UnauthorizedUserError("Username was not correct")
         except DatabaseReconnectingError as e:
             raise e

@@ -113,13 +113,35 @@ async def create_user(
         The created user record.
     """
     db = Database()
-    user = db.create_user(
-        username=user_values.username,
-        email=user_values.email,
-        password=user_values.password,
-        firstname=user_values.firstname,
-        lastname=user_values.lastname,
-    )
+    try:
+        user = db.create_user(
+            username=user_values.username,
+            email=user_values.email,
+            password=user_values.password,
+            firstname=user_values.firstname,
+            lastname=user_values.lastname,
+        )
+    except DatabaseError as e:
+        if "unique_username" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Username is not unique",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        elif "unique_email" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Email is not unique",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Unhandled Exception: {e}",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+
     return {
         "id": user.id,
         "username": user.username,
