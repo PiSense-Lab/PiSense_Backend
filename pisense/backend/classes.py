@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 import mariadb
+from pandas import col
 from passlib.context import CryptContext
 
 import os
@@ -23,7 +24,13 @@ import sqlalchemy
 from pisense.backend.exceptions import CouldNotConnectToDBError, DatabaseError, DatabaseReconnectingError, FindingRowError, UnauthorizedUserError
 from pisense.database.validate import validate_value
 
-# --- at module level, before the Database class ---
+def valid_existing_identifier(name: str) -> bool:
+    """Looser check for column names that already exist in the DB (allows spaces)."""
+    return bool(re.match(r'^[A-Za-z_][A-Za-z0-9_ ]*$', name))
+
+def quote_identifier(name: str) -> str:
+    """Wraps a column/table name in backticks, escaping internal backticks."""
+    return "`" + name.replace("`", "``") + "`"
 
 class AddColumnChange(BaseModel):
     type: Literal["add_column"]
@@ -71,6 +78,7 @@ Change = Annotated[
     ],
     Field(discriminator="type")
 ]
+
 
 class ApplyChangesRequest(BaseModel):
     changes: List[Change]
@@ -396,13 +404,13 @@ class Database():
         # Validate columns
         if columns:
             for col in columns:
-                if not valid_identifier(col.strip()):
+                if not valid_existing_identifier(col.strip()):
                     raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
         # Build SELECT clause
         cols = "*"
         if columns:
-            cols = ", ".join(col.strip() for col in columns)
+            cols = ", ".join(quote_identifier(col.strip()) for col in columns)
 
         # Build WHERE clause
         where = f" WHERE {where_condition}" if where_condition else ""
@@ -436,7 +444,7 @@ class Database():
 
         # Validate column names
         for col in column_name:
-            if not valid_identifier(col.strip()):
+            if not valid_existing_identifier(col.strip()):
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
         # Fetch column types from the existing table
@@ -448,24 +456,21 @@ class Database():
             if col not in schema:
                 raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
 
-        cols = ", ".join(col.strip() for col in column_name)
-        placeholders = ", ".join([f":{col}" for col in column_name])
-        cols = cols.replace("index", "`index`")
-        cols = cols.replace("DateTime", "`DateTime`")
-        query = text(f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders})")
+        
+        cols = ", ".join(quote_identifier(col.strip()) for col in column_name)
+        placeholders = ", ".join([":val" + str(i) for i in range(len(column_name))])
+        query = text(f"INSERT INTO `{table_name}` ({cols}) VALUES ({placeholders})")
 
-        # Insert rows
         for row in rows:
             if len(row) != len(column_name):
                 raise HTTPException(status_code=400, detail="Row length does not match column length")
 
-            # Validate each value against its column type
             for val, col in zip(row, column_name):
                 validate_value(val, schema[col])
 
-
-            d_rows = dict(zip(column_name, row))
-            self.connection.execute(query, d_rows)    #safe parameter binding
+            # Use positional keys: val0, val1, val2 ...
+            params = {f"val{i}": v for i, v in enumerate(row)}
+            self.connection.execute(query, params)
 
         if commit:
             self.connection.commit()
@@ -564,7 +569,7 @@ class Database():
 
         # Validate column names
         for col in column_name:
-            if not valid_identifier(col.strip()):
+            if not valid_existing_identifier(col.strip()):
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
         # Fetch schema
@@ -592,9 +597,8 @@ class Database():
             for col, value in zip(column_name, r[:-1]):
                 validate_value(value, schema[col])
 
-        # Build UPDATE query
-        set_clause = ", ".join([f"`{col}` = :{col}" for col in column_name])
-        query = text(f"UPDATE `{table_name}` SET {set_clause} WHERE `index` = :row_id")
+        set_clause = ", ".join([f"{quote_identifier(col)} = :{col}" for col in column_name])
+        query = text(f"UPDATE {quote_identifier(table_name)} SET {set_clause} WHERE {quote_identifier('index')} = :row_id")
 
         # Execute updates
         for r in row:
@@ -614,7 +618,7 @@ class Database():
     def rename_column(self, table_name: str, old_column_name: str, new_column_name: str, commit: bool = True):
         if not valid_identifier(table_name):
             raise HTTPException(status_code=400, detail="Invalid table name")
-        if not valid_identifier(old_column_name):
+        if not valid_existing_identifier(old_column_name):
             raise HTTPException(status_code=400, detail="Invalid old column name")
         if not valid_identifier(new_column_name):
             raise HTTPException(status_code=400, detail="Invalid new column name")
@@ -1149,8 +1153,8 @@ class Database():
             raise HTTPException(status_code=400, detail="Table name is not valid")
 
         if mode == "delete":
-            query = f"DELETE FROM {table_name} WHERE `id` = {row_num}"
-            self.connection.execute(text(query))
+            query = text(f"DELETE FROM {quote_identifier(table_name)} WHERE `id` = :row_id")
+            self.connection.execute(query, {"row_id": row_num})  # ← bind, don't interpolate
             if commit:
                 self.connection.commit()
             return f"Row in {table_name} at {row_num} deleted"
@@ -1160,7 +1164,7 @@ class Database():
             raise HTTPException(status_code=400, detail="No row or column data")
 
         for col in row_columns:
-            if not valid_identifier(col.strip()):
+            if not valid_existing_identifier(col.strip()):
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
         res = self.connection.execute(text(f"DESCRIBE {table_name}"))
@@ -1170,8 +1174,8 @@ class Database():
             if col not in schema:
                 raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
 
-        set_clause = ", ".join(f"{col} = :{col}" for col in row_columns)
-        query = text(f"UPDATE {table_name} SET {set_clause} WHERE `id` = :row_id")
+        set_clause = ", ".join(f"{quote_identifier(col)} = :{col}" for col in row_columns)
+        query = text(f"UPDATE {quote_identifier(table_name)} SET {set_clause} WHERE `id` = :row_id")
         params = dict(zip(row_columns, row_data))
         params["row_id"] = row_num
 
