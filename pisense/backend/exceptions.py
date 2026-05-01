@@ -20,3 +20,8 @@ class FindingRowError(Exception):
     """Raised when a user fails authentication."""
     def __init__(self, message: str):
         super().__init__(f"{message}")
+
+class CouldNotConnectToDBError(Exception):
+    """Raised when a user fails authentication."""
+    def __init__(self, message: str):
+        super().__init__(f"{message}")

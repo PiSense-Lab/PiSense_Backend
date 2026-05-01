@@ -19,7 +19,7 @@ import logging
 import sys
 from fastapi import Depends, HTTPException
 import sqlalchemy
-from pisense.backend.exceptions import DatabaseError, DatabaseReconnectingError, FindingRowError, UnauthorizedUserError
+from pisense.backend.exceptions import CouldNotConnectToDBError, DatabaseError, DatabaseReconnectingError, FindingRowError, UnauthorizedUserError
 from pisense.database.validate import validate_value
 def database_to_user(user: dict) -> "User":
     return User(
@@ -165,6 +165,9 @@ class Database():
                 self.connection.execute(text("SELECT 1"))
             except ( mariadb.InterfaceError, sqlalchemy.exc.InterfaceError ):
                 run = True
+            except ( sqlalchemy.exc.OperationalError ) as e:
+                self.connection.rollback()
+                raise CouldNotConnectToDBError("Could not ping database ip, could be a network related issue.") from e
 
         if run:
             print("Connecting to database")
