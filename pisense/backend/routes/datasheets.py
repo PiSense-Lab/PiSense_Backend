@@ -1,3 +1,4 @@
+import datetime
 from sqlite3 import DatabaseError
 
 from fastapi import APIRouter, File, UploadFile, status, HTTPException
@@ -34,8 +35,6 @@ async def get_tables(
     db =  Database()
     res = db.get_all_tablenames(project_id)
 
-    # res = simplejson.dumps(res, ignore_nan=True)
-
     return res
 
 @router.get("/get_table")
@@ -62,8 +61,6 @@ async def read_single_table(
         res = db.get_table(project_id=None)  # or define a clearer "get_all"
     else:
         res = db.get_table(table_name, project_id=project_id, return_method=1)
-
-    # res = simplejson.dumps(res, ignore_nan=True)
 
     return res
 

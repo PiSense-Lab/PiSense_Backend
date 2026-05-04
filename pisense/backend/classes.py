@@ -906,6 +906,10 @@ class Database():
             if df.empty:
                 return []
 
+            df = df.replace({float('nan'): None})
+
+            print(df)
+
             if return_method == 1:
                 return df.to_dict(orient="records")
 
@@ -922,6 +926,8 @@ class Database():
                 f"SELECT * FROM {table_name}",
                 con=self.connection
             )
+
+            df = df.replace({float('nan'): None})
 
             if df.empty:
                 return []
@@ -940,6 +946,8 @@ class Database():
 
             rows = res.fetchall()
             dataset_df = pd.DataFrame(rows, columns=["table_name"])
+
+            dataset_df = dataset_df.replace({float('nan'): None})
 
             if dataset_df.empty:
                 raise DatabaseError("No tables found for this project")
