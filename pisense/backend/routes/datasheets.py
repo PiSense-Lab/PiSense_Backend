@@ -1,4 +1,3 @@
-import datetime
 from sqlite3 import DatabaseError
 
 from fastapi import APIRouter, File, UploadFile, status, HTTPException

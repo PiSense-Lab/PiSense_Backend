@@ -908,8 +908,6 @@ class Database():
 
             df = df.replace({float('nan'): None})
 
-            print(df)
-
             if return_method == 1:
                 return df.to_dict(orient="records")
 
