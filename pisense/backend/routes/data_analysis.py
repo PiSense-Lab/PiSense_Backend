@@ -17,6 +17,7 @@ async def z_detect_outliers(
     raw = db.get_table(tablename, project_id=project_id)
     undet = pd.DataFrame(raw)
     z = (undet[y_title] - undet[y_title].expanding().mean()) / undet[y_title].expanding().std()
+    print(z)
     return z
 
 #@router.get("/mad_detect_anomalies")

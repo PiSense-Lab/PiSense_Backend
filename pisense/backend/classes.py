@@ -906,6 +906,8 @@ class Database():
             if df.empty:
                 return []
 
+            df = df.fillna(0)
+
             if return_method == 1:
                 return df.to_dict(orient="records")
 
@@ -925,6 +927,7 @@ class Database():
 
             if df.empty:
                 return []
+            df = df.fillna(0)
 
             return df.to_dict(orient="records")
 
@@ -954,6 +957,7 @@ class Database():
                     f"SELECT * FROM {name}",
                     con=self.connection
                 )
+                df = df.fillna(0)
 
                 results[name] = df.to_dict(orient="records")
 
