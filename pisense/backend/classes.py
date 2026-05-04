@@ -920,16 +920,26 @@ class Database():
                 else:
                     raise HTTPException(status_code=400, detail="No row or column data")
 
-            if mode == "delete":
-                query = f"DELETE FROM {table_name} WHERE `id`={row_num}"
-
-                return_msg = f"Row in {table_name} at {row_num} deleted"
-
 
             self.connection.execute(text(query))
             self.connection.commit()
 
             return return_msg
+
+
+    def delete_row(self, table_name, row_num):
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Table name is not valid")
+
+        query = text(f"DELETE FROM {table_name} WHERE `id`={row_num}")
+
+        self.connection.execute(query)
+
+        return_msg = f"Row in {table_name} at {row_num} deleted"
+
+        return return_msg
+
+
 
     def create_user_projects(self, user_id: int, project_id: int, role: USER_ROLES ):
         columns = ["user_id", "project_id", "role"]

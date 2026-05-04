@@ -9,6 +9,7 @@ from pisense.backend.routes.datasheets import router as tables_router
 from pisense.backend.routes.user import router as user_router
 from pisense.backend.routes.projects import router as project_router
 from pisense.backend.routes.output_tools import router as output_router
+from pisense.backend.routes.data_analysis import router as analysis_router
 
 
 # to start server: source .venv/bin/activate && fastapi dev pisense/api/main.py
@@ -42,6 +43,7 @@ app.include_router(tables_router)
 app.include_router(user_router)
 app.include_router(project_router)
 app.include_router(output_router)
+app.include_router(analysis_router)
 
 @app.get("/")
 async def root():
