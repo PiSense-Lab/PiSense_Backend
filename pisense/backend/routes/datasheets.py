@@ -34,7 +34,7 @@ async def get_tables(
     db =  Database()
     res = db.get_all_tablenames(project_id)
 
-    return dict(res)
+    return res
 
 @router.get("/get_table")
 async def read_single_table(
