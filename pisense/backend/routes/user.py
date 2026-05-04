@@ -9,21 +9,40 @@ from pisense.backend.classes import Authenticator
 from fastapi import Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from pisense.backend.exceptions import DatabaseError
+from pisense.backend.exceptions import DatabaseError, DatabaseReconnectingError
 
 router = APIRouter(prefix="/users")
 
 @router.get("/verify-token")
 async def verify_user_token(payload=Depends(Authenticator().verify_token)):
+    """ Verifies User Token from header. 
+
+    returns:
+        (str): message
+        (str): payload
+    """
     return {"message": "Token is valid", "payload": payload}
 
 @router.post("/token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), extended: bool | None = None, ):
+    """ Returns access token if supplied valid credentials from header. 
+
+    returns:
+        (str): access_token
+        (str): token_type
+    """
     try:
         user = Authenticator().authenticate_user(form_data.username, form_data.password)
     except DatabaseError as e:
-        print(f"DB Error, Skipping - {e}")
+        print(f"{e}")
         user = None
+    except DatabaseReconnectingError as e:
+        print(f"{e}")
+        raise HTTPException(
+            status_code=status.HTTP_451_UNAVAILABLE_FOR_LEGAL_REASONS,
+            detail="Database Is Reconnecting, Try Again",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -43,7 +62,7 @@ async def get_all_users():
     """
     Gets all users in the database.
 
-    Returns:
+    returns:
         (int): id 
         (int): role users role (ask for nums?)
         (str): username users shown name
@@ -73,7 +92,7 @@ async def get_users(username: str | None = None):
 @router.get("/get_user_projects")
 async def get_user_projects(user_id: int | None = None):
     """
-    Retrieve projects associated with a user.
+    Retrieves projects associated with a user.
 
     params:
         user_id: Optional user ID to filter projects.
@@ -110,13 +129,35 @@ async def create_user(
         (str): lastname
     """
     db = Database()
-    user = db.create_user(
-        username=user_values.username,
-        email=user_values.email,
-        password=user_values.password,
-        firstname=user_values.firstname,
-        lastname=user_values.lastname,
-    )
+    try:
+        user = db.create_user(
+            username=user_values.username,
+            email=user_values.email,
+            password=user_values.password,
+            firstname=user_values.firstname,
+            lastname=user_values.lastname,
+        )
+    except DatabaseError as e:
+        if "unique_username" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Username is not unique",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        elif "unique_email" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Email is not unique",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Unhandled Exception: {e}",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+
     return {
         "id": user.id,
         "username": user.username,

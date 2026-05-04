@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from pisense.backend.routes.weather import router as weather_router
 from pisense.backend.routes.datasheets import router as tables_router
 from pisense.backend.routes.user import router as user_router
+from pisense.backend.routes.utility import router as utility_router
 from pisense.backend.routes.projects import router as project_router
 from pisense.backend.routes.output_tools import router as output_router
 from pisense.backend.routes.data_analysis import router as analysis_router
@@ -41,6 +42,7 @@ app.add_middleware(
 app.include_router(weather_router)
 app.include_router(tables_router)
 app.include_router(user_router)
+app.include_router(utility_router)
 app.include_router(project_router)
 app.include_router(output_router)
 app.include_router(analysis_router)

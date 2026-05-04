@@ -1,3 +1,5 @@
+from sqlite3 import DatabaseError
+
 from fastapi import APIRouter, File, UploadFile, status, HTTPException
 from io import BytesIO
 import pandas as pd
@@ -5,6 +7,7 @@ import json
 from typing import Any, List
 from pisense.backend.classes import Database
 from pisense.backend.models.table_models import DataTable
+import simplejson as simplejson
 
 
 router = APIRouter(prefix="/datatables")
@@ -30,7 +33,7 @@ async def get_tables(
     """
     db =  Database()
     res = db.get_all_tablenames(project_id)
-    print(res)
+
     return res
 
 @router.get("/get_table")
@@ -53,11 +56,12 @@ async def read_single_table(
 
     """
     db = Database()
-
     if project_id is None:
         res = db.get_table(project_id=None)  # or define a clearer "get_all"
     else:
         res = db.get_table(table_name, project_id=project_id, return_method=1)
+
+    res = simplejson.dumps(res, ignore_nan=True)
 
     return res
 
@@ -85,6 +89,33 @@ async def get_rows(
     return {"data": res}
 
 
+@router.patch("/edit_table", status_code=200)
+async def apply_table_changes(
+    changes: List[dict],
+    table_name: str
+):
+    """
+        Applies a list of changes to the database.
+
+    params:
+    changes: List of change dictionaries, each containing:
+    - action: The type of change ('edit', 'add', 'delete').
+    - row_num: The row number to be modified (for 'edit' and 'delete').
+    - row_data: List of values for the row (for 'edit' and 'add').
+    - row_columns: List of column names corresponding to row_data (for 'edit' and 'delete').
+    table_name: The name of the table to which the changes should be applied.
+
+    Raises:
+    HTTPException: If any database error occurs during the application of changes.
+    """
+
+    db = Database()
+    try:
+        db.apply_changes(changes)
+        db.update_last_updated(table_name)
+
+    except DatabaseError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.patch("/edit_point", status_code=200)
 async def edit_point(
@@ -109,6 +140,7 @@ async def edit_point(
     """
     db = Database()
     db.modify_row(table_name, row_num, row_data=row_data, row_columns=row_columns, mode="edit")
+
 
 @router.patch("/add_point", status_code=200)
 async def add_point(
@@ -151,8 +183,7 @@ async def remove_point(
 
     """
     db = Database()
-    #db.modify_row(table_name, row_num,mode="delete")
-    db.delete_row(table_name, row_num)
+    db.modify_row(table_name, row_num,mode="delete")
 
 @router.patch("/add_column", status_code=200)
 async def add_column(
@@ -224,7 +255,21 @@ async def create_table(
     """
     db = Database()
     db.create_table(table_name, column_name, column_type,project_id)
+    db.update_last_updated(table_name)
     return {"table_name": table_name}
+
+@router.delete("/delete_table")
+def delete_table(
+    project_id: int,
+    table_name: str,
+):
+    """
+    Deletes a dataset table and removes it from the dataset registry.
+    Protected system tables cannot be deleted.
+    """
+
+    result = Database().delete_table(table_name=table_name, project_id=project_id)
+    return {"message": result}
 
 @router.post("/upload_manual", status_code=200)
 async def upload_manual(
@@ -253,6 +298,7 @@ async def upload_manual(
     db = Database()
     df = pd.DataFrame(json.loads(json_in))
     db.df_create_table(project_id, table_name, df)  # come back to for project_id
+    db.update_last_updated(table_name)
     return {"table_name": table_name, "json": json_in}
 
 @router.post("/upload_csv/")
@@ -286,6 +332,7 @@ async def upload_csv(
     if table_name is None:
         table_name = file.filename
     db.df_create_table(project_id, table_name, df)  # come back to for project_id
+    db.update_last_updated(table_name)
     return {"filename": file.filename, "rows_count": len(df)}
 
 # originally generated with AI
@@ -333,6 +380,7 @@ async def upload_excel_file(
 
     db = Database()
     db.df_create_table(project_id, file.filename.replace(".xlsx", ""), df)
+    db.update_last_updated(file.filename.replace(".xlsx", ""))
 
     # Process the DataFrame (e.g., convert to JSON or perform analysis)
     # Returning a dictionary, which FastAPI serializes to JSON

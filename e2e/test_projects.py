@@ -1,4 +1,6 @@
 # import pytest
+from datetime import date
+
 from fastapi.testclient import TestClient
 from pisense.api.main import app
 from pisense.backend.classes import USER_ROLES, Project, Database, User
@@ -22,6 +24,7 @@ def test_create_get_projects():
         public = False
         archived = False
         owner_id = user1.id
+        last_updated = date.today()
 
         project = db.create_project( name = project_name, owner_id = owner_id )
         project.add_user(user1_2.id, USER_ROLES.analyst)
@@ -35,6 +38,7 @@ def test_create_get_projects():
         assert project.public == public
         assert project.archived == archived
         assert project.owner_id == owner_id
+        assert project.last_updated == last_updated
 
         users = project.users
         possible_users = [ user1, user1_2, user1_3]
@@ -71,6 +75,7 @@ def test_create_get_projects():
         assert project.public == public
         assert project.archived == archived
         assert project.owner_id == owner_id
+        assert project.last_updated == last_updated
 
         for up in users:
             user = up['user']
@@ -105,6 +110,7 @@ def test_create_get_projects():
         assert project.public == public
         assert project.archived == archived
         assert project.owner_id == owner_id
+        assert project.last_updated == date.today()
 
         project = db.get_project( name = project_name)
         print("User object from `get_project`")
@@ -116,6 +122,7 @@ def test_create_get_projects():
         assert project.public == public
         assert project.archived == archived
         assert project.owner_id == owner_id
+        assert project.last_updated == date.today()
 
 
         project_name = "test_project_public_archived"
@@ -134,6 +141,7 @@ def test_create_get_projects():
         assert project.public == public
         assert project.archived == archived
         assert project.owner_id == owner_id
+        assert project.last_updated == date.today()
 
         project = db.get_project( name = project_name)
         print("User object from `get_project`")
@@ -145,6 +153,7 @@ def test_create_get_projects():
         assert project.public == public
         assert project.archived == archived
         assert project.owner_id == owner_id
+        assert project.last_updated == date.today()
 
         projects = db.get_projects()
         assert len(projects) == 3
