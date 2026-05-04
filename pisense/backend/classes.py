@@ -1,7 +1,6 @@
 from datetime import date, datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 import mariadb
-from pandas import col
 from passlib.context import CryptContext
 
 import os
@@ -456,7 +455,7 @@ class Database():
             if col not in schema:
                 raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
 
-        
+
         cols = ", ".join(quote_identifier(col.strip()) for col in column_name)
         placeholders = ", ".join([":val" + str(i) for i in range(len(column_name))])
         query = text(f"INSERT INTO `{table_name}` ({cols}) VALUES ({placeholders})")

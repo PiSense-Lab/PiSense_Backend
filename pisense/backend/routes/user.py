@@ -16,7 +16,7 @@ router = APIRouter(prefix="/users")
 @router.get("/verify-token")
 async def verify_user_token(payload=Depends(Authenticator().verify_token)):
     """ Verifies User Token from header. 
-    
+
     returns:
         (str): message
         (str): payload
@@ -26,7 +26,7 @@ async def verify_user_token(payload=Depends(Authenticator().verify_token)):
 @router.post("/token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), extended: bool | None = None, ):
     """ Returns access token if supplied valid credentials from header. 
-    
+
     returns:
         (str): access_token
         (str): token_type
