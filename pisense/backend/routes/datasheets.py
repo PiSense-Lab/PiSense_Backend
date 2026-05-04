@@ -34,6 +34,8 @@ async def get_tables(
     db =  Database()
     res = db.get_all_tablenames(project_id)
 
+    # res = simplejson.dumps(res, ignore_nan=True)
+
     return res
 
 @router.get("/get_table")
