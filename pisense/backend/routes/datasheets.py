@@ -7,6 +7,7 @@ import json
 from typing import Any, List
 from pisense.backend.classes import Database
 from pisense.backend.models.table_models import DataTable
+import simplejson as simplejson
 
 
 router = APIRouter(prefix="/datatables")
@@ -33,7 +34,7 @@ async def get_tables(
     db =  Database()
     res = db.get_all_tablenames(project_id)
 
-    return res
+    return dict(res)
 
 @router.get("/get_table")
 async def read_single_table(
@@ -55,11 +56,12 @@ async def read_single_table(
 
     """
     db = Database()
-
     if project_id is None:
         res = db.get_table(project_id=None)  # or define a clearer "get_all"
     else:
         res = db.get_table(table_name, project_id=project_id, return_method=1)
+
+    res = simplejson.dumps(res, ignore_nan=True)
 
     return res
 
@@ -264,7 +266,7 @@ def delete_table(
     Deletes a dataset table and removes it from the dataset registry.
     Protected system tables cannot be deleted.
     """
-    
+
     result = Database().delete_table(table_name=table_name, project_id=project_id)
     return {"message": result}
 
