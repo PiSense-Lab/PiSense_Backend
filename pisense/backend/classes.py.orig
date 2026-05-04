@@ -906,7 +906,11 @@ class Database():
             if df.empty:
                 return []
 
+<<<<<<< HEAD
+            df = df.fillna(0)
+=======
             df = df.replace({float('nan'): None})
+>>>>>>> origin
 
             if return_method == 1:
                 return df.to_dict(orient="records")
@@ -929,6 +933,7 @@ class Database():
 
             if df.empty:
                 return []
+            df = df.fillna(0)
 
             return df.to_dict(orient="records")
 
@@ -960,6 +965,7 @@ class Database():
                     f"SELECT * FROM {name}",
                     con=self.connection
                 )
+                df = df.fillna(0)
 
                 results[name] = df.to_dict(orient="records")
 
@@ -1188,6 +1194,21 @@ class Database():
         if commit:
             self.connection.commit()
         return f"Row in {table_name} updated to {row_data}"
+
+
+    def delete_row(self, table_name, row_num):
+        if not valid_identifier(table_name):
+            raise HTTPException(status_code=400, detail="Table name is not valid")
+
+        query = text(f"DELETE FROM {table_name} WHERE `id`={row_num}")
+
+        self.connection.execute(query)
+
+        return_msg = f"Row in {table_name} at {row_num} deleted"
+
+        return return_msg
+
+
 
     def create_user_projects(self, user_id: int, project_id: int, role: USER_ROLES ):
         columns = ["user_id", "project_id", "role"]

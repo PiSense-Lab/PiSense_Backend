@@ -63,8 +63,6 @@ async def read_single_table(
     else:
         res = db.get_table(table_name, project_id=project_id, return_method=1)
 
-    # res = simplejson.dumps(res, ignore_nan=True)
-
     return res
 
 
