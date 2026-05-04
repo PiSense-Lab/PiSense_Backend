@@ -20,11 +20,11 @@ async def z_detect_outliers(
     z = (undet[y_title] - undet[y_title].expanding().mean()) / undet[y_title].expanding().std()
     z[np.isnan(z.astype(float))] = 0
 
-    res_arr = []
-    for u_val, z_score in zip(undet[y_title], z):
+    res_dict = {}
+    for u_val, z_score, i in zip(undet[y_title], z, undet["index"]):
         if z_score >= 2 or z_score <= -2:
-            res_arr.append(u_val)
-    return res_arr
+            res_dict[f"{i}"] = u_val
+    return {"count": len(res_dict), "data": res_dict}
 
 #@router.get("/mad_detect_anomalies")
 #async def mad_detect_outliers(
