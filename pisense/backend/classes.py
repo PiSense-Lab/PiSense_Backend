@@ -1157,9 +1157,14 @@ class Database():
         if not valid_identifier(table_name):
             raise HTTPException(status_code=400, detail="Table name is not valid")
 
+        res = self.connection.execute(text(f"DESCRIBE `{table_name}`"))
+        schema_rows = res.fetchall()
+        primary_key = schema_rows[0][0]  # First column name
+        schema = {col[0]: col[1].upper() for col in schema_rows}
+
         if mode == "delete":
-            query = text(f"DELETE FROM {quote_identifier(table_name)} WHERE `id` = :row_id")
-            self.connection.execute(query, {"row_id": row_num})  # ← bind, don't interpolate
+            query = text(f"DELETE FROM {quote_identifier(table_name)} WHERE {quote_identifier(primary_key)} = :row_id")
+            self.connection.execute(query, {"row_id": row_num})
             if commit:
                 self.connection.commit()
             return f"Row in {table_name} at {row_num} deleted"
@@ -1172,15 +1177,12 @@ class Database():
             if not valid_existing_identifier(col.strip()):
                 raise HTTPException(status_code=400, detail=f"Invalid column name: {col}")
 
-        res = self.connection.execute(text(f"DESCRIBE {table_name}"))
-        schema = {col[0]: col[1].upper() for col in res.fetchall()}
-
         for col in row_columns:
             if col not in schema:
                 raise HTTPException(status_code=400, detail=f"Column {col} does not exist in table {table_name}")
 
         set_clause = ", ".join(f"{quote_identifier(col)} = :{col}" for col in row_columns)
-        query = text(f"UPDATE {quote_identifier(table_name)} SET {set_clause} WHERE `id` = :row_id")
+        query = text(f"UPDATE {quote_identifier(table_name)} SET {set_clause} WHERE {quote_identifier(primary_key)} = :row_id")
         params = dict(zip(row_columns, row_data))
         params["row_id"] = row_num
 
