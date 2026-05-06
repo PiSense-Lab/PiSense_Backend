@@ -169,7 +169,8 @@ async def add_point(
 @router.patch("/remove_point", status_code=200)
 async def remove_point(
         row_num: int,
-        table_name: str
+        table_name: str,
+        project_id: int | None = None
 ):
     """
     Removes a point from a given table in the database.
